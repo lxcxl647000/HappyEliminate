@@ -1,13 +1,10 @@
-import { _decorator, Component, Node, Size, tween, UITransform, Vec3 } from 'cc';
+import { _decorator, Component, Node, ProgressBar, Size, tween, UITransform, Vec3 } from 'cc';
 import { StarUtils } from './StarUtils';
 import { Constants } from '../../game/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('ProgressScript')
 export class ProgressScript extends Component {
-
-    @property(Node)
-    progressNode: Node;
 
     @property(Node)
     start1Node: Node;
@@ -17,6 +14,9 @@ export class ProgressScript extends Component {
 
     @property(Node)
     start3Node: Node;
+
+    @property(ProgressBar)
+    progressBar: ProgressBar;
 
     // 记录进度, 默认0，最大值100
     private progress: number = 0;
@@ -65,9 +65,9 @@ export class ProgressScript extends Component {
 
     private updateNodes(onFinish?: () => void) {
         // progress
-        let scale = this.progress / 100;
-        tween(this.progressNode)
-            .to(Constants.PROGRESS_CHANGE_DURATION, { scale: new Vec3(scale, 1, 1) })
+        let progressValue = this.progress / 100;
+        tween(this.progressBar)
+            .to(Constants.PROGRESS_CHANGE_DURATION, { progress: progressValue })
             .call(() => {
                 if (onFinish) {
                     onFinish();

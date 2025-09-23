@@ -7,7 +7,7 @@ export enum CellType {
     TYPE_2,
     TYPE_3,
     TYPE_4,
-    TYPE_5,
+    // TYPE_5,
     TOTALCOUNT
 };
 

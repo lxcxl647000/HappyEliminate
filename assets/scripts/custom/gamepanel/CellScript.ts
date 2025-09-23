@@ -66,7 +66,7 @@ export class CellScript extends Component {
             this.textureConfg[CellType.TYPE_2] = { sprite: this.spriteFrameList[1], name: this.spriteFrameList[1].name };
             this.textureConfg[CellType.TYPE_3] = { sprite: this.spriteFrameList[2], name: this.spriteFrameList[2].name };
             this.textureConfg[CellType.TYPE_4] = { sprite: this.spriteFrameList[3], name: this.spriteFrameList[3].name };
-            this.textureConfg[CellType.TYPE_5] = { sprite: this.spriteFrameList[4], name: this.spriteFrameList[4].name };
+            // this.textureConfg[CellType.TYPE_5] = { sprite: this.spriteFrameList[4], name: this.spriteFrameList[4].name };
 
             this.textureConfg[CellType.INVALID] = { sprite: undefined, name: undefined };
 

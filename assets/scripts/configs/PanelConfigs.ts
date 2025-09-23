@@ -53,4 +53,21 @@ export const PanelConfigs = {
         prefabPath: `${BundleConfigs.mainBundle}/prefabs/TestPanel`,
         layerZIndex: PanelLayerEnum.PopLayer,
     },
+    userInfoPanel: <PanelConfig>{
+        prefabPath: `${BundleConfigs.userInfoBundle}/prefabs/userInfoPanel`,
+        layerZIndex: PanelLayerEnum.PopLayer,
+    },
+    signPanel: <PanelConfig>{
+        prefabPath: `${BundleConfigs.signBundle}/prefabs/SignPanel`,
+        layerZIndex: PanelLayerEnum.PopLayer,
+    },
+    chengjiuPanel: <PanelConfig>{
+        prefabPath: `${BundleConfigs.chengjiuBundle}/prefabs/chengjiuPanel`,
+        layerZIndex: PanelLayerEnum.PopLayer,
+    },
+    redEnvelopePanel: <PanelConfig>{
+        prefabPath: `${BundleConfigs.redEnvelopeBundle}/prefabs/redEnvelopePanel`,
+        layerZIndex: PanelLayerEnum.PopLayer,
+    }
+
 };

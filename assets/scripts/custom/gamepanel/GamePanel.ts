@@ -1,4 +1,4 @@
-import { _decorator, Component, director, instantiate, Label, Node, Prefab, randomRangeInt, Vec3 } from 'cc';
+import { _decorator, director, instantiate, Label, Node, Prefab, randomRangeInt, Vec3 } from 'cc';
 import { LevelGridLayout } from './LevelGridLayout';
 import { CellScript } from './CellScript';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
@@ -16,6 +16,9 @@ import { DiaLogScript } from './DiaLogScript';
 import { qc } from '../../framework/qc';
 import { GlobalData } from '../../game/util/GlobalData';
 import LevelMgr from '../../game/LevelMgr';
+import PlayerMgr from '../../game/PlayerMgr';
+import { PanelConfigs } from '../../configs/PanelConfigs';
+import EventDef from '../../constants/EventDef';
 const { ccclass, property } = _decorator;
 
 class GameStaus {
@@ -64,8 +67,11 @@ export class GamePanel extends PanelComponent {
     @property(Prefab)
     lineStarPrefab: Prefab;
 
+    @property(Label)
+    levelValue: Label = null;
+
     // 
-    private levelConfig: Level = new Level();
+    private levelConfig: Level = null;
 
     // 记录游戏状态
     private scoreValue: ScroeRule = new ScroeRule();
@@ -84,19 +90,25 @@ export class GamePanel extends PanelComponent {
     // 游戏状态，用来判断游戏是否结束
     private gameStatus: GameStaus = new GameStaus();
 
+
     show(option: PanelShowOption): void {
         option.onShowed();
+        this.levelConfig = option.data;
     }
 
     hide(option: PanelHideOption): void {
         option.onHided();
     }
 
-    start() {
-        // 从全局变量中获取
-        this.levelConfig = LevelMgr.ins.levels[0];
+    private _init() {
+        if (!this.levelConfig) {
+            this.levelConfig = LevelMgr.ins.getLevel(PlayerMgr.ins.player.mapId, PlayerMgr.ins.player.level);
+        }
+
         // 初始化内容
         this.initViews(this.levelConfig);
+
+        this.levelValue.string = this.levelConfig.levelIndex.toString();
 
         //监听游戏操作
         this.levelGridScript = this.levelGrid.getComponent(LevelGridLayout);
@@ -161,7 +173,10 @@ export class GamePanel extends PanelComponent {
                 this.gameStatus.matchStableComplete = true;
             }
         });
+    }
 
+    start() {
+        this._init();
     }
     private noNeedToCheckGameStatus: boolean = false;
     update(deltaTime: number) {
@@ -296,7 +311,6 @@ export class GamePanel extends PanelComponent {
     private showGameDialog(success: boolean) {
         this.dialogNode.active = true;
         let dialogScript = this.dialogNode.getComponent(DiaLogScript);
-        dialogScript.setTitle("LEVEL " + this.levelConfig.levelIndex);
         dialogScript.setScore(this.goalProgress.score);
         dialogScript.setStarCounter(this.progressNode.getComponent(ProgressScript).getStarCountr());
         dialogScript.setSuccess(success);
@@ -304,7 +318,15 @@ export class GamePanel extends PanelComponent {
         dialogScript.show({
             onConform: () => {
                 dialogScript.remove();
-                director.loadScene("menu");
+
+                qc.panelRouter.hide({
+                    panel: PanelConfigs.gamePanel,
+                    onHided: () => {
+                        qc.panelRouter.destroy({
+                            panel: PanelConfigs.gamePanel,
+                        });
+                    },
+                });
             }
         })
     }
@@ -321,16 +343,29 @@ export class GamePanel extends PanelComponent {
         this.levelConfig.starCount = this.progressNode.getComponent(ProgressScript).getStarCountr();
 
         // 更新列表中的内容
-        let levels = GlobalData.getInstance().getDataStr(Constants.LEVEL_DATA_KEY) as Level[]
-        for (let index = 0; index < levels.length; index++) {
-            const element = levels[index];
-            if (element.levelIndex === this.levelConfig.levelIndex) {
-                levels[index] = this.levelConfig;
-                break;
-            }
+        // let levels = GlobalData.getInstance().getDataStr(Constants.LEVEL_DATA_KEY) as Level[]
+        // for (let index = 0; index < levels.length; index++) {
+        //     const element = levels[index];
+        //     if (element.levelIndex === this.levelConfig.levelIndex) {
+        //         levels[index] = this.levelConfig;
+        //         break;
+        //     }
+        // }
+        // GlobalData.getInstance().setDataStr(Constants.LEVEL_DATA_KEY, levels);
+        // qc.storage.setObj(Constants.LEVEL_DATA_PATH, levels);
+
+        let nextLevel = this.levelConfig.levelIndex + 1;
+        let mapId = PlayerMgr.ins.player.mapId;
+        if (LevelMgr.ins.getLevel(mapId, nextLevel)) {
+            PlayerMgr.ins.player.level = nextLevel;
+            PlayerMgr.ins.player.stars[this.levelConfig.levelIndex] = this.levelConfig.starCount;
+            qc.storage.setObj(Constants.PLAYER_DATA_KEY, PlayerMgr.ins.player);
+            qc.eventManager.emit(EventDef.Update_Level);
+            qc.eventManager.emit(EventDef.Update_Stars, this.levelConfig.levelIndex, this.levelConfig.starCount);
         }
-        GlobalData.getInstance().setDataStr(Constants.LEVEL_DATA_KEY, levels);
-        qc.storage.setObj(Constants.LEVEL_DATA_PATH, levels);
+        else {// 解锁下一张地图//
+
+        }
     }
 
     private updateStepNode() {

@@ -23,7 +23,7 @@ export class GoalTypeCounterItem extends Component {
     }
 
     setNumber(num: number) {
-        this.numNode.getComponent(Label).string = JSON.stringify(num);
+        this.numNode.getComponent(Label).string = 'x' + JSON.stringify(num);
     }
 
     setComplete(flag: boolean) {

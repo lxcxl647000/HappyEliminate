@@ -7,5 +7,9 @@ export const BundleConfigs = {
     mainBundle: "mainBundle",
     bootBundle: "bootBundle",
     commonBundle: "commonBundle",
-    configBundle: "configBundle"
+    configBundle: "configBundle",
+    userInfoBundle: "userInfoBundle",
+    signBundle: "signBundle",
+    chengjiuBundle: "chengjiuBundle",
+    redEnvelopeBundle: "redEnvelopeBundle",
 };

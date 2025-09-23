@@ -34,9 +34,20 @@ export default class LevelMgr {
         return this._instance;
     }
 
-    private _levels: Level[] = null;
-    public get levels(): Level[] {
-        return this._levels;
+    private _levels: Map<number, Level> = new Map();
+    // key为地图id//
+    private _maps: Map<number, Map<number, Level>> = new Map();
+    public getLevel(mapId: number, levelIndex: number): Level {
+        let map = this.getMap(mapId);
+        if (map) {
+            return map.get(levelIndex);
+        }
+        else {
+            return null;
+        }
+    }
+    public getMap(mapId: number) {
+        return this._maps.get(mapId);
     }
 
     public loadLevelData(): Promise<void> {
@@ -49,7 +60,18 @@ export default class LevelMgr {
                     }
                     else {
                         console.log('load levels success', data.json);
-                        this._levels = LevelUtil.loadFromJson(data);
+                        let levels = LevelUtil.loadFromJson(data);
+                        for (let level of levels) {
+                            this._levels.set(level.levelIndex, level);
+                            if (this._maps.has(level.mapId)) {
+                                this._maps.get(level.mapId).set(level.levelIndex, level);
+                            }
+                            else {
+                                let map = new Map<number, Level>();
+                                map.set(level.levelIndex, level);
+                                this._maps.set(level.mapId, map);
+                            }
+                        }
                         resolve();
                     }
                 });

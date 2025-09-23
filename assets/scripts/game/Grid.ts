@@ -149,7 +149,7 @@ export class Grid {
             let haveCrossCell = false;
             for (const items of matches) {
                 for (const item of items) {
-                    let index = matchesItem.findIndex((value) =>value.gridID === item.gridID);
+                    let index = matchesItem.findIndex((value) => value.gridID === item.gridID);
                     if (index >= 0) {
                         haveCrossCell = true;
                         // console.log("cross happen when find match", matchesItem[index].gridID, matchesItem.length, items.length);
@@ -159,7 +159,7 @@ export class Grid {
                 }
                 if (haveCrossCell) {
                     // 将剩下的合并到已经匹配上的列表
-                    matchesItem.forEach( v => items.push(v) )
+                    matchesItem.forEach(v => items.push(v))
                     // console.log("cross happen when find match append", matchesItem.length, items.length);
                     return;
                 }
@@ -240,12 +240,12 @@ export class Grid {
             if (needRemoveJ.length > 0 && needDropJ.length > 0) {
                 for (let j1 = 0; j1 < cols; j1++) {
                     if (this.canPutNodeGridItem(i, j1)) {
-                        if (needDropJ.length > 0){
+                        if (needDropJ.length > 0) {
                             // 从需要下落的列表中依次取出来，下落到可以容身的单元
                             let dropBottom = needDropJ.shift();
                             if (cells[i][j1] !== cells[i][dropBottom]) {
                                 opt.onDrop(cells[i][j1], cells[i][dropBottom]);
-                                
+
                                 // 位置发生了交换，那么需要移除的位置也会变化
                                 for (let ri = 0; ri < needRemoveJ.length; ri++) {
                                     const element = needRemoveJ[ri];
@@ -253,12 +253,12 @@ export class Grid {
                                         needRemoveJ[ri] = dropBottom;
                                         break;
                                     }
-                                    
+
                                 }
-                           
+
                             }
                         }
-                    } 
+                    }
                 }
             }
 
@@ -340,12 +340,16 @@ export class Grid {
      * @returns 
      */
     canSwapCell(a: Cell, b: Cell): boolean {
-        if (!this.canPutNodeGridItem(a.gridID.x, a.gridID.y) || 
+        if (!this.canPutNodeGridItem(a.gridID.x, a.gridID.y) ||
             !this.canPutNodeGridItem(b.gridID.x, b.gridID.y)) {
-            console.log("can not swap ",a.gridID, b.gridID);
+            console.log("can not swap ", a.gridID, b.gridID);
             return false;
         }
-        return (Math.abs(a.x - b.x) + Math.abs(a.y - b.y)) === this.cellSize;
+        let result = (Math.abs(a.x - b.x) + Math.abs(a.y - b.y));
+        console.log(result.toFixed(3), this.cellSize.toFixed(3));
+        return result.toFixed(3) === this.cellSize.toFixed(3);
+
+        // return (Math.abs(a.x - b.x) + Math.abs(a.y - b.y)) === this.cellSize;
     }
 
     /**

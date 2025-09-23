@@ -1,6 +1,8 @@
 import { _decorator, Label, Node } from 'cc';
 import { StarUtils } from './StarUtils';
 import { DiaLogBaseScript } from './DiaLogBaseScript';
+import { qc } from '../../framework/qc';
+import { PanelConfigs } from '../../configs/PanelConfigs';
 const { ccclass, property } = _decorator;
 
 @ccclass('DiaLogScript')
@@ -16,9 +18,6 @@ export class DiaLogScript extends DiaLogBaseScript {
     star3Node: Node;
 
     @property(Node)
-    titleLabelNode: Node;
-
-    @property(Node)
     scoreLabelNode: Node;
 
     @property(Node)
@@ -32,10 +31,6 @@ export class DiaLogScript extends DiaLogBaseScript {
 
     update(deltaTime: number) {
 
-    }
-
-    setTitle(title: string) {
-        this.titleLabelNode.getComponent(Label).string = title;
     }
 
     setStarCounter(counter: number) {
@@ -56,6 +51,17 @@ export class DiaLogScript extends DiaLogBaseScript {
         if (this.dialogOpt && this.dialogOpt.onConform) {
             this.dialogOpt.onConform();
         }
+    }
+
+    onCloseClick() {
+        qc.panelRouter.hide({
+            panel: PanelConfigs.gamePanel,
+            onHided: () => {
+                qc.panelRouter.destroy({
+                    panel: PanelConfigs.gamePanel,
+                });
+            },
+        });
     }
 }
 

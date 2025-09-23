@@ -28,6 +28,7 @@ export class Level {
     score: number = 0;
     // 达到三星的分数
     star3score: number = 10000;
+    mapId: number = 0;
 }
 
 export class LevelUtil {

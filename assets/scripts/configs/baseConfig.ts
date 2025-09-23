@@ -1,9 +1,7 @@
 export const baseConfig = {
     appid: '3000000136119813',
-    // baseUrl: 'https://quchuangtest.yundps.com',
-    // emptyAppDomain: 'https://mobiletest.yundps.com',
-    baseUrl: 'https://quchuang.yundps.com',
-    emptyAppDomain: 'https://mobile.yundps.com',
+    baseUrl: 'https://quchuangtest.yundps.com',
+    // baseUrl: 'https://quchuang.yundps.com',
     baseHost: 'quchuangtest.yundps.com',
     apiVersion: '0.4.0',
     adzoneId: '0',
