@@ -14,7 +14,6 @@ import { ScoreLabelScript } from './ScoreLabelScript';
 import { EffectLineStarScript } from './EffectLineStarScript';
 import { DiaLogScript } from './DiaLogScript';
 import { qc } from '../../framework/qc';
-import { GlobalData } from '../../game/util/GlobalData';
 import LevelMgr from '../../game/LevelMgr';
 import PlayerMgr from '../../game/PlayerMgr';
 import { PanelConfigs } from '../../configs/PanelConfigs';
@@ -72,10 +71,11 @@ export class GamePanel extends PanelComponent {
 
     // 
     private levelConfig: Level = null;
+    private levelData: Level = null;
 
     // 记录游戏状态
     private scoreValue: ScroeRule = new ScroeRule();
-    private stepsValue: number = 20;
+    private stepsValue: number = 25;
     private goalProgress: GoalProgress = new GoalProgress();
 
     // 游戏操作
@@ -106,13 +106,17 @@ export class GamePanel extends PanelComponent {
         }
 
         // 初始化内容
-        this.initViews(this.levelConfig);
+        // this.initViews(this.levelConfig);
+        this.levelData = new Level(this.levelConfig);
+        this.initViews(this.levelData);
 
-        this.levelValue.string = this.levelConfig.levelIndex.toString();
+        // this.levelValue.string = this.levelConfig.levelIndex.toString();
+        this.levelValue.string = this.levelData.levelIndex.toString();
 
         //监听游戏操作
         this.levelGridScript = this.levelGrid.getComponent(LevelGridLayout);
-        this.levelGridScript.init(this.levelConfig);
+        // this.levelGridScript.init(this.levelConfig);
+        this.levelGridScript.init(this.levelData);
         this.levelGridScript.setGridListener({
             onSwapStep: (from: Cell, to: Cell) => {
                 if (!this.isFirstStableHappened) {
@@ -176,8 +180,16 @@ export class GamePanel extends PanelComponent {
     }
 
     start() {
+        qc.eventManager.on(EventDef.Resurrection, this._resurrection, this);
+        qc.eventManager.on(EventDef.UseStepsTool, this._addSteps, this);
         this._init();
     }
+
+    protected onDestroy(): void {
+        qc.eventManager.off(EventDef.Resurrection, this._resurrection, this);
+        qc.eventManager.off(EventDef.UseStepsTool, this._addSteps, this);
+    }
+
     private noNeedToCheckGameStatus: boolean = false;
     update(deltaTime: number) {
         if (this.noNeedToCheckGameStatus) {
@@ -271,12 +283,11 @@ export class GamePanel extends PanelComponent {
             }
         }
         return false;
-
     }
 
     private gameOver() {
         console.log("game over");
-        this.levelGridScript.stop();
+        // this.levelGridScript.stop();
         // 显示游戏结束弹窗
         this.showGameDialog(false);
     }
@@ -297,7 +308,8 @@ export class GamePanel extends PanelComponent {
         this.goalProgress.score = this.scoreValue.score;
         // 计算3星进度
         // 三星进度, 乘上100，是为了计算百分比
-        let progress = this.goalProgress.score * 100 / this.levelConfig.star3score;
+        // let progress = this.goalProgress.score * 100 / this.levelConfig.star3score;
+        let progress = this.goalProgress.score * 100 / this.levelData.star3score;
 
         this.gameStatus.progressFinish = false;
         this.progressNode.getComponent(ProgressScript).setProgress(progress, () => {
@@ -313,7 +325,7 @@ export class GamePanel extends PanelComponent {
         let dialogScript = this.dialogNode.getComponent(DiaLogScript);
         dialogScript.setScore(this.goalProgress.score);
         dialogScript.setStarCounter(this.progressNode.getComponent(ProgressScript).getStarCountr());
-        dialogScript.setSuccess(success);
+        dialogScript.setSuccess(success, this.levelData);
 
         dialogScript.show({
             onConform: () => {
@@ -333,35 +345,37 @@ export class GamePanel extends PanelComponent {
 
     private updateGameStorage() {
         // 更新当前level的内容
-        this.levelConfig.complete = true;
+        // this.levelConfig.complete = true;
+        this.levelData.complete = true;
         // 如果完成的分数更低那就不用更新了
-        if (this.levelConfig.score > this.scoreValue.score) {
+        // if (this.levelConfig.score > this.scoreValue.score) {
+        if (this.levelData.score > this.scoreValue.score) {
             // TODO: 如果修改了计算分数的规则，需要检查
             return;
         }
-        this.levelConfig.score = this.scoreValue.score;
-        this.levelConfig.starCount = this.progressNode.getComponent(ProgressScript).getStarCountr();
+        // this.levelConfig.score = this.scoreValue.score;
+        // this.levelConfig.starCount = this.progressNode.getComponent(ProgressScript).getStarCountr();
+        this.levelData.score = this.scoreValue.score;
+        this.levelData.starCount = this.progressNode.getComponent(ProgressScript).getStarCountr();
 
-        // 更新列表中的内容
-        // let levels = GlobalData.getInstance().getDataStr(Constants.LEVEL_DATA_KEY) as Level[]
-        // for (let index = 0; index < levels.length; index++) {
-        //     const element = levels[index];
-        //     if (element.levelIndex === this.levelConfig.levelIndex) {
-        //         levels[index] = this.levelConfig;
-        //         break;
-        //     }
+        // 顺利过关通过分数计算是0星的话给1星//
+        // if (this.levelConfig.starCount === 0) {
+        //     this.levelConfig.starCount = 1;
         // }
-        // GlobalData.getInstance().setDataStr(Constants.LEVEL_DATA_KEY, levels);
-        // qc.storage.setObj(Constants.LEVEL_DATA_PATH, levels);
-
-        let nextLevel = this.levelConfig.levelIndex + 1;
+        if (this.levelData.starCount === 0) {
+            this.levelData.starCount = 1;
+        }
+        // let nextLevel = this.levelConfig.levelIndex + 1;
+        let nextLevel = this.levelData.levelIndex + 1;
         let mapId = PlayerMgr.ins.player.mapId;
         if (LevelMgr.ins.getLevel(mapId, nextLevel)) {
             PlayerMgr.ins.player.level = nextLevel;
-            PlayerMgr.ins.player.stars[this.levelConfig.levelIndex] = this.levelConfig.starCount;
+            // PlayerMgr.ins.player.stars[this.levelConfig.levelIndex] = this.levelConfig.starCount;
+            PlayerMgr.ins.player.stars[this.levelData.levelIndex] = this.levelData.starCount;
             qc.storage.setObj(Constants.PLAYER_DATA_KEY, PlayerMgr.ins.player);
-            qc.eventManager.emit(EventDef.Update_Level);
-            qc.eventManager.emit(EventDef.Update_Stars, this.levelConfig.levelIndex, this.levelConfig.starCount);
+            qc.eventManager.emit(EventDef.Update_Level, true);
+            // qc.eventManager.emit(EventDef.Update_Stars, this.levelConfig.levelIndex, this.levelConfig.starCount);
+            qc.eventManager.emit(EventDef.Update_Stars, this.levelData.levelIndex, this.levelData.starCount);
         }
         else {// 解锁下一张地图//
 
@@ -376,5 +390,36 @@ export class GamePanel extends PanelComponent {
     }
     private updateGoalNode() {
         this.levelGoal.updateGoal(this.goalProgress);
+    }
+
+    public _resurrection() {
+        this._addSteps(Constants.Resurrection_Add_Steps);
+        this.gameStatus.gameFailed = false;
+        this.gameStatus.gameSuccess = false;
+        this.gameStatus.matchStableComplete = false;
+        this.gameStatus.progressFinish = false;
+        this.gameStatus.stepLeftReduceComplete = false;
+        this.noNeedToCheckGameStatus = false;
+    }
+
+    private _addSteps(steps: number) {
+        this.stepsValue += steps;
+        this.updateStepNode();
+    }
+
+    onHammerClick() {
+        this.levelGridScript.useHammerTool();
+    }
+
+    onSortClick() {
+        this.levelGridScript.randomGrid();
+    }
+
+    onBoomClick() {
+        this.levelGridScript.useBoomTool();
+    }
+
+    onAddStepsClick() {
+        this.levelGridScript.useStepsTool();
     }
 }

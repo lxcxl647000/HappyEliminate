@@ -1,5 +1,6 @@
 import { _decorator, Component, tween, Vec3 } from 'cc';
 import { Constants } from '../../game/Constants';
+import { Level } from '../../game/Level';
 const { ccclass, property } = _decorator;
 
 export interface IDialogOption {

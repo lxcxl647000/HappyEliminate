@@ -31,9 +31,9 @@ export class ToolsState extends StateWithMachine {
         // 有些道具会将某些Cell设置成已匹配
         data.tool.process(data.cell, data.grid, () => {
             // 道具已使用，将道具移除
-            if (data.cell) {
-                data.cell.tool = null;
-            }
+            // if (data.cell) {
+            //     data.cell.tool = null;
+            // }
             // 如果道具消除了另一个道具，再触发一次道具消除
             data.grid.rangeCells((c: Cell, i: number, j: number) => {
                 if (c.match && c.tool) {

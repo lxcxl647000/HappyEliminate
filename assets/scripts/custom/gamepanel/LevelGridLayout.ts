@@ -21,6 +21,9 @@ import { ToolsState, ToolsStateEnterData } from '../../game/gridstate/ToolsState
 import { ErrorState } from '../../game/gridstate/ErrorState';
 import { ITool, ToolType } from '../../game/tools/ITool';
 import { RandomTool } from '../../game/tools/RandomTool';
+import { HammerTool } from '../../game/tools/HammerTool';
+import { StepsTool } from '../../game/tools/StepsTool';
+import { BoomTool } from '../../game/tools/BoomTool';
 
 
 export interface GridListener {
@@ -321,6 +324,38 @@ export class LevelGridLayout extends Component {
         this.useRandomTool(new RandomTool())
     }
 
+    useHammerTool() {
+        this.gridStateMachine.transitionTo(
+            ConstStatus.getInstance().toolsState,
+            {
+                cell: null,
+                grid: this.grid,
+                tool: new HammerTool()
+            } as ToolsStateEnterData
+        );
+    }
+
+    useStepsTool() {
+        this.gridStateMachine.transitionTo(
+            ConstStatus.getInstance().toolsState,
+            {
+                cell: null,
+                grid: this.grid,
+                tool: new StepsTool()
+            } as ToolsStateEnterData
+        );
+    }
+
+    useBoomTool() {
+        this.gridStateMachine.transitionTo(
+            ConstStatus.getInstance().toolsState,
+            {
+                cell: null,
+                grid: this.grid,
+                tool: new BoomTool()
+            } as ToolsStateEnterData
+        );
+    }
 }
 
 

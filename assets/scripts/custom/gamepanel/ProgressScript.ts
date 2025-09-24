@@ -54,7 +54,7 @@ export class ProgressScript extends Component {
     private updateStarCounter() {
         if (this.progress > 99) {
             this.starCounter = 3;
-        } else if (this.progress > 70) {
+        } else if (this.progress > 66) {
             this.starCounter = 2;
         } else if (this.progress > 40) {
             this.starCounter = 1;

@@ -381,4 +381,11 @@ export class Grid {
             }
         }
     }
+
+    randomCell() {
+        let cells = this.cells;
+        const rows = cells.length;
+        const cols = cells[0].length;
+        return cells[randomRangeInt(0, rows)][randomRangeInt(0, cols)];
+    }
 }

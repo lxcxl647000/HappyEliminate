@@ -24,6 +24,9 @@ export enum ToolType {
     BOOM_MATCH = 3,
     BOOM_UP_MATCH = 4,
     TYPE_MATCH = 5,
+    TYPE_HAMMER = 6,
+    TYPE_STEPS = 7,
+    TYPE_BOOM = 8,
 
     RANDOM_GRID = 10,
 

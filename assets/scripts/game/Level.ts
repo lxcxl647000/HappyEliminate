@@ -1,6 +1,6 @@
 import { JsonAsset, _decorator } from 'cc';
-import { GridItemType } from './Types';
-import { GoalValue } from './goal/GoalTyps';
+import { CellType, GridItemType } from './Types';
+import { GoalTypeCounter, GoalValue } from './goal/GoalTyps';
 const { ccclass, property } = _decorator;
 
 export class Level {
@@ -29,6 +29,39 @@ export class Level {
     // 达到三星的分数
     star3score: number = 10000;
     mapId: number = 0;
+
+    constructor(level: Level) {
+        this.levelIndex = level.levelIndex;
+        this.steps = level.steps;
+        if (typeof (level.goal) === 'number') {
+            this.goal = level.goal;
+        }
+        else {
+            this.goal = { type: level.goal.type, value: 0 };
+            let g = level.goal as GoalValue;
+            if (typeof (g.value) === 'number') {
+                this.goal['value'] = g.value;
+            }
+            else {
+                let arr: GoalTypeCounter[] = g.value as GoalTypeCounter[];
+                this.goal['value'] = [];
+                for (let i = 0; i < arr.length; i++) {
+                    let element = arr[i];
+                    let goalTypeCounter = new GoalTypeCounter();
+                    goalTypeCounter.cellType = element.cellType;
+                    goalTypeCounter.counter = element.counter;
+                    this.goal['value'][i] = goalTypeCounter;
+                }
+            }
+        }
+        this.types = level.types;
+        this.gridName = level.gridName;
+        this.grid = level.grid;
+        this.complete = level.complete;
+        this.starCount = level.starCount;
+        this.star3score = level.star3score;
+        this.mapId = level.mapId;
+    }
 }
 
 export class LevelUtil {

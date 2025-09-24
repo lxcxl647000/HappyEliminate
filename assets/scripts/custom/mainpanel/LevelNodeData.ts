@@ -20,10 +20,12 @@ export class LevelNodeData extends Component {
 
     protected onEnable(): void {
         qc.eventManager.on(EventDef.Update_Stars, this._updateStars, this);
+        qc.eventManager.on(EventDef.Active_Next_Level, this._activeLevel, this);
     }
 
     protected onDisable(): void {
         qc.eventManager.off(EventDef.Update_Stars, this._updateStars, this);
+        qc.eventManager.off(EventDef.Active_Next_Level, this._activeLevel, this);
     }
 
     private _updateStars(level: number, stars: number) {
@@ -57,5 +59,12 @@ export class LevelNodeData extends Component {
                 data: this._levelData
             });
         }
+    }
+
+    private _activeLevel(level: number) {
+        if (level !== this._levelData.levelIndex) {
+            return;
+        }
+        this.levelStatus.index = PlayerMgr.ins.player.level < this._levelData.levelIndex ? 0 : 1;
     }
 }

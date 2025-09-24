@@ -169,9 +169,10 @@ export class FillState extends StateWithMachine {
                         this.fillWithTool(cell, new RowMatchTool());
                     } else if (colIndexSameCounter === 4) {
                         this.fillWithTool(cell, new ColMatchTool());
-                    } else if (rowIndexSameCounter >= 5 || colIndexSameCounter >= 5) {
-                        this.fillWithTool(cell, new BoomUpMatchTool());
                     }
+                    // else if (rowIndexSameCounter >= 5 || colIndexSameCounter >= 5) {
+                    //     this.fillWithTool(cell, new BoomUpMatchTool());
+                    // }
                 } else {
                     // 可能是T 或L
                     this.fillWithTool(cell, new BoomMatchTool())

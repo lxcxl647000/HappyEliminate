@@ -46,6 +46,9 @@ export class Constants {
 
 
     public static PLAYER_DATA_KEY: string = "PLAYER_DATA_KEY";
+
+    // 复活增加步数//
+    public static Resurrection_Add_Steps = 5;
 }
 
 

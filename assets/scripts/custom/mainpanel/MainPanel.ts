@@ -16,13 +16,15 @@ export class MainPanel extends PanelComponent {
     levelLabel: Label = null;
     @property(ListCom)
     mapList: ListCom = null;
+    @property(Node)
+    setting: Node = null;
 
     private _currentLevel: Level = null;
 
     show(option: PanelShowOption): void {
         option.onShowed();
 
-        this._updateLevel();
+        this._updateLevel(false);
         this._initMap();
     }
     hide(option: PanelHideOption): void {
@@ -50,7 +52,10 @@ export class MainPanel extends PanelComponent {
         }
     }
 
-    private _updateLevel() {
+    private _updateLevel(needUpdateNext: boolean) {
+        if (needUpdateNext) {
+            qc.eventManager.emit(EventDef.Active_Next_Level, PlayerMgr.ins.player.level);
+        }
         this._currentLevel = LevelMgr.ins.getLevel(PlayerMgr.ins.player.mapId, PlayerMgr.ins.player.level);
         this.levelLabel.string = `第${PlayerMgr.ins.player.level}关`;
     }
@@ -72,6 +77,7 @@ export class MainPanel extends PanelComponent {
             },
         });
     }
+    // 签到
     signBtn() {
         qc.panelRouter.showPanel({
             panel: PanelConfigs.signPanel,
@@ -85,6 +91,45 @@ export class MainPanel extends PanelComponent {
             panel: PanelConfigs.chengjiuPanel,
             onShowed: () => {
                 console.log('this is a chengjiuBtn');
+            },
+        });
+    }
+    // 我的背包
+    backpackBtn() {
+        qc.panelRouter.showPanel({
+            panel: PanelConfigs.backpackPanel,
+            onShowed: () => {
+                console.log('this is a backpackBtn');
+            },
+        });
+    }
+    // 体力兑换
+    exchangeBtn() {
+        qc.panelRouter.showPanel({
+            panel: PanelConfigs.exchangePanel,
+            onShowed: () => {
+                console.log('this is a exchangeBtn');
+            },
+        });
+    }
+
+    onSettingBtn() {
+        this.setting.active = !this.setting.active;
+    }
+
+    onRedPackBtn() {
+        qc.panelRouter.showPanel({
+            panel: PanelConfigs.redEnvelopePanel,
+            onShowed: () => {
+
+            },
+        });
+    }
+    // 任务中心
+    taskBtn() {
+        qc.panelRouter.showPanel({
+            panel: PanelConfigs.taskPanel,
+            onShowed: () => {
             },
         });
     }

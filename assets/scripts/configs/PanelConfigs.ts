@@ -68,6 +68,18 @@ export const PanelConfigs = {
     redEnvelopePanel: <PanelConfig>{
         prefabPath: `${BundleConfigs.redEnvelopeBundle}/prefabs/redEnvelopePanel`,
         layerZIndex: PanelLayerEnum.PopLayer,
+    },
+    backpackPanel: <PanelConfig>{
+        prefabPath: `${BundleConfigs.backpackBundle}/prefabs/BackpackPanel`,
+        layerZIndex: PanelLayerEnum.PopLayer,
+    },
+    exchangePanel: <PanelConfig>{
+        prefabPath: `${BundleConfigs.exchangeBundle}/prefabs/ExchangePanel`,
+        layerZIndex: PanelLayerEnum.PopLayer,
+    },
+    taskPanel: <PanelConfig>{
+        prefabPath: `${BundleConfigs.taskBundle}/prefabs/TaskPanel`,
+        layerZIndex: PanelLayerEnum.PopLayer,
     }
 
 };

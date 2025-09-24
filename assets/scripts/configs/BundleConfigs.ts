@@ -12,4 +12,7 @@ export const BundleConfigs = {
     signBundle: "signBundle",
     chengjiuBundle: "chengjiuBundle",
     redEnvelopeBundle: "redEnvelopeBundle",
+    backpackBundle: "backpackBundle",
+    exchangeBundle: "exchangeBundle",
+    taskBundle: "taskBundle"
 };
