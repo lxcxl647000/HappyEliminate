@@ -106,11 +106,9 @@ export class GamePanel extends PanelComponent {
         }
 
         // 初始化内容
-        // this.initViews(this.levelConfig);
         this.levelData = new Level(this.levelConfig);
         this.initViews(this.levelData);
 
-        // this.levelValue.string = this.levelConfig.levelIndex.toString();
         this.levelValue.string = this.levelData.levelIndex.toString();
 
         //监听游戏操作
@@ -308,7 +306,6 @@ export class GamePanel extends PanelComponent {
         this.goalProgress.score = this.scoreValue.score;
         // 计算3星进度
         // 三星进度, 乘上100，是为了计算百分比
-        // let progress = this.goalProgress.score * 100 / this.levelConfig.star3score;
         let progress = this.goalProgress.score * 100 / this.levelData.star3score;
 
         this.gameStatus.progressFinish = false;
@@ -345,41 +342,41 @@ export class GamePanel extends PanelComponent {
 
     private updateGameStorage() {
         // 更新当前level的内容
-        // this.levelConfig.complete = true;
         this.levelData.complete = true;
         // 如果完成的分数更低那就不用更新了
-        // if (this.levelConfig.score > this.scoreValue.score) {
         if (this.levelData.score > this.scoreValue.score) {
             // TODO: 如果修改了计算分数的规则，需要检查
             return;
         }
-        // this.levelConfig.score = this.scoreValue.score;
-        // this.levelConfig.starCount = this.progressNode.getComponent(ProgressScript).getStarCountr();
         this.levelData.score = this.scoreValue.score;
         this.levelData.starCount = this.progressNode.getComponent(ProgressScript).getStarCountr();
 
         // 顺利过关通过分数计算是0星的话给1星//
-        // if (this.levelConfig.starCount === 0) {
-        //     this.levelConfig.starCount = 1;
-        // }
         if (this.levelData.starCount === 0) {
             this.levelData.starCount = 1;
         }
-        // let nextLevel = this.levelConfig.levelIndex + 1;
-        let nextLevel = this.levelData.levelIndex + 1;
-        let mapId = PlayerMgr.ins.player.mapId;
-        if (LevelMgr.ins.getLevel(mapId, nextLevel)) {
-            PlayerMgr.ins.player.level = nextLevel;
-            // PlayerMgr.ins.player.stars[this.levelConfig.levelIndex] = this.levelConfig.starCount;
-            PlayerMgr.ins.player.stars[this.levelData.levelIndex] = this.levelData.starCount;
-            qc.storage.setObj(Constants.PLAYER_DATA_KEY, PlayerMgr.ins.player);
-            qc.eventManager.emit(EventDef.Update_Level, true);
-            // qc.eventManager.emit(EventDef.Update_Stars, this.levelConfig.levelIndex, this.levelConfig.starCount);
-            qc.eventManager.emit(EventDef.Update_Stars, this.levelData.levelIndex, this.levelData.starCount);
+        PlayerMgr.ins.player.stars[this.levelData.levelIndex] = this.levelData.starCount;
+        qc.eventManager.emit(EventDef.Update_Stars, this.levelData.levelIndex, this.levelData.starCount);
+        if (this.levelData.levelIndex >= PlayerMgr.ins.player.level) {
+            let nextLevel = this.levelData.levelIndex + 1;
+            let mapId = PlayerMgr.ins.player.mapId;
+            if (LevelMgr.ins.getLevel(mapId, nextLevel)) {
+                PlayerMgr.ins.player.level = nextLevel;
+                qc.eventManager.emit(EventDef.Update_Level, true);
+            }
+            else {// 解锁下一张地图//
+                mapId += 1;
+                if (LevelMgr.ins.getMap(mapId)) {
+                    PlayerMgr.ins.player.level = nextLevel;
+                    PlayerMgr.ins.player.mapId = mapId;
+                    qc.eventManager.emit(EventDef.Unlock_Map);
+                }
+            }
         }
-        else {// 解锁下一张地图//
-
+        else {
+            qc.eventManager.emit(EventDef.Jump_Level, PlayerMgr.ins.player.mapId, PlayerMgr.ins.player.level);
         }
+        qc.storage.setObj(Constants.PLAYER_DATA_KEY, PlayerMgr.ins.player);
     }
 
     private updateStepNode() {

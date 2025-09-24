@@ -51,6 +51,9 @@ export class LevelNodeData extends Component {
 
     onClickLevel() {
         if (this._levelData) {
+            if (this._levelData.levelIndex > PlayerMgr.ins.player.level) {
+                return;
+            }
             qc.panelRouter.showPanel({
                 panel: PanelConfigs.gamePanel,
                 onShowed: () => {

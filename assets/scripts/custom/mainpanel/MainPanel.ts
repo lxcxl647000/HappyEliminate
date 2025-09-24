@@ -32,16 +32,29 @@ export class MainPanel extends PanelComponent {
     }
 
     protected onEnable(): void {
+        qc.eventManager.on(EventDef.Unlock_Map, this._unlockMap, this);
         qc.eventManager.on(EventDef.Update_Level, this._updateLevel, this);
+        qc.eventManager.on(EventDef.Jump_Level, this._jumpToLevel, this);
         this.levelLabel.string = `第${PlayerMgr.ins.player.level}关`;
     }
 
     protected onDisable(): void {
         qc.eventManager.off(EventDef.Update_Level, this._updateLevel, this);
+        qc.eventManager.off(EventDef.Unlock_Map, this._unlockMap, this);
+        qc.eventManager.off(EventDef.Jump_Level, this._jumpToLevel, this);
     }
 
     private _initMap() {
         this.mapList.numItems = PlayerMgr.ins.player.mapId;
+        this._jumpToLevel(PlayerMgr.ins.player.mapId, PlayerMgr.ins.player.level);
+    }
+
+    private _jumpToLevel(mapId: number, level: number) {
+        let total = 0;
+        for (let i = 0; i < mapId; i++) {
+            total += LevelMgr.ins.getMap(i + 1).size;
+        }
+        this.mapList.scrollView.scrollToPercentVertical((level + 2) / total);
     }
 
     public onRenderMap(item: Node, index: number) {
@@ -58,6 +71,16 @@ export class MainPanel extends PanelComponent {
         }
         this._currentLevel = LevelMgr.ins.getLevel(PlayerMgr.ins.player.mapId, PlayerMgr.ins.player.level);
         this.levelLabel.string = `第${PlayerMgr.ins.player.level}关`;
+
+        this._jumpToLevel(PlayerMgr.ins.player.mapId, PlayerMgr.ins.player.level);
+    }
+
+    private _unlockMap() {
+        qc.eventManager.emit(EventDef.Map_Lock_Status);
+        this.mapList.numItems = PlayerMgr.ins.player.mapId;
+        this.mapList.scrollTo(PlayerMgr.ins.player.mapId - 1);
+
+        this._updateLevel(true);
     }
 
     onStartBtn() {
