@@ -35,21 +35,21 @@ export class SwapState extends StateWithMachine {
                 this.stateMachine.transitionTo(ConstStatus.getInstance().idelState, {} as IEnterData)
             });
         } else {
-            if (this.listener) {
-                this.listener.onSwapStep(data.fromCell, data.toCell);
-            }
+            let findMatchData = {
+                swapCellFrom: data.fromCell,
+                swapCellTo: data.toCell,
+                grid: data.grid
+            } as FindMatchStateEnterData;
 
             data.grid.swapCell(data.fromCell, data.toCell);
             // 执行swap的动画
             CellUtils.changePostion(data.fromCell, data.grid);
             CellUtils.changePostion(data.toCell, data.grid, () => {
-                this.stateMachine.transitionTo(
-                    ConstStatus.getInstance().findMatchState,
-                    {
-                        swapCellFrom: data.fromCell,
-                        swapCellTo: data.toCell,
-                        grid: data.grid
-                    } as FindMatchStateEnterData)
+                let matches = ConstStatus.getInstance().findMatchState.findMatch(data);
+                if (matches.length > 0 && this.listener) {
+                    this.listener.onSwapStep(data.fromCell, data.toCell);
+                }
+                this.stateMachine.transitionTo(ConstStatus.getInstance().findMatchState, findMatchData);
             });
         }
     }

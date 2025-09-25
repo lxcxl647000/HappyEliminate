@@ -99,7 +99,7 @@ export class FindMatchState extends StateWithMachine {
 
     }
 
-    private findMatch(data: FindMatchStateEnterData) {
+    public findMatch(data: FindMatchStateEnterData) {
         const threshold = 3;
         // 检查是否可以消除
         let matches = data.grid.findMatches(threshold, (a: Cell, b: Cell) => {

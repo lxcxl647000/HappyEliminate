@@ -212,6 +212,11 @@ export class LevelGridLayout extends Component {
 
         cellScript.setOnClickListener({
             onClick: (node: Node) => {
+                if (HammerTool.isUsing) {
+                    this.hammerTool(node);
+                    HammerTool.isUsing = false;
+                    return;
+                }
                 // 如果不是idel不允许操作
                 if (!(this.gridStateMachine.getCurrentState() instanceof IdelState)) {
                     this.resetClickSwap();
@@ -332,10 +337,15 @@ export class LevelGridLayout extends Component {
     }
 
     useHammerTool() {
+        HammerTool.isUsing = true;
+    }
+
+    hammerTool(node: Node) {
+        let cell = this.grid.findCellByNode(node);
         this.gridStateMachine.transitionTo(
             ConstStatus.getInstance().toolsState,
             {
-                cell: null,
+                cell: cell,
                 grid: this.grid,
                 tool: new HammerTool()
             } as ToolsStateEnterData
