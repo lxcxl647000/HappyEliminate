@@ -14,5 +14,6 @@ export const BundleConfigs = {
     redEnvelopeBundle: "redEnvelopeBundle",
     backpackBundle: "backpackBundle",
     exchangeBundle: "exchangeBundle",
-    taskBundle: "taskBundle"
+    taskBundle: "taskBundle",
+    redEnvelopeModelBundle: 'redEnvelopeModelBundle'
 };

@@ -50,7 +50,8 @@ export class FillState extends StateWithMachine {
                 // 用+ 是因为左下角是（0,0）
                 data.grid.gridIDToPos(new Vec2(cell.gridID.x, data.grid.rows + index + 1), outPos);
                 cell.x = outPos.x;
-                cell.y = outPos.y;
+                // cell.y = outPos.y;
+                cell.y = data.grid.cellSize + data.grid.gridSize.height / 2;
 
                 // 消除了创建一个新的Cell
                 cell.type = data.grid.randomCellType();

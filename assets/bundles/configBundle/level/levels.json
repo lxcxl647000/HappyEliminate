@@ -800,7 +800,7 @@
         "mapId":1
     },
     {
-        "levelIndex": 1,
+        "levelIndex": 21,
         "steps": 25,
         "goal": {
             "type":1,
@@ -840,7 +840,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 2,
+        "levelIndex": 22,
         "steps": 25,
         "goal": {
             "type":1,
@@ -880,7 +880,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 3,
+        "levelIndex": 23,
         "steps": 25,
         "goal": {
             "type":1,
@@ -920,7 +920,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 4,
+        "levelIndex": 24,
         "steps": 25,
         "goal": {
             "type":1,
@@ -960,7 +960,55 @@
         "mapId":2
     },
     {
-        "levelIndex": 5,
+        "levelIndex": 25,
+        "steps": 25,
+        "goal": {
+            "type":1,
+            "value": [
+                {
+                    "cellType":1,
+                    "counter":15
+                },
+                {
+                    "cellType":3,
+                    "counter":20
+                },
+                {
+                    "cellType":2,
+                    "counter":20
+                },
+                {
+                    "cellType":4,
+                    "counter":20
+                }
+            ]
+        },
+        "types": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "gridName":"正方形",
+        "grid":[
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1]
+        ],
+        "complete": false,
+        "starCount": -1,
+        "score": 0,
+        "star3score": 1500,
+        "mapId":2
+    },
+    {
+        "levelIndex": 26,
         "steps": 25,
         "goal": {
             "type":1,
@@ -1000,7 +1048,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 6,
+        "levelIndex": 27,
         "steps": 25,
         "goal": {
             "type":1,
@@ -1040,7 +1088,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 7,
+        "levelIndex": 28,
         "steps": 25,
         "goal": {
             "type":1,
@@ -1080,7 +1128,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 8,
+        "levelIndex": 29,
         "steps": 25,
         "goal": {
             "type":1,
@@ -1120,7 +1168,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 9,
+        "levelIndex": 30,
         "steps": 25,
         "goal": {
             "type":1,
@@ -1160,7 +1208,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 10,
+        "levelIndex": 31,
         "steps": 25,
         "goal": {
             "type":1,
@@ -1200,7 +1248,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 11,
+        "levelIndex": 32,
         "steps": 25,
         "goal": {
             "type":1,
@@ -1240,7 +1288,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 12,
+        "levelIndex": 33,
         "steps": 25,
         "goal": {
             "type":1,
@@ -1280,7 +1328,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 13,
+        "levelIndex": 34,
         "steps": 25,
         "goal": {
             "type":1,
@@ -1320,7 +1368,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 14,
+        "levelIndex": 35,
         "steps": 25,
         "goal": {
             "type":1,
@@ -1360,7 +1408,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 15,
+        "levelIndex": 36,
         "steps": 25,
         "goal": {
             "type":1,
@@ -1400,7 +1448,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 16,
+        "levelIndex": 37,
         "steps": 25,
         "goal": {
             "type":1,
@@ -1440,7 +1488,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 17,
+        "levelIndex": 38,
         "steps": 25,
         "goal": {
             "type":1,
@@ -1480,7 +1528,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 18,
+        "levelIndex": 39,
         "steps": 25,
         "goal": {
             "type":1,
@@ -1520,47 +1568,7 @@
         "mapId":2
     },
     {
-        "levelIndex": 19,
-        "steps": 25,
-        "goal": {
-            "type":1,
-            "value": [
-                {
-                    "cellType":1,
-                    "counter":15
-                },
-                {
-                    "cellType":3,
-                    "counter":20
-                }
-            ]
-        },
-        "types": [
-            1,
-            2,
-            3,
-            4
-        ],
-        "gridName":"正方形",
-        "grid":[
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1]
-        ],
-        "complete": false,
-        "starCount": -1,
-        "score": 0,
-        "star3score": 1500,
-        "mapId":2
-    },
-    {
-        "levelIndex": 20,
+        "levelIndex": 40,
         "steps": 25,
         "goal": {
             "type":1,

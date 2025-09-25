@@ -1,8 +1,8 @@
 import { _decorator, instantiate, Node, Label } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from "../../framework/lib/router/PanelComponent";
-import { qc } from "db://assets/scripts/framework/qc";
+import { qc } from "../../framework/qc";
 import CustomSprite from '../componetUtils/CustomSprite';
-import {PanelConfigs} from "db://assets/scripts/configs/PanelConfigs";
+import { PanelConfigs } from "../../configs/PanelConfigs";
 const { ccclass, property } = _decorator;
 
 @ccclass('BackpackPanel')

@@ -81,5 +81,9 @@ export const PanelConfigs = {
         prefabPath: `${BundleConfigs.taskBundle}/prefabs/TaskPanel`,
         layerZIndex: PanelLayerEnum.PopLayer,
     }
-
+    ,
+    redEnvelopeModelPanel: <PanelConfig>{
+        prefabPath: `${BundleConfigs.redEnvelopeModelBundle}/prefabs/redEnvelopeModelPanel`,
+        layerZIndex: PanelLayerEnum.PopLayer,
+    }
 };

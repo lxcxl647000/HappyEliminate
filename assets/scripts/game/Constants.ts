@@ -12,12 +12,13 @@ export class Constants {
     static GRID_SIZE_HEIGHT: number = 9; // 地图大小，每行每列多少个
     static GRID_SIZE_MAX: number = 9; // 地图大小，每行最多多少个
 
-    static GRID_WIDTH: number = 650;
+    // static GRID_WIDTH: number = 650;
+    static GRID_WIDTH: number = 643;
     // 根据每行最多可以放多少，计算cell的大小
     static GRID_CELL_SIZE: number = Constants.GRID_WIDTH / Constants.GRID_SIZE_MAX;
 
     // CELL 大小缩放比例，目的是预留一些空隙
-    static GRID_CELL_SIZE_SCALE: number = 0.8;
+    static GRID_CELL_SIZE_SCALE: number = 0.9;
     static GRID_CELL_BG_SIZE_SCALE: number = 0.95;
 
     // 消除动画时长

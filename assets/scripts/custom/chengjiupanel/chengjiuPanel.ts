@@ -2,7 +2,7 @@ import { _decorator, assetManager, AssetManager, ImageAsset, SpriteFrame, Compon
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
-import { contentItem } from '../componetUtils/contentItem';
+import { contentItem } from './contentItem';
 import ListCom from '../../framework/lib/components/scrollviewplus/ListCom';
 const { ccclass, property } = _decorator;
 @ccclass('chengjiuPanel')

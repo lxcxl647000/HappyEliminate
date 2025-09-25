@@ -28,6 +28,7 @@ export default class MainSceneCtrl extends Component {
         await AssetLoader.loadBundle(BundleConfigs.redEnvelopeBundle);
         await AssetLoader.loadBundle(BundleConfigs.exchangeBundle);
         await AssetLoader.loadBundle(BundleConfigs.taskBundle);
+         await AssetLoader.loadBundle(BundleConfigs.redEnvelopeModelBundle);
         // 加载启动页
         await qc.panelRouter.loadAsync(PanelConfigs.bootPanel);
 

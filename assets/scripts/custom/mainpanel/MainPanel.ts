@@ -50,11 +50,14 @@ export class MainPanel extends PanelComponent {
     }
 
     private _jumpToLevel(mapId: number, level: number) {
+        if (level <= 5) {
+            return;
+        }
         let total = 0;
         for (let i = 0; i < mapId; i++) {
             total += LevelMgr.ins.getMap(i + 1).size;
         }
-        this.mapList.scrollView.scrollToPercentVertical((level + 2) / total);
+        this.mapList.scrollView.scrollToPercentVertical((level) / total);
     }
 
     public onRenderMap(item: Node, index: number) {
@@ -76,9 +79,14 @@ export class MainPanel extends PanelComponent {
     }
 
     private _unlockMap() {
-        qc.eventManager.emit(EventDef.Map_Lock_Status);
+        // qc.eventManager.emit(EventDef.Map_Lock_Status);
+        this.mapList.numItems = 0;
         this.mapList.numItems = PlayerMgr.ins.player.mapId;
-        this.mapList.scrollTo(PlayerMgr.ins.player.mapId - 1);
+        setTimeout(() => {
+            this.mapList.scrollTo(PlayerMgr.ins.player.mapId - 1);
+
+        }, 500);
+        // this.mapList.scrollTo(PlayerMgr.ins.player.mapId - 1);
 
         this._updateLevel(true);
     }
@@ -155,6 +163,19 @@ export class MainPanel extends PanelComponent {
             onShowed: () => {
             },
         });
+    }
+    // 红包弹窗
+    redPackBtn() {
+        qc.panelRouter.showPanel({
+            panel: PanelConfigs.redEnvelopeModelPanel,
+            onShowed: () => {
+            },
+        });
+    }
+
+
+    private _setBtnsActive() {
+
     }
 }
 

@@ -47,16 +47,26 @@ export class contentItem extends Component {
 
                 // 设置奖励信息
                 if (data.Reward) {
-                    data.Reward.forEach((element: any) => {
-                        let item = instantiate(this.TextBox);
-                        let itemNode = instantiate(this.ImgBox);
-                        item.getComponent(Label).string = '+' + element.num
-                        itemNode.getComponent(CustomSprite).index = element.type - 1;
-                        itemNode.addChild(item);
-                        itemNode.active = true;
-                        this.ImgListBox.addChild(itemNode);
+                    // 清空节点
+                    // this.ImgListBox.destroyAllChildren();
 
-                    });
+
+                    if (!this.ImgListBox['flag']) {
+                        data.Reward.forEach((element: any, index: number) => {
+                            let item = instantiate(this.TextBox);
+                            let itemNode = instantiate(this.ImgBox);
+                            item.getComponent(Label).string = '+' + element.num
+                            itemNode.getComponent(CustomSprite).index = element.type - 1;
+                            itemNode.addChild(item);
+                            itemNode.active = true;
+                            this.ImgListBox.addChild(itemNode);
+                            if (index == data.Reward.length - 1) {
+                                this.ImgListBox['flag'] = true
+                            }
+
+                        });
+                    }
+
 
                 }
 
@@ -85,7 +95,7 @@ export class contentItem extends Component {
             }
         })
     }
-      
+
     submitBtn() {
         if (this.submit['data'] == 1) {
             console.log('领取奖励')

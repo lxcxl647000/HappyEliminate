@@ -5,6 +5,8 @@ export interface IPlayer {
     level: number;
     stars: { [level: number]: number };
     mapId: number;
+    energy: number;
+    gold: number;
 }
 
 export default class PlayerMgr {

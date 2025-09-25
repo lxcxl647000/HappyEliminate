@@ -61,6 +61,9 @@ export class LevelGridLayout extends Component {
     @property(Prefab)
     gridBgPrefab: Prefab;
 
+    @property(Node)
+    cellParent: Node;
+
     grid: Grid;
 
     stopWorld: boolean = true;
@@ -147,7 +150,8 @@ export class LevelGridLayout extends Component {
                 // 设置背景的内容
                 node.getComponent(GridItemBGScript).setType(this.grid.getGridItemBgType(i, j))
 
-                this.node.addChild(node);
+                // this.node.addChild(node);
+                this.cellParent.addChild(node);
             }
         };
 
@@ -178,10 +182,13 @@ export class LevelGridLayout extends Component {
             this.grid.cellSize * Constants.GRID_CELL_SIZE_SCALE);
         let node = instantiate(this.cellPrefab)
         let nodeSpriteTransform = node.getComponent(Sprite).getComponent(UITransform)
+
         let nodeSacle = new Vec3(nodeSize.width / nodeSpriteTransform.width, nodeSize.height / nodeSpriteTransform.height, 1);
         // 修改scale 可以让node的子元素也变化
         node.setScale(nodeSacle);
-        this.node.addChild(node);
+
+        // this.node.addChild(node);
+        this.cellParent.addChild(node);
 
         // 添加单击事件回调
         let cellScript = node.getComponent(CellScript);

@@ -1,7 +1,7 @@
 import { _decorator, Node } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from "../../framework/lib/router/PanelComponent";
-import { qc } from "db://assets/scripts/framework/qc";
-import { PanelConfigs } from "db://assets/scripts/configs/PanelConfigs";
+import { qc } from "../../framework/qc";
+import { PanelConfigs } from "../../configs/PanelConfigs";
 import { taskItems } from '../../commonTs/taskItem';
 import ListCom from '../../framework/lib/components/scrollviewplus/ListCom';
 const { ccclass, property } = _decorator;
@@ -10,7 +10,7 @@ const { ccclass, property } = _decorator;
 export class ExchangePanel extends PanelComponent {
     @property(ListCom)
     list: ListCom = null;
-    taskList: any[] = []
+    taskList: any[] = [];
 
     init() {
         this.taskList = [
@@ -361,7 +361,7 @@ export class ExchangePanel extends PanelComponent {
                 "finish_complete_num": 0,
                 "friends_status": 0
             }
-        ]
+        ];
         this.list.numItems = this.taskList.length;
     }
 

@@ -1,4 +1,4 @@
-import { _decorator, director, instantiate, Label, Node, Prefab, randomRangeInt, Vec3 } from 'cc';
+import { _decorator, director, instantiate, Label, Node, Prefab, randomRangeInt, UITransform, Vec3 } from 'cc';
 import { LevelGridLayout } from './LevelGridLayout';
 import { CellScript } from './CellScript';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
@@ -7,7 +7,7 @@ import { ScroeRule } from '../../game/ScoreRule';
 import { GoalProgress } from '../../game/goal/GoalProgress';
 import { IGoalScript } from '../../game/goal/GoalTyps';
 import { Constants } from '../../game/Constants';
-import { Cell } from '../../game/Types';
+import { Cell, CellType } from '../../game/Types';
 import { GoalFactorys } from '../../game/goal/GoalFactorys';
 import { ProgressScript } from './ProgressScript';
 import { ScoreLabelScript } from './ScoreLabelScript';
@@ -120,6 +120,7 @@ export class GamePanel extends PanelComponent {
                 if (!this.isFirstStableHappened) {
                     return;
                 }
+
                 this.stepsValue--;
                 this.updateStepNode();
                 this.updateGoalNode();
@@ -141,8 +142,15 @@ export class GamePanel extends PanelComponent {
                             for (const reduceItem of reduceSuccessCells) {
                                 const moveToTargetNode = instantiate(reduceItem.node);
                                 this.levelGrid.addChild(moveToTargetNode);
-                                // TODO 位置需要计算，位置是每个Target相对于levelGrid的位置
-                                moveToTargetNode.getComponent(CellScript).moveAndDisappear(new Vec3(0, 500, 0), () => {
+
+                                let goalTarget = this._findGoalTarget(reduceItem.type);
+                                let pos = new Vec3(0, 500, 0);
+                                let moveToTargetCell = moveToTargetNode.getComponent(CellScript)
+                                if (goalTarget) {
+                                    let p = goalTarget.getComponent(UITransform).convertToWorldSpaceAR(new Vec3(0, 0, 0));
+                                    pos = moveToTargetCell.node.parent.getComponent(UITransform).convertToNodeSpaceAR(p);
+                                }
+                                moveToTargetCell.moveAndDisappear(pos, () => {
 
                                     this.updateScoreAndProgress()
                                     this.updateGoalNode();
@@ -239,20 +247,20 @@ export class GamePanel extends PanelComponent {
 
                 // 将分数显示出来
                 const offset = this.scoreValue.score - lastValue;
-                const scoreLabelNode = instantiate(this.scoreLabelPrefab);
-                const lineStarNode = instantiate(this.lineStarPrefab);
-                this.node.addChild(scoreLabelNode);
-                // 位置暂时随机
-                scoreLabelNode.setPosition(new Vec3(
-                    randomRangeInt(-Constants.SCREEN_WIDTH / 3, Constants.SCREEN_WIDTH / 3),
-                    randomRangeInt(-Constants.SCREEN_WIDTH / 3, Constants.SCREEN_WIDTH / 3),
-                    0));
-                scoreLabelNode.getComponent(ScoreLabelScript).setValue(offset);
+                // const scoreLabelNode = instantiate(this.scoreLabelPrefab);
+                // const lineStarNode = instantiate(this.lineStarPrefab);
+                // this.node.addChild(scoreLabelNode);
+                // // 位置暂时随机
+                // scoreLabelNode.setPosition(new Vec3(
+                //     randomRangeInt(-Constants.SCREEN_WIDTH / 3, Constants.SCREEN_WIDTH / 3),
+                //     randomRangeInt(-Constants.SCREEN_WIDTH / 3, Constants.SCREEN_WIDTH / 3),
+                //     0));
+                // scoreLabelNode.getComponent(ScoreLabelScript).setValue(offset);
 
-                this.node.addChild(lineStarNode);
-                // TODO 位置需要计算，位置是Step相对于node里面的位置
-                lineStarNode.getComponent(EffectLineStarScript).setPath(new Vec3(-250, 500, 0), scoreLabelNode.getPosition());
-                lineStarNode.getComponent(EffectLineStarScript).startMove();
+                // this.node.addChild(lineStarNode);
+                // // TODO 位置需要计算，位置是Step相对于node里面的位置
+                // lineStarNode.getComponent(EffectLineStarScript).setPath(new Vec3(-250, 500, 0), scoreLabelNode.getPosition());
+                // lineStarNode.getComponent(EffectLineStarScript).startMove();
 
                 console.log('process left step', this.stepsValue)
                 if (this.stepsValue === 0) {
@@ -418,5 +426,20 @@ export class GamePanel extends PanelComponent {
 
     onAddStepsClick() {
         this.levelGridScript.useStepsTool();
+    }
+
+    private _findGoalTarget(type: CellType): Node {
+        let target: Node = null;
+        let goalsParent = this.goalLayoutNode.children[0];
+        for (let child of goalsParent.children) {
+            if (child.active) {
+                let cell = child.getComponentInChildren(CellScript);
+                if (type === cell.cellType) {
+                    target = cell.node;
+                    break;
+                }
+            }
+        }
+        return target;
     }
 }

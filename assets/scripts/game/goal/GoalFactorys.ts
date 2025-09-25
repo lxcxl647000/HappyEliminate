@@ -26,7 +26,7 @@ export class GoalFactorys {
             // 先添加到node再更新内容
             goalLayoutNode.addChild(node);
             let goalScore = node.getComponent(GoalScore);
-           
+
             goalScore.setGoal(targetGoalComplete);
 
             return {
@@ -51,21 +51,21 @@ export class GoalFactorys {
                     goalNode: node
                 };
             }
-             else if (goalValue.type === GoalType.TYPE_COUNTER) {
-            let targetGoalComplete1 = new GoalProgress();
-            targetGoalComplete1.types = goalValue.value as GoalTypeCounter[];
-            let prefab1 = prefabs[GoalType.TYPE_COUNTER];
-            let node1 = instantiate(prefab1);
-            // 先添加到node再更新内容
-            goalLayoutNode.addChild(node1);
-            let goalScore1 = node1.getComponent(GoalTypeCounter4);
-            goalScore1.setGoal(targetGoalComplete1);
+            else if (goalValue.type === GoalType.TYPE_COUNTER) {
+                let targetGoalComplete1 = new GoalProgress();
+                targetGoalComplete1.types = goalValue.value as GoalTypeCounter[];
+                let prefab1 = prefabs[GoalType.TYPE_COUNTER];
+                let node1 = instantiate(prefab1);
+                // 先添加到node再更新内容
+                goalLayoutNode.addChild(node1);
+                let goalScore1 = node1.getComponent(GoalTypeCounter4);
+                goalScore1.setGoal(targetGoalComplete1);
 
-            return {
-                goalScript: goalScore1,
-                goalNode: node1
-            };
-        }
+                return {
+                    goalScript: goalScore1,
+                    goalNode: node1
+                };
+            }
         }
 
         // default

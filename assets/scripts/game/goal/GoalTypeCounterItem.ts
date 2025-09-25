@@ -34,6 +34,7 @@ export class GoalTypeCounterItem extends Component {
 
     setType(cellType: CellType) {
         this.cellNode.getComponent(CellScript).setType(cellType);
+        this.cellNode.setScale(.9, .9);
     }
 }
 
