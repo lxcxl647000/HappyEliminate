@@ -34,7 +34,7 @@ export class CellScript extends Component {
 
     sprite: Sprite;
     textureConfg: Map<CellType, { sprite: SpriteFrame, name: string }>;
-    toolTextureConfig: Map<ToolType, { sprite: SpriteFrame, name: string }>;
+    toolTextureConfig: Map<ToolType, { sprite: SpriteFrame }>;
 
     cellType: CellType = CellType.INVALID;
 
@@ -71,10 +71,11 @@ export class CellScript extends Component {
             this.textureConfg[CellType.INVALID] = { sprite: undefined, name: undefined };
 
             this.toolTextureConfig = new Map<ToolType, { sprite: SpriteFrame, name: string }>();
-            this.toolTextureConfig.set(ToolType.BOOM_MATCH, { sprite: this.toolSpriteFrameList[0], name: this.toolSpriteFrameList[0].name });
-            this.toolTextureConfig.set(ToolType.BOOM_UP_MATCH, { sprite: this.toolSpriteFrameList[1], name: this.toolSpriteFrameList[1].name });
-            this.toolTextureConfig.set(ToolType.ROW_MATCH, { sprite: this.toolSpriteFrameList[2], name: this.toolSpriteFrameList[2].name });
-            this.toolTextureConfig.set(ToolType.COL_MATCH, { sprite: this.toolSpriteFrameList[3], name: this.toolSpriteFrameList[3].name });
+            this.toolTextureConfig.set(ToolType.BOOM_MATCH, { sprite: this.toolSpriteFrameList[0] });
+            this.toolTextureConfig.set(ToolType.BOOM_UP_MATCH, { sprite: this.toolSpriteFrameList[1] });
+            this.toolTextureConfig.set(ToolType.ROW_MATCH, { sprite: this.toolSpriteFrameList[2] });
+            this.toolTextureConfig.set(ToolType.COL_MATCH, { sprite: this.toolSpriteFrameList[3] });
+            this.toolTextureConfig.set(ToolType.TYPE_MATCH, { sprite: this.toolSpriteFrameList[4] });
 
         }
     }

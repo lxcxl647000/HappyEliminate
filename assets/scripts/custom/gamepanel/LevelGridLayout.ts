@@ -24,6 +24,7 @@ import { RandomTool } from '../../game/tools/RandomTool';
 import { HammerTool } from '../../game/tools/HammerTool';
 import { StepsTool } from '../../game/tools/StepsTool';
 import { BoomTool } from '../../game/tools/BoomTool';
+import { GamePanel } from './GamePanel';
 
 
 export interface GridListener {
@@ -77,6 +78,12 @@ export class LevelGridLayout extends Component {
     listener: GridListener = null;
 
     private gridStateMachine: StateMachine;
+    public getGridStateMachine() { return this.gridStateMachine; }
+
+    private _gamepanel: GamePanel = null;
+    public setGamePanel(gamepanel: GamePanel) {
+        this._gamepanel = gamepanel;
+    }
 
     public init(levelConfig: Level) {
         this.grid = new Grid(levelConfig.grid, Constants.GRID_CELL_SIZE, levelConfig.types);
@@ -98,6 +105,7 @@ export class LevelGridLayout extends Component {
         ConstStatus.getInstance().foundMatchState = new FoundMatchState(this.gridStateMachine);
         ConstStatus.getInstance().fillState = new FillState(this.gridStateMachine);
         ConstStatus.getInstance().fillState.setFillNewNodeFun(this.initCellAndNode.bind(this));
+        ConstStatus.getInstance().fillState.setGamePanel(this._gamepanel);
         ConstStatus.getInstance().removeState = new RemoveState(this.gridStateMachine);
 
 
@@ -189,6 +197,7 @@ export class LevelGridLayout extends Component {
 
         // this.node.addChild(node);
         this.cellParent.addChild(node);
+        // node.active = false;
 
         // 添加单击事件回调
         let cellScript = node.getComponent(CellScript);
@@ -213,8 +222,13 @@ export class LevelGridLayout extends Component {
         cellScript.setOnClickListener({
             onClick: (node: Node) => {
                 if (HammerTool.isUsing) {
-                    this.hammerTool(node);
                     HammerTool.isUsing = false;
+                    this.hammerTool(node);
+                    return;
+                }
+                if (BoomTool.isUsing) {
+                    BoomTool.isUsing = false;
+                    this.boomTool(node);
                     return;
                 }
                 // 如果不是idel不允许操作
@@ -223,6 +237,11 @@ export class LevelGridLayout extends Component {
                     return;
                 }
                 let cell = this.grid.findCellByNode(node);
+                // 如果点中的是彩虹糖豆则不能点击触发，需要和交换位置的cell配对消除//
+                if (cell.tool && cell.tool.getType() == ToolType.TYPE_MATCH) {
+                    this.prepareClickSwap(cell);
+                    return;
+                }
                 // 如果选中了道具，则需要进行一次道具触发
                 if (cell.tool) {
                     // 选中了道具，进行处理
@@ -332,12 +351,13 @@ export class LevelGridLayout extends Component {
      * 随机打乱网格, 随机的交换
      */
     randomGrid() {
+        this._setToolIsUsing(ToolType.RANDOM_GRID);
         console.log("random grid");
         this.useRandomTool(new RandomTool())
     }
 
     useHammerTool() {
-        HammerTool.isUsing = true;
+        this._setToolIsUsing(ToolType.TYPE_HAMMER);
     }
 
     hammerTool(node: Node) {
@@ -353,6 +373,7 @@ export class LevelGridLayout extends Component {
     }
 
     useStepsTool() {
+        this._setToolIsUsing(ToolType.TYPE_STEPS);
         this.gridStateMachine.transitionTo(
             ConstStatus.getInstance().toolsState,
             {
@@ -364,14 +385,24 @@ export class LevelGridLayout extends Component {
     }
 
     useBoomTool() {
+        this._setToolIsUsing(ToolType.TYPE_BOOM);
+    }
+
+    boomTool(node: Node) {
+        let cell = this.grid.findCellByNode(node);
         this.gridStateMachine.transitionTo(
             ConstStatus.getInstance().toolsState,
             {
-                cell: null,
+                cell: cell,
                 grid: this.grid,
                 tool: new BoomTool()
             } as ToolsStateEnterData
         );
+    }
+
+    private _setToolIsUsing(type: ToolType) {
+        HammerTool.isUsing = type == ToolType.TYPE_HAMMER;
+        BoomTool.isUsing = type == ToolType.TYPE_BOOM;
     }
 }
 

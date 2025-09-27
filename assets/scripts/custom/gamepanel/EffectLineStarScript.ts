@@ -36,12 +36,13 @@ export class EffectLineStarScript extends Component {
         this.to = to;
     }
 
-    startMove() {
+    startMove(cb?: Function) {
         this.node.setPosition(this.from);
         tween(this.node)
             .to(this.duration, { position: this.to })
             .call(() => {
                 this.node.removeFromParent();
+                cb && cb();
             })
             .start();
     }

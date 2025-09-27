@@ -7,9 +7,10 @@ import { ConstStatus } from "./ConstStatus";
 import { RowMatchTool } from "../tools/RowMatchTool";
 import { ITool } from "../tools/ITool";
 import { BoomMatchTool } from "../tools/BoomMatchTool";
-import { BoomUpMatchTool } from "../tools/BoomUpMatchTool";
 import { ColMatchTool } from "../tools/ColMatchTool";
 import { CellScript } from "../../custom/gamepanel/CellScript";
+import { TypeMatchTool } from "../tools/TypeMatchTool";
+import { GamePanel } from "../../custom/gamepanel/GamePanel";
 
 export class FillStateEnterData extends IEnterData {
     matches: Cell[][]; // 匹配找到的，用来计算要不要生成道具
@@ -27,6 +28,8 @@ export class FillState extends StateWithMachine {
     public setFillNewNodeFun(fillNewNode: (cell: Cell) => void) {
         this.fillNewNode = fillNewNode;
     }
+    private _gamePanel: GamePanel = null;
+    public setGamePanel(gamePanel: GamePanel) { this._gamePanel = gamePanel; }
     getName(): string {
         return 'FillState';
     }
@@ -134,6 +137,9 @@ export class FillState extends StateWithMachine {
      * 2、L 或者 T型 则生成炸弹
      */
     private checkToGenerateTools(data: FillStateEnterData) {
+        if (!this._gamePanel.getIsFirstStableHappened()) {
+            return;
+        }
         if (data.matches.length > 0) {
             for (const matchesItem of data.matches) {
                 // console.log("checkToGenerateTools ", matchesItem.length);
@@ -171,9 +177,9 @@ export class FillState extends StateWithMachine {
                     } else if (colIndexSameCounter === 4) {
                         this.fillWithTool(cell, new ColMatchTool());
                     }
-                    // else if (rowIndexSameCounter >= 5 || colIndexSameCounter >= 5) {
-                    //     this.fillWithTool(cell, new BoomUpMatchTool());
-                    // }
+                    else if (rowIndexSameCounter >= 5 || colIndexSameCounter >= 5) {
+                        this.fillWithTool(cell, new TypeMatchTool());
+                    }
                 } else {
                     // 可能是T 或L
                     this.fillWithTool(cell, new BoomMatchTool())
@@ -181,8 +187,12 @@ export class FillState extends StateWithMachine {
             }
         }
     }
-    private fillWithTool(cell: Cell, tool: ITool) {
+    public fillWithTool(cell: Cell, tool: ITool) {
         cell.tool = tool;
         this.fillNewNode(cell);
+    }
+
+    public setWithTool(cell: Cell, tool: ITool) {
+        cell.tool = tool;
     }
 }

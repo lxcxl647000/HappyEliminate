@@ -7,13 +7,16 @@ import { ITool, ToolType } from "./ITool";
  * 使用后在屏幕上3X3区域爆炸
  */
 export class BoomTool implements ITool {
+    static isUsing = false;
     getType(): ToolType {
         return ToolType.TYPE_BOOM;
     }
     process(cell: Cell, grid: Grid, onComplete: () => void) {
-        let randomCell = grid.randomCell();
+        if (!cell) {
+            cell = grid.randomCell();
+        }
         grid.rangeCells((c: Cell, i: number, j: number) => {
-            const dis = Vec2.distance(randomCell.gridID, c.gridID);
+            const dis = Vec2.distance(cell.gridID, c.gridID);
             if (dis < 2) {
                 c.match = true;
             }

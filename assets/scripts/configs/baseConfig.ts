@@ -1,5 +1,5 @@
 export const baseConfig = {
-    appid: '3000000136119813',
+    appid: '3000000137357221',
     baseUrl: 'https://quchuangtest.yundps.com',
     // baseUrl: 'https://quchuang.yundps.com',
     baseHost: 'quchuangtest.yundps.com',

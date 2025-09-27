@@ -6,6 +6,8 @@ import { IdelState } from "./IdelState";
 import { CellUtils } from "../gameutils/CellUtils";
 import { IEnterData, IState, StateWithMachine } from "../util/StateMachine";
 import { GridListener } from "../../custom/gamepanel/LevelGridLayout";
+import { ToolType } from "../tools/ITool";
+import { ToolsState, ToolsStateEnterData } from "./ToolsState";
 
 export class SwapStateEnterData extends IEnterData {
     fromCell: Cell;
@@ -23,7 +25,7 @@ export class SwapState extends StateWithMachine {
     }
     canTransitionTo(state: IState): boolean {
         return state instanceof FindMatchState ||
-            state instanceof IdelState;
+            state instanceof IdelState || state instanceof ToolsState;
     }
     onEnter(data: SwapStateEnterData): void {
         if (data.from instanceof FindMatchState) {
@@ -46,13 +48,40 @@ export class SwapState extends StateWithMachine {
             CellUtils.changePostion(data.fromCell, data.grid);
             CellUtils.changePostion(data.toCell, data.grid, () => {
                 let matches = ConstStatus.getInstance().findMatchState.findMatch(data);
-                if (matches.length > 0 && this.listener) {
+                if ((matches.length > 0 || data.fromCell.tool || data.toCell.tool) && this.listener) {
                     this.listener.onSwapStep(data.fromCell, data.toCell);
                 }
+                // 交换中是否有道具//
+                this._handleSwapTools(data);
                 this.stateMachine.transitionTo(ConstStatus.getInstance().findMatchState, findMatchData);
             });
         }
     }
     onLeave(): void {
+    }
+
+    // 处理发生交换时有道具//
+    private _handleSwapTools(data: SwapStateEnterData) {
+        let toolCell: Cell = null;
+        if (data.fromCell.tool) {
+            toolCell = data.fromCell;
+        } else if (data.toCell.tool) {
+            toolCell = data.toCell;
+        }
+        if (toolCell) {
+            let cell = toolCell;
+            if (toolCell.tool.getType() === ToolType.TYPE_MATCH) {
+                cell = toolCell === data.fromCell ? data.toCell : data.fromCell;
+                cell['typeMatchCell'] = toolCell;
+            }
+            this.stateMachine.transitionTo(
+                ConstStatus.getInstance().toolsState,
+                {
+                    cell: cell,
+                    tool: toolCell.tool,
+                    grid: data.grid
+                } as ToolsStateEnterData
+            );
+        }
     }
 }

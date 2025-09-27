@@ -283,6 +283,10 @@
       {
         "__uuid__": "e3dfa177-fdc0-4756-b374-8a928b203d09@f9941",
         "__expectedType__": "cc.SpriteFrame"
+      },
+      {
+        "__uuid__": "94b9d1d9-4070-4b15-8ec6-78d2e9f02c2e@f9941",
+        "__expectedType__": "cc.SpriteFrame"
       }
     ],
     "_id": ""
