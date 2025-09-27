@@ -6,7 +6,6 @@ import { ITool, ToolType } from "./ITool";
  * 任意消除一个
  */
 export class HammerTool implements ITool {
-    static isUsing = false;
     getType(): ToolType {
         return ToolType.TYPE_HAMMER;
     }

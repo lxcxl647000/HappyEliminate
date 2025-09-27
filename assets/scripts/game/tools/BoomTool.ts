@@ -7,7 +7,6 @@ import { ITool, ToolType } from "./ITool";
  * 使用后在屏幕上3X3区域爆炸
  */
 export class BoomTool implements ITool {
-    static isUsing = false;
     getType(): ToolType {
         return ToolType.TYPE_BOOM;
     }

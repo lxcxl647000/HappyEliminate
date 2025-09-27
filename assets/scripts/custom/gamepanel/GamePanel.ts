@@ -76,6 +76,11 @@ export class GamePanel extends PanelComponent {
     @property(Label)
     levelValue: Label = null;
 
+    @property(Node)
+    toolMask: Node = null;
+    @property(Node)
+    toolsCopy: Node = null;
+
     // 
     private levelConfig: Level = null;
     private levelData: Level = null;
@@ -100,6 +105,10 @@ export class GamePanel extends PanelComponent {
 
     // 剩余步数转换成道具需要的道具//
     private _needRandomTools: ToolType[] = [ToolType.BOOM_MATCH, ToolType.ROW_MATCH, ToolType.COL_MATCH];
+
+    // 当前选中底部使用的道具类型//
+    private _useToolType: ToolType = ToolType.INVALID;
+    public get useToolType() { return this._useToolType; }
 
 
     show(option: PanelShowOption): void {
@@ -462,7 +471,7 @@ export class GamePanel extends PanelComponent {
     }
 
     onHammerClick() {
-        this.levelGridScript.useHammerTool();
+        this.showToolMask(ToolType.TYPE_HAMMER);
     }
 
     onSortClick() {
@@ -470,7 +479,7 @@ export class GamePanel extends PanelComponent {
     }
 
     onBoomClick() {
-        this.levelGridScript.useBoomTool();
+        this.showToolMask(ToolType.TYPE_BOOM);
     }
 
     onAddStepsClick() {
@@ -490,5 +499,23 @@ export class GamePanel extends PanelComponent {
             }
         }
         return target;
+    }
+
+    onToolMaskClick() {
+        this.hideToolMask();
+    }
+
+    public showToolMask(type: ToolType) {
+        this._useToolType = type;
+        this.toolMask.active = true;
+        this.toolsCopy.getChildByName(ToolType[type]).active = true;
+    }
+
+    public hideToolMask() {
+        this._useToolType = ToolType.INVALID;
+        this.toolMask.active = false;
+        for (let child of this.toolsCopy.children) {
+            child.active = false;
+        }
     }
 }

@@ -221,14 +221,14 @@ export class LevelGridLayout extends Component {
 
         cellScript.setOnClickListener({
             onClick: (node: Node) => {
-                if (HammerTool.isUsing) {
-                    HammerTool.isUsing = false;
-                    this.hammerTool(node);
+                if (this._gamepanel.useToolType === ToolType.TYPE_HAMMER) {
+                    this._gamepanel.hideToolMask();
+                    this.useHammerTool(node);
                     return;
                 }
-                if (BoomTool.isUsing) {
-                    BoomTool.isUsing = false;
-                    this.boomTool(node);
+                if (this._gamepanel.useToolType === ToolType.TYPE_BOOM) {
+                    this._gamepanel.hideToolMask();
+                    this.useBoomTool(node);
                     return;
                 }
                 // 如果不是idel不允许操作
@@ -351,16 +351,11 @@ export class LevelGridLayout extends Component {
      * 随机打乱网格, 随机的交换
      */
     randomGrid() {
-        this._setToolIsUsing(ToolType.RANDOM_GRID);
         console.log("random grid");
         this.useRandomTool(new RandomTool())
     }
 
-    useHammerTool() {
-        this._setToolIsUsing(ToolType.TYPE_HAMMER);
-    }
-
-    hammerTool(node: Node) {
+    useHammerTool(node: Node) {
         let cell = this.grid.findCellByNode(node);
         this.gridStateMachine.transitionTo(
             ConstStatus.getInstance().toolsState,
@@ -373,7 +368,6 @@ export class LevelGridLayout extends Component {
     }
 
     useStepsTool() {
-        this._setToolIsUsing(ToolType.TYPE_STEPS);
         this.gridStateMachine.transitionTo(
             ConstStatus.getInstance().toolsState,
             {
@@ -384,11 +378,7 @@ export class LevelGridLayout extends Component {
         );
     }
 
-    useBoomTool() {
-        this._setToolIsUsing(ToolType.TYPE_BOOM);
-    }
-
-    boomTool(node: Node) {
+    useBoomTool(node: Node) {
         let cell = this.grid.findCellByNode(node);
         this.gridStateMachine.transitionTo(
             ConstStatus.getInstance().toolsState,
@@ -398,11 +388,6 @@ export class LevelGridLayout extends Component {
                 tool: new BoomTool()
             } as ToolsStateEnterData
         );
-    }
-
-    private _setToolIsUsing(type: ToolType) {
-        HammerTool.isUsing = type == ToolType.TYPE_HAMMER;
-        BoomTool.isUsing = type == ToolType.TYPE_BOOM;
     }
 }
 
