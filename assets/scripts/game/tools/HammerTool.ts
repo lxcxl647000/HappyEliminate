@@ -1,5 +1,4 @@
-import { Grid } from "../Grid";
-import { Cell } from "../Types";
+import { ToolsStateEnterData } from "../gridstate/ToolsState";
 import { ITool, ToolType } from "./ITool";
 
 /**
@@ -9,9 +8,9 @@ export class HammerTool implements ITool {
     getType(): ToolType {
         return ToolType.TYPE_HAMMER;
     }
-    process(cell: Cell, grid: Grid, onComplete: () => void) {
-        if (cell) {
-            cell.match = true;
+    process(data: ToolsStateEnterData, onComplete: () => void) {
+        if (data.cell) {
+            data.cell.match = true;
         }
         // 没有动画，执行完成直接回调
         onComplete();

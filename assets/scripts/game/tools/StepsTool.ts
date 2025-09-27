@@ -1,7 +1,6 @@
 import EventDef from "../../constants/EventDef";
 import { qc } from "../../framework/qc";
-import { Grid } from "../Grid";
-import { Cell } from "../Types";
+import { ToolsStateEnterData } from "../gridstate/ToolsState";
 import { ITool, ToolType } from "./ITool";
 
 /**
@@ -11,7 +10,7 @@ export class StepsTool implements ITool {
     getType(): ToolType {
         return ToolType.TYPE_STEPS;
     }
-    process(cell: Cell, grid: Grid, onComplete: () => void) {
+    process(data: ToolsStateEnterData, onComplete: () => void) {
         qc.eventManager.emit(EventDef.UseStepsTool, 3);
         // 没有动画，执行完成直接回调
         onComplete();

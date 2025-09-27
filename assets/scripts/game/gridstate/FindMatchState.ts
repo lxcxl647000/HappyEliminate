@@ -7,6 +7,7 @@ import { ConstStatus } from "./ConstStatus";
 import { RandomTool } from "../tools/RandomTool";
 import { GridListener } from "../../custom/gamepanel/LevelGridLayout";
 import { IEnterData, IState, StateWithMachine } from "../util/StateMachine";
+import { ToolsStateEnterData } from "./ToolsState";
 
 export class FindMatchStateEnterData extends IEnterData {
     swapCellFrom?: Cell;
@@ -122,7 +123,9 @@ export class FindMatchState extends StateWithMachine {
 
     private conformCanBeMatch(data: FindMatchStateEnterData, onConfrom: () => void) {
         const randomTool = new RandomTool();
-        randomTool.process(null, data.grid, () => {
+        let toolData: ToolsStateEnterData = new ToolsStateEnterData();
+        toolData.grid = data.grid;
+        randomTool.process(toolData, () => {
             const matches = this.findMatch(data);
             if (matches.length === 0) {
                 this.conformCanBeMatch(data, onConfrom);

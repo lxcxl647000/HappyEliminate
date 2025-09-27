@@ -1,4 +1,4 @@
-import { Grid } from "../Grid";
+import { ToolsStateEnterData } from "../gridstate/ToolsState";
 import { Cell } from "../Types";
 import { ITool, ToolType } from "./ITool";
 
@@ -9,15 +9,13 @@ export class TypeMatchTool implements ITool {
     getType(): ToolType {
         return ToolType.TYPE_MATCH;
     }
-    process(cell: Cell, grid: Grid, onComplete: () => void) {
-        let isClearAll = false;
-        if (cell['typeMatchCell']) {
-            isClearAll = cell.tool && cell.tool.getType() === ToolType.TYPE_MATCH;
-            cell['typeMatchCell'].match = true;
-            cell['typeMatchCell'] = null;
-        }
-        grid.rangeCells((c: Cell, i: number, j: number) => {
-            if ((c.type === cell.type && c.tool === null) || isClearAll) {
+    process(data: ToolsStateEnterData, onComplete: () => void) {
+        let isClearAll = data.swapCell && data.swapCell.tool
+            && data.swapCell.tool.getType() === ToolType.TYPE_MATCH
+            && data.tool.getType() === ToolType.TYPE_MATCH;
+        data.cell.match = true;
+        data.grid.rangeCells((c: Cell, i: number, j: number) => {
+            if (isClearAll || (data.swapCell && c.type === data.swapCell.type && c.tool === null)) {
                 c.match = true;
             }
         });

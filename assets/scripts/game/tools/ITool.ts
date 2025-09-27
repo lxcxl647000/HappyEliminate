@@ -1,5 +1,4 @@
-import { Grid } from "../Grid";
-import { Cell } from "../Types";
+import { ToolsStateEnterData } from "../gridstate/ToolsState";
 
 export interface ITool {
     /**
@@ -8,7 +7,7 @@ export interface ITool {
      * @param grid 所有元素
      * @param onComplete 完成回到
      */
-    process(cell: Cell, grid: Grid, onComplete: () => void): void;
+    process(data: ToolsStateEnterData, onComplete: () => void): void;
 
     /**
      * 获取当前道具的类型

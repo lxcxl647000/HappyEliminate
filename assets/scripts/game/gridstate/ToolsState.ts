@@ -10,6 +10,7 @@ export class ToolsStateEnterData extends IEnterData {
     cell: Cell; // 触发道具的位置， 可能为空
     tool: ITool;
     grid: Grid;
+    swapCell?: Cell;// 与道具交换的格子，可能普通格子也可能是道具//
 }
 
 
@@ -29,7 +30,7 @@ export class ToolsState extends StateWithMachine {
     onEnter(data: ToolsStateEnterData): void {
         // 使用道具，道具执行完成之后，开始一轮匹配
         // 有些道具会将某些Cell设置成已匹配
-        data.tool.process(data.cell, data.grid, () => {
+        data.tool.process(data, () => {
             // 道具已使用，将道具移除
             // if (data.cell) {
             //     data.cell.tool = null;

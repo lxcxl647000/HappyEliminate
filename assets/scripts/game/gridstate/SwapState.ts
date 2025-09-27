@@ -6,7 +6,6 @@ import { IdelState } from "./IdelState";
 import { CellUtils } from "../gameutils/CellUtils";
 import { IEnterData, IState, StateWithMachine } from "../util/StateMachine";
 import { GridListener } from "../../custom/gamepanel/LevelGridLayout";
-import { ToolType } from "../tools/ITool";
 import { ToolsState, ToolsStateEnterData } from "./ToolsState";
 
 export class SwapStateEnterData extends IEnterData {
@@ -69,17 +68,14 @@ export class SwapState extends StateWithMachine {
             toolCell = data.toCell;
         }
         if (toolCell) {
-            let cell = toolCell;
-            if (toolCell.tool.getType() === ToolType.TYPE_MATCH) {
-                cell = toolCell === data.fromCell ? data.toCell : data.fromCell;
-                cell['typeMatchCell'] = toolCell;
-            }
+            let cell = toolCell === data.fromCell ? data.toCell : data.fromCell;
             this.stateMachine.transitionTo(
                 ConstStatus.getInstance().toolsState,
                 {
-                    cell: cell,
+                    cell: toolCell,
                     tool: toolCell.tool,
-                    grid: data.grid
+                    grid: data.grid,
+                    swapCell: cell
                 } as ToolsStateEnterData
             );
         }
