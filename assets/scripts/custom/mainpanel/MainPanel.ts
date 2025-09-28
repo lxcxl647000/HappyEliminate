@@ -93,7 +93,7 @@ export class MainPanel extends PanelComponent {
 
     onStartBtn() {
         qc.panelRouter.showPanel({
-            panel: PanelConfigs.gamePanel,
+            panel: PanelConfigs.gameStartPanel,
             onShowed: () => {
 
             },
@@ -176,6 +176,14 @@ export class MainPanel extends PanelComponent {
 
     private _setBtnsActive() {
 
+    }
+
+    onGoldBtn() {
+        qc.panelRouter.showPanel({
+            panel: PanelConfigs.addGoldPanel,
+            onShowed: () => {
+            },
+        });
     }
 }
 

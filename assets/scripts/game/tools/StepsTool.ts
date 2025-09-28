@@ -1,5 +1,6 @@
 import EventDef from "../../constants/EventDef";
 import { qc } from "../../framework/qc";
+import { Constants } from "../Constants";
 import { ToolsStateEnterData } from "../gridstate/ToolsState";
 import { ITool, ToolType } from "./ITool";
 
@@ -11,7 +12,7 @@ export class StepsTool implements ITool {
         return ToolType.TYPE_STEPS;
     }
     process(data: ToolsStateEnterData, onComplete: () => void) {
-        qc.eventManager.emit(EventDef.UseStepsTool, 3);
+        qc.eventManager.emit(EventDef.UseStepsTool, Constants.Tool_Add_Steps);
         // 没有动画，执行完成直接回调
         onComplete();
     }

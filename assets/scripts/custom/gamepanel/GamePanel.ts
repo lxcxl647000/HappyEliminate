@@ -25,6 +25,7 @@ import { ToolsStateEnterData } from '../../game/gridstate/ToolsState';
 import { BoomMatchTool } from '../../game/tools/BoomMatchTool';
 import { ColMatchTool } from '../../game/tools/ColMatchTool';
 import { RowMatchTool } from '../../game/tools/RowMatchTool';
+import { ItemType } from '../../configs/ItemConfig';
 const { ccclass, property } = _decorator;
 
 class GameStaus {
@@ -81,6 +82,9 @@ export class GamePanel extends PanelComponent {
     @property(Node)
     toolsCopy: Node = null;
 
+    @property(Node)
+    selectToolFrom: Node = null;
+
     // 
     private levelConfig: Level = null;
     private levelData: Level = null;
@@ -110,10 +114,14 @@ export class GamePanel extends PanelComponent {
     private _useToolType: ToolType = ToolType.INVALID;
     public get useToolType() { return this._useToolType; }
 
+    private _seletToolFromGameStart: { [id: number]: number } = {};
+
 
     show(option: PanelShowOption): void {
         option.onShowed();
-        this.levelConfig = option.data;
+        let { level, selectTools } = option.data;
+        this.levelConfig = level as Level;
+        this._seletToolFromGameStart = selectTools as { [id: number]: number };
     }
 
     hide(option: PanelHideOption): void {
@@ -184,25 +192,35 @@ export class GamePanel extends PanelComponent {
 
             },
             onStable: () => {
+                let func = () => {
+                    if (!this.isFirstStableHappened) {
+                        this.isFirstStableHappened = true;
+                    }
+
+                    // 停止连续消除计分
+                    this.scoreValue.continueMatchFinish();
+
+                    // 检查游戏是否结束
+                    if (this.levelGoal.isComplete()) {
+                        // this.gameStatus.gameSuccess = true;
+                        this.processLeftSteps(() => {
+                            this.gameStatus.gameSuccess = true;
+                        });
+                    } else if (this.stepsValue <= 0) {
+                        this.gameStatus.gameFailed = true;
+                        this.processLeftSteps();
+                    }
+
+                    this.gameStatus.matchStableComplete = true;
+                };
+
                 if (!this.isFirstStableHappened) {
-                    this.isFirstStableHappened = true;
-                }
-
-                // 停止连续消除计分
-                this.scoreValue.continueMatchFinish();
-
-                // 检查游戏是否结束
-                if (this.levelGoal.isComplete()) {
-                    // this.gameStatus.gameSuccess = true;
-                    this.processLeftSteps(() => {
-                        this.gameStatus.gameSuccess = true;
+                    this._setToolFormGameStart(() => {
+                        func();
                     });
-                } else if (this.stepsValue <= 0) {
-                    this.gameStatus.gameFailed = true;
-                    this.processLeftSteps();
                 }
 
-                this.gameStatus.matchStableComplete = true;
+                func();
             }
         });
     }
@@ -516,6 +534,55 @@ export class GamePanel extends PanelComponent {
         this.toolMask.active = false;
         for (let child of this.toolsCopy.children) {
             child.active = false;
+        }
+    }
+
+    private _setToolFormGameStart(cb: Function) {
+        let tools = [];
+        for (let key in this._seletToolFromGameStart) {
+            if (this._seletToolFromGameStart[key] > 0) {
+                tools.push(key);
+            }
+        }
+        let count = tools.length;
+        for (let tool of tools) {
+            const lineStarNode = instantiate(this.lineStarPrefab);
+            this.node.addChild(lineStarNode);
+            let randomCell = +tool === ToolType.TYPE_STEPS ? null : this.levelGridScript.grid.randomCell();
+            let fromPos = CocosUtils.setNodeToTargetPos(lineStarNode, this.selectToolFrom);
+            let toPos = CocosUtils.setNodeToTargetPos(lineStarNode, randomCell ? randomCell.node : this.stepsValueNode);
+            let effectLineStarScript = lineStarNode.getComponent(EffectLineStarScript);
+            effectLineStarScript.setDuration(.4);
+            effectLineStarScript.setPath(fromPos, toPos);
+            effectLineStarScript.startMove(() => {
+                if (randomCell) {
+                    let iTool: ITool = new BoomMatchTool();
+                    if (!randomCell.node) {
+                        ConstStatus.getInstance().fillState.fillWithTool(randomCell, iTool);
+                    }
+                    else {
+                        let cellScript: CellScript = randomCell.node.getComponent(CellScript);
+                        if (cellScript) {
+                            cellScript.setToolType(+tool);
+                            ConstStatus.getInstance().fillState.setWithTool(randomCell, iTool);
+                        }
+                    }
+                    if (--count === 0) {
+                        cb && cb();
+                    }
+                }
+                else {
+                    this._addSteps(Constants.Tool_Add_Steps);
+                    if (--count === 0) {
+                        cb && cb();
+                    }
+                }
+                let itemType = +tool === ToolType.TYPE_STEPS ? ItemType.Steps : ItemType.Boom;
+                if (PlayerMgr.ins.player.backPack[itemType]) {
+                    PlayerMgr.ins.player.backPack[itemType] -= 1;
+                    qc.storage.setObj(Constants.PLAYER_DATA_KEY, PlayerMgr.ins.player);
+                }
+            });
         }
     }
 }

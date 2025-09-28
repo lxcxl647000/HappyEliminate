@@ -1,3 +1,5 @@
+import EventDef from "../constants/EventDef";
+import { ItemType } from "../configs/ItemConfig";
 import { qc } from "../framework/qc";
 import { Constants } from "./Constants";
 
@@ -7,6 +9,7 @@ export interface IPlayer {
     mapId: number;
     energy: number;
     gold: number;
+    backPack: { [id: number]: number };
 }
 
 export default class PlayerMgr {
@@ -25,14 +28,50 @@ export default class PlayerMgr {
                 {
                     level: 1,
                     stars: {},
-                    mapId: 1
+                    mapId: 1,
+                    energy: 100,
+                    // energy: 0,
+                    gold: 0
                 }
             );
+        }
+        if (!this._player.level) {
+            this._player.level = 1;
+        }
+        if (!this._player.stars) {
+            this._player.stars = {};
+        }
+        if (!this._player.mapId) {
+            this._player.mapId = 1;
+        }
+        if (!this._player.energy) {
+            // this._player.energy = 0;
+            this._player.energy = 100;
+        }
+        if (!this._player.gold) {
+            this._player.gold = 0;
+        }
+        if (!this._player.backPack) {
+            this._player.backPack = {};
         }
         return this._player;
     }
     public set player(value: IPlayer) {
         this._player = value;
         qc.storage.setObj(Constants.PLAYER_DATA_KEY, this._player);
+    }
+
+    public addGold(num: number) {
+        this.player.gold += num;
+        qc.eventManager.emit(EventDef.Update_Gold);
+    }
+
+    public addEnergy(num: number) {
+        this.player.energy += num;
+        qc.eventManager.emit(EventDef.Update_Energy);
+    }
+
+    public getItemNum(itemId: ItemType) {
+        return this.player.backPack[itemId] || 0;
     }
 }

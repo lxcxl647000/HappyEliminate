@@ -86,4 +86,14 @@ export const PanelConfigs = {
         prefabPath: `${BundleConfigs.redEnvelopeModelBundle}/prefabs/redEnvelopeModelPanel`,
         layerZIndex: PanelLayerEnum.PopLayer,
     }
+    ,
+    gameStartPanel: <PanelConfig>{
+        prefabPath: `${BundleConfigs.gameStartBundle}/prefabs/GameStartPanel`,
+        layerZIndex: PanelLayerEnum.PopLayer,
+    }
+    ,
+    addGoldPanel: <PanelConfig>{
+        prefabPath: `${BundleConfigs.addGoldBundle}/prefabs/AddGoldPanel`,
+        layerZIndex: PanelLayerEnum.PopLayer,
+    }
 };

@@ -55,7 +55,7 @@ export class LevelNodeData extends Component {
                 return;
             }
             qc.panelRouter.showPanel({
-                panel: PanelConfigs.gamePanel,
+                panel: PanelConfigs.gameStartPanel,
                 onShowed: () => {
 
                 },

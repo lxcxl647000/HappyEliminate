@@ -50,6 +50,8 @@ export class Constants {
 
     // 复活增加步数//
     public static Resurrection_Add_Steps = 5;
+    // 增加步数道具增加步数//
+    public static Tool_Add_Steps = 3;
 }
 
 

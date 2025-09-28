@@ -7,4 +7,7 @@ export default class EventDef {
     public static Unlock_Map = 'Unlock_Map';
     public static Map_Lock_Status = 'Map_Lock_Status';
     public static Jump_Level = 'Jump_Level';
+    public static Update_Gold = 'Update_Gold';
+    public static Update_Energy = 'Update_Energy';
+    public static Select_Tool = 'Select_Tool';
 }

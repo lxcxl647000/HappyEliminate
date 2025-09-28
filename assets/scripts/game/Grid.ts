@@ -386,6 +386,10 @@ export class Grid {
         let cells = this.cells;
         const rows = cells.length;
         const cols = cells[0].length;
-        return cells[randomRangeInt(0, rows)][randomRangeInt(0, cols)];
+        let cell = cells[randomRangeInt(0, rows)][randomRangeInt(0, cols)];
+        if (cell.tool !== null) {
+            return this.randomCell();
+        }
+        return cell;
     }
 }
