@@ -18,9 +18,10 @@ export default class MainSceneCtrl extends Component {
 
     async start() {
         // 加载 Bundle
-        await AssetLoader.loadBundle(BundleConfigs.configBundle)
-        await AssetLoader.loadBundle(BundleConfigs.bootBundle);
+        await AssetLoader.loadBundle(BundleConfigs.configBundle);
         await AssetLoader.loadBundle(BundleConfigs.commonBundle);
+        await AssetLoader.loadBundle(BundleConfigs.iconBundle);
+        await AssetLoader.loadBundle(BundleConfigs.bootBundle);
         await AssetLoader.loadBundle(BundleConfigs.gameBundle);
         await AssetLoader.loadBundle(BundleConfigs.mainBundle);
         await AssetLoader.loadBundle(BundleConfigs.userInfoBundle);
@@ -29,7 +30,8 @@ export default class MainSceneCtrl extends Component {
         await AssetLoader.loadBundle(BundleConfigs.exchangeBundle);
         await AssetLoader.loadBundle(BundleConfigs.taskBundle);
         await AssetLoader.loadBundle(BundleConfigs.redEnvelopeModelBundle);
-        await AssetLoader.loadBundle(BundleConfigs.redEnvelopeModelBundle);
+        await AssetLoader.loadBundle(BundleConfigs.gameStartBundle);
+
         // 加载启动页
         await qc.panelRouter.loadAsync(PanelConfigs.bootPanel);
 

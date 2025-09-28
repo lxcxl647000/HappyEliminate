@@ -31,7 +31,8 @@ export default class PlayerMgr {
                     mapId: 1,
                     energy: 100,
                     // energy: 0,
-                    gold: 0
+                    // gold: 0
+                    gold: 10000
                 }
             );
         }
@@ -49,7 +50,8 @@ export default class PlayerMgr {
             this._player.energy = 100;
         }
         if (!this._player.gold) {
-            this._player.gold = 0;
+            // this._player.gold = 0;
+            this._player.gold = 10000;
         }
         if (!this._player.backPack) {
             this._player.backPack = {};
@@ -73,5 +75,15 @@ export default class PlayerMgr {
 
     public getItemNum(itemId: ItemType) {
         return this.player.backPack[itemId] || 0;
+    }
+
+    public addItem(itemId: ItemType, num: number) {
+        if (!this.player.backPack[itemId]) {
+            this.player.backPack[itemId] = num;
+        }
+        else {
+            this.player.backPack[itemId] += num;
+        }
+
     }
 }

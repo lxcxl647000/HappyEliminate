@@ -21,6 +21,8 @@ export class GameStartPanel extends PanelComponent {
     levelLabel: Label = null;
     @property(Node)
     toolParent: Node = null;
+    @property(Label)
+    energyCostLabel: Label = null;
 
     private _level: Level = null;
     private _tools: ItemType[] = [ItemType.Boom, ItemType.Steps];
@@ -46,6 +48,7 @@ export class GameStartPanel extends PanelComponent {
     }
 
     private _init() {
+        this.energyCostLabel.string = `-${Constants.Energy_Cost}`;
         this.levelLabel.string = this._level.levelIndex.toString();
         this._initTarget();
         this._initTools();
@@ -87,9 +90,10 @@ export class GameStartPanel extends PanelComponent {
     }
 
     onStartClick() {
-        if (PlayerMgr.ins.player.energy < 1) {
+        if (PlayerMgr.ins.player.energy < Constants.Energy_Cost) {
             return;
         }
+        PlayerMgr.ins.addEnergy(-Constants.Energy_Cost);
         qc.panelRouter.showPanel({
             panel: PanelConfigs.gamePanel,
             onShowed: () => {
@@ -113,18 +117,8 @@ export class GameStartPanel extends PanelComponent {
 
     onAdGetTool() {
         // test//
-        if (PlayerMgr.ins.player.backPack[ItemType.Boom]) {
-            PlayerMgr.ins.player.backPack[ItemType.Boom] += 1;
-        }
-        else {
-            PlayerMgr.ins.player.backPack[ItemType.Boom] = 1;
-        }
-        if (PlayerMgr.ins.player.backPack[ItemType.Steps]) {
-            PlayerMgr.ins.player.backPack[ItemType.Steps] += 1;
-        }
-        else {
-            PlayerMgr.ins.player.backPack[ItemType.Steps] = 1;
-        }
+        PlayerMgr.ins.addItem(ItemType.Boom, 1);
+        PlayerMgr.ins.addItem(ItemType.Steps, 1);
         qc.storage.setObj(Constants.PLAYER_DATA_KEY, PlayerMgr.ins.player);
         this._initTools();
         // test// 

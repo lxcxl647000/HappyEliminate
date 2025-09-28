@@ -1,26 +1,26 @@
 export const ExchangeToolConfig = {
     3: {
-        id: 1,
+        id: 3,
         name: '炸弹',
-        icon: 'currency/icon_gold',
+        icon: 'tools/icon_boom',
         exchange: 100
     },
     4: {
-        id: 2,
+        id: 4,
         name: '随机排序',
-        icon: 'currency/icon_gold',
+        icon: 'tools/icon_sort',
         exchange: 100
     },
     5: {
-        id: 3,
+        id: 5,
         name: '锤子',
-        icon: 'currency/icon_gold',
+        icon: 'tools/icon_hammer',
         exchange: 100
     },
     6: {
-        id: 4,
+        id: 6,
         name: '步数',
-        icon: 'currency/icon_gold',
+        icon: 'tools/icon_step',
         exchange: 100
     },
 };

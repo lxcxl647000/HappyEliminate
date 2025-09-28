@@ -52,13 +52,16 @@ export default class CocosUtils {
      */
     public static loadTextureFromBundle(bundleName: string, url: string, sprite: Sprite) {
         let loadBundleTexture = (bundle: AssetManager.Bundle) => {
-            bundle.load(url, Texture2D, null, (error: Error, texture: Texture2D) => {
+            bundle.load(url, ImageAsset, null, (error: Error, imageAsset: ImageAsset) => {
                 if (error) {
                     console.log(error);
                     return;
                 }
                 const spriteFrame = new SpriteFrame();
+                const texture = new Texture2D();
+                texture.image = imageAsset;
                 spriteFrame.texture = texture;
+                sprite.spriteFrame = spriteFrame;
                 if (sprite) {
                     sprite.spriteFrame = spriteFrame;
                 }

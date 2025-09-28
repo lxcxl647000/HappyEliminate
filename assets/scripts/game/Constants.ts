@@ -52,6 +52,8 @@ export class Constants {
     public static Resurrection_Add_Steps = 5;
     // 增加步数道具增加步数//
     public static Tool_Add_Steps = 3;
+    // 每局消耗体力//
+    public static Energy_Cost = 10;
 }
 
 

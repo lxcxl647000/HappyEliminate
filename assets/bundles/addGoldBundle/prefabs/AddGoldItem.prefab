@@ -715,10 +715,12 @@
   },
   {
     "__type__": "cc.ClickEvent",
-    "target": null,
+    "target": {
+      "__id__": 1
+    },
     "component": "",
-    "_componentId": "",
-    "handler": "",
+    "_componentId": "faf73sLkeVA66jyx/bOp936",
+    "handler": "onClickGo",
     "customEventData": ""
   },
   {
@@ -818,6 +820,15 @@
     "_enabled": true,
     "__prefab": {
       "__id__": 34
+    },
+    "btnLabel": {
+      "__id__": 18
+    },
+    "icon": {
+      "__id__": 5
+    },
+    "des": {
+      "__id__": 11
     },
     "_id": ""
   },
