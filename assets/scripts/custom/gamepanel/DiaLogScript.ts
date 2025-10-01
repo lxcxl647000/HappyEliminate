@@ -12,6 +12,7 @@ import ConfigMgr from '../../manager/ConfigMgr';
 import { configConfigs } from '../../configs/configConfigs';
 import CocosUtils from '../../utils/CocosUtils';
 import { BundleConfigs } from '../../configs/BundleConfigs';
+import PlayerMgr from '../../manager/PlayerMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('DiaLogScript')
@@ -41,8 +42,8 @@ export class DiaLogScript extends DiaLogBaseScript {
     @property(Node)
     targetParent: Node = null;
 
-    @property(Node)
-    rewardBg: Node = null;
+    @property(UITransform)
+    rewardBg: UITransform = null;
     @property(Node)
     rewardTmp: Node = null;
     @property(Node)
@@ -51,12 +52,18 @@ export class DiaLogScript extends DiaLogBaseScript {
     doubleLayout: Node = null;
     @property(Node)
     doubleNode: Node = null;
+    @property(UITransform)
+    bg: UITransform = null;
+
 
     // 成功还是失败
     private success: boolean = false;
-
     private _normalHeight: number = 240;
     private _doubleHeight: number = 342;
+    private _normalBgHeight: number = 567;
+    private _doubleBgHeight: number = 670;
+    private _rewards: { type: ItemType, count: number }[] = [];
+    private _isDouble: boolean = false;
 
     update(deltaTime: number) {
 
@@ -80,7 +87,16 @@ export class DiaLogScript extends DiaLogBaseScript {
     }
 
     public setRewards(rewards: { type: ItemType, count: number }[], isDouble: boolean) {
-        this.rewardBg.getComponent(UITransform).height = isDouble ? this._doubleHeight : this._normalHeight;
+        this._rewards = rewards;
+        this._isDouble = isDouble;
+        if (isDouble) {
+            this.rewardBg.height = this._doubleHeight;
+            this.bg.height = this._doubleBgHeight;
+        }
+        else {
+            this.rewardBg.height = this._normalHeight;
+            this.bg.height = this._normalBgHeight;
+        }
         this._initReward(rewards, this.normalLayout);
         this.doubleNode.active = isDouble;
         if (isDouble) {
@@ -105,6 +121,9 @@ export class DiaLogScript extends DiaLogBaseScript {
         if (this.dialogOpt && this.dialogOpt.onConform) {
             this.dialogOpt.onConform();
         }
+        if (this.success) {
+            this._getRewards();
+        }
     }
 
     onCloseClick() {
@@ -116,6 +135,9 @@ export class DiaLogScript extends DiaLogBaseScript {
                 });
             },
         });
+        if (this.success) {
+            this._getRewards();
+        }
     }
 
     addStepsByAd() {
@@ -143,6 +165,14 @@ export class DiaLogScript extends DiaLogBaseScript {
                     }
                 }
             }
+        }
+    }
+
+    private _getRewards() {
+        let rewardCount = 0;
+        for (let reward of this._rewards) {
+            let count = this._isDouble ? reward.count * 2 : reward.count;
+            PlayerMgr.ins.addItem(reward.type, count, ++rewardCount === this._rewards.length);
         }
     }
 }

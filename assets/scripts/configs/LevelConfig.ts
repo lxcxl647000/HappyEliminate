@@ -60,5 +60,6 @@ export class LevelConfig {
         this.starCount = level.starCount;
         this.star3score = level.star3score;
         this.mapId = level.mapId;
+        this.rewards = level.rewards;
     }
 }
