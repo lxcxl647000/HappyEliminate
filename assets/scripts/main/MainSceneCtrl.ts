@@ -3,6 +3,7 @@ import AssetLoader from "../../scripts/framework/lib/asset/AssetLoader";
 import { qc } from "../framework/qc";
 import { BundleConfigs } from "../configs/BundleConfigs";
 import { PanelConfigs } from "../configs/PanelConfigs";
+import { baseConfig } from "../configs/baseConfig";
 
 const { ccclass, property } = _decorator;
 
@@ -31,6 +32,10 @@ export default class MainSceneCtrl extends Component {
         await AssetLoader.loadBundle(BundleConfigs.taskBundle);
         await AssetLoader.loadBundle(BundleConfigs.redEnvelopeModelBundle);
         await AssetLoader.loadBundle(BundleConfigs.gameStartBundle);
+        await AssetLoader.loadBundle(BundleConfigs.luckyTurntableBundle);
+        await AssetLoader.loadBundle(BundleConfigs.getItemBundle);
+
+        if (baseConfig.gm) await AssetLoader.loadBundle(BundleConfigs.gmBundle);
 
         // 加载启动页
         await qc.panelRouter.loadAsync(PanelConfigs.bootPanel);

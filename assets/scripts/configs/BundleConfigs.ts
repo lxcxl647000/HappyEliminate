@@ -18,5 +18,8 @@ export const BundleConfigs = {
     redEnvelopeModelBundle: 'redEnvelopeModelBundle',
     gameStartBundle: 'gameStartBundle',
     addGoldBundle: 'addGoldBundle',
-    iconBundle: 'iconBundle'
+    iconBundle: 'iconBundle',
+    luckyTurntableBundle: 'luckyTurntableBundle',
+    gmBundle: 'gmBundle',
+    getItemBundle: 'getItemBundle',
 };

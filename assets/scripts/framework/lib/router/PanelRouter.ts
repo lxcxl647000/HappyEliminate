@@ -44,6 +44,7 @@ export default class PanelRouter {
      * 所有UI图层的根节点
      */
     private _rootNode: Node = null;
+    public get rootNode(): Node { return this._rootNode; }
 
     /**
      * 记录图层节点的Map

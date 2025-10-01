@@ -2,12 +2,13 @@ import { _decorator, Component, Label, Node } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
-import { Level } from '../../game/Level';
-import LevelMgr from '../../game/LevelMgr';
-import PlayerMgr from '../../game/PlayerMgr';
+import { LevelConfig } from '../../configs/LevelConfig';
+import LevelMgr from '../../manager/LevelMgr';
+import PlayerMgr from '../../manager/PlayerMgr';
 import EventDef from '../../constants/EventDef';
 import ListCom from '../../framework/lib/components/scrollviewplus/ListCom';
 import { MapNodeData } from './MapNodeData';
+import { baseConfig } from '../../configs/baseConfig';
 const { ccclass, property } = _decorator;
 
 @ccclass('MainPanel')
@@ -18,12 +19,15 @@ export class MainPanel extends PanelComponent {
     mapList: ListCom = null;
     @property(Node)
     setting: Node = null;
+    @property(Node)
+    gm: Node = null;
 
-    private _currentLevel: Level = null;
+    private _currentLevel: LevelConfig = null;
 
     show(option: PanelShowOption): void {
         option.onShowed();
 
+        this.gm.active = baseConfig.gm;
         this._updateLevel(false);
         this._initMap();
     }
@@ -181,6 +185,22 @@ export class MainPanel extends PanelComponent {
     onGoldBtn() {
         qc.panelRouter.showPanel({
             panel: PanelConfigs.addGoldPanel,
+            onShowed: () => {
+            },
+        });
+    }
+
+    onLuckyTurntableBtn() {
+        qc.panelRouter.showPanel({
+            panel: PanelConfigs.luckyTurntablePanel,
+            onShowed: () => {
+            },
+        });
+    }
+
+    onGM() {
+        qc.panelRouter.showPanel({
+            panel: PanelConfigs.gmPanel,
             onShowed: () => {
             },
         });

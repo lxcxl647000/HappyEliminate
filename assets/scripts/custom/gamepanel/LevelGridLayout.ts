@@ -7,7 +7,7 @@ import { GridItemBGScript } from './GridItemBGScript';
 import { Cell } from '../../game/Types';
 import { Grid } from '../../game/Grid';
 import { StateMachine } from '../../game/util/StateMachine';
-import { Level } from '../../game/Level';
+import { LevelConfig } from '../../configs/LevelConfig';
 import { Constants } from '../../game/Constants';
 import { ConstStatus } from '../../game/gridstate/ConstStatus';
 import { IdelState } from '../../game/gridstate/IdelState';
@@ -25,6 +25,8 @@ import { HammerTool } from '../../game/tools/HammerTool';
 import { StepsTool } from '../../game/tools/StepsTool';
 import { BoomTool } from '../../game/tools/BoomTool';
 import { GamePanel } from './GamePanel';
+import { qc } from '../../framework/qc';
+import EventDef from '../../constants/EventDef';
 
 
 export interface GridListener {
@@ -85,7 +87,7 @@ export class LevelGridLayout extends Component {
         this._gamepanel = gamepanel;
     }
 
-    public init(levelConfig: Level) {
+    public init(levelConfig: LevelConfig) {
         this.grid = new Grid(levelConfig.grid, Constants.GRID_CELL_SIZE, levelConfig.types);
         this.initGridCells();
         this.stopWorld = false;
@@ -221,14 +223,19 @@ export class LevelGridLayout extends Component {
 
         cellScript.setOnClickListener({
             onClick: (node: Node) => {
+                if (this._gamepanel.isFinish) {
+                    return;
+                }
                 if (this._gamepanel.useToolType === ToolType.TYPE_HAMMER) {
                     this._gamepanel.hideToolMask();
                     this.useHammerTool(node);
+                    qc.eventManager.emit(EventDef.Game_Select_Tool_Success, ToolType.TYPE_HAMMER);
                     return;
                 }
                 if (this._gamepanel.useToolType === ToolType.TYPE_BOOM) {
                     this._gamepanel.hideToolMask();
                     this.useBoomTool(node);
+                    qc.eventManager.emit(EventDef.Game_Select_Tool_Success, ToolType.TYPE_BOOM);
                     return;
                 }
                 // 如果不是idel不允许操作
@@ -259,6 +266,9 @@ export class LevelGridLayout extends Component {
                 }
             },
             onMoveDirection: (node: Node, dir: Vec2) => {
+                if (this._gamepanel.isFinish) {
+                    return;
+                }
                 // 如果不是idel不允许操作
                 if (!(this.gridStateMachine.getCurrentState() instanceof IdelState)) {
                     this.resetClickSwap();

@@ -14,6 +14,10 @@ enum PanelLayerEnum {
      * 弹窗层级
      */
     PopLayer = 400,
+    /**
+     * 弹窗层级
+     */
+    PopLayer1 = 401,
 }
 
 /**
@@ -95,5 +99,20 @@ export const PanelConfigs = {
     addGoldPanel: <PanelConfig>{
         prefabPath: `${BundleConfigs.addGoldBundle}/prefabs/AddGoldPanel`,
         layerZIndex: PanelLayerEnum.PopLayer,
+    }
+    ,
+    luckyTurntablePanel: <PanelConfig>{
+        prefabPath: `${BundleConfigs.luckyTurntableBundle}/prefabs/LuckyTurntablePanel`,
+        layerZIndex: PanelLayerEnum.PopLayer,
+    }
+    ,
+    gmPanel: <PanelConfig>{
+        prefabPath: `${BundleConfigs.gmBundle}/prefabs/GMPanel`,
+        layerZIndex: PanelLayerEnum.PopLayer,
+    }
+    ,
+    getItemPanel: <PanelConfig>{
+        prefabPath: `${BundleConfigs.getItemBundle}/prefabs/GetItemPanel`,
+        layerZIndex: PanelLayerEnum.PopLayer1,
     }
 };

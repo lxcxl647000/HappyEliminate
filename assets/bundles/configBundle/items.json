@@ -1,0 +1,44 @@
+[
+    {
+        "id": 1,
+        "name": "金币",
+        "icon": "currency/icon_gold",
+        "big_icon": "currency/big_icon_gold",
+        "des": ""
+    },
+    {
+        "id": 2,
+        "name": "体力",
+        "icon": "currency/icon_energy",
+        "big_icon": "currency/big_icon_energy",
+        "des": ""
+    },
+    {
+        "id": 3,
+        "name": "炸弹",
+        "icon": "tools/icon_boom",
+        "big_icon": "tools/big_icon_boom",
+        "des": "指定区域小范围内爆炸消除道具"
+    },
+    {
+        "id": 4,
+        "name": "打乱棋盘",
+        "icon": "tools/icon_sort",
+        "big_icon": "tools/big_icon_sort",
+        "des": ""
+    },
+    {
+        "id": 5,
+        "name": "锤子",
+        "icon": "tools/icon_hammer",
+        "big_icon": "tools/big_icon_hammer",
+        "des": ""
+    },
+    {
+        "id": 6,
+        "name": "步数",
+        "icon": "tools/icon_step",
+        "big_icon": "tools/big_icon_step",
+        "des": ""
+    }
+]

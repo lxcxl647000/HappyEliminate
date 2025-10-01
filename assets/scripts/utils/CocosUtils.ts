@@ -1,4 +1,5 @@
-import { AssetManager, assetManager, ImageAsset, Node, resources, Sprite, SpriteFrame, Texture2D, UITransform, Vec3 } from "cc";
+import { Asset, AssetManager, assetManager, ImageAsset, Node, resources, Sprite, SpriteFrame, Texture2D, UITransform, Vec3 } from "cc";
+import AssetLoader from "../framework/lib/asset/AssetLoader";
 
 export default class CocosUtils {
     /**
@@ -47,16 +48,12 @@ export default class CocosUtils {
     /**
      * 从自定义bundle里动态加载图片
      * @param bundleName 
-     * @param url 
+     * @param path 
      * @param sprite 
      */
-    public static loadTextureFromBundle(bundleName: string, url: string, sprite: Sprite) {
-        let loadBundleTexture = (bundle: AssetManager.Bundle) => {
-            bundle.load(url, ImageAsset, null, (error: Error, imageAsset: ImageAsset) => {
-                if (error) {
-                    console.log(error);
-                    return;
-                }
+    public static loadTextureFromBundle(bundleName: string, path: string, sprite: Sprite) {
+        CocosUtils.loadFromBundle<ImageAsset>(bundleName, path, Asset).then((imageAsset: ImageAsset) => {
+            if (imageAsset) {
                 const spriteFrame = new SpriteFrame();
                 const texture = new Texture2D();
                 texture.image = imageAsset;
@@ -65,15 +62,25 @@ export default class CocosUtils {
                 if (sprite) {
                     sprite.spriteFrame = spriteFrame;
                 }
-            });
-        };
-        let bundle: AssetManager.Bundle = assetManager.getBundle(bundleName);
-        if (bundle == null) {
-            assetManager.loadBundle(bundleName, (error: Error, bundle: AssetManager.Bundle) => {
-                loadBundleTexture(bundle);
-            });
-        } else {
-            loadBundleTexture(bundle);
-        }
+            }
+        })
+    }
+
+    public static loadFromBundle<T extends Asset>(bundleName: string, path: string, type: typeof Asset): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
+            let loadBundle = (bundle: AssetManager.Bundle) => {
+                bundle.load(path, type, (error: Error, resLoad: T) => {
+                    error ? resolve(null) : resolve(resLoad);
+                });
+            };
+            let bundle: AssetManager.Bundle = assetManager.getBundle(bundleName);
+            if (bundle == null) {
+                AssetLoader.loadBundle(bundleName).then((bundle: AssetManager.Bundle) => {
+                    loadBundle(bundle);
+                })
+            } else {
+                loadBundle(bundle);
+            }
+        });
     }
 }

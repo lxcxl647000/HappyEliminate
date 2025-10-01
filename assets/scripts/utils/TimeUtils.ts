@@ -359,4 +359,8 @@ export default class TimeUtils {
 		let vh: number = h % 24;
 		return d + "天" + vh + "小时" + vm + "分钟";
 	}
+
+	public static now() {
+		return new Date().getTime();
+	}
 }

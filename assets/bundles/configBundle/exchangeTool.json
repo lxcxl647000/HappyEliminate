@@ -1,0 +1,26 @@
+[
+    {
+        "id": 1,
+        "itemType": 3,
+        "name": "炸弹",
+        "exchange": 100
+    },
+    {
+        "id": 2,
+        "itemType": 4,
+        "name": "打乱棋盘",
+        "exchange": 100
+    },
+    {
+        "id": 3,
+        "itemType": 5,
+        "name": "锤子",
+        "exchange": 100
+    },
+    {
+        "id": 4,
+        "itemType": 6,
+        "name": "增加步数",
+        "exchange": 100
+    }
+]

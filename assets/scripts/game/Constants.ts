@@ -39,14 +39,11 @@ export class Constants {
     static MENU_LIST_ROW_COUNTER: number = 4;
     static MENU_LIST_ITEM_SIZE: number = Constants.MENU_LIST_WIDTH / Constants.MENU_LIST_ROW_COUNTER;
 
-    // 关卡列表
-    public static LEVEL_DATA_PATH: string = "level_details/levels" // do not have .json ex
-    public static LEVEL_DATA_KEY: string = "levels_data";
 
-    public static LEVEL_CURRENT_KEY: string = "level_data_current";
-
-
+    // 用于存本地的key值//
     public static PLAYER_DATA_KEY: string = "PLAYER_DATA_KEY";
+    public static LUCKY_TURNTABLE_DATA_KEY: string = "LUCKY_TURNTABLE_DATA_KEY";
+
 
     // 复活增加步数//
     public static Resurrection_Add_Steps = 5;
@@ -54,6 +51,8 @@ export class Constants {
     public static Tool_Add_Steps = 3;
     // 每局消耗体力//
     public static Energy_Cost = 10;
+    // 幸运转盘每天总使用次数//
+    public static LuckyTurntable_TotalNum = 10;
 }
 
 

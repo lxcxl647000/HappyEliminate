@@ -3,7 +3,7 @@ import CustomSprite from '../custom/componetUtils/CustomSprite';
 import { qc } from '../framework/qc';
 import EventDef from '../constants/EventDef';
 import { numAnimaTs } from './numAnimaTs';
-import PlayerMgr from '../game/PlayerMgr';
+import PlayerMgr from '../manager/PlayerMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('EnergyAndGold')

@@ -3,17 +3,10 @@ import CocosUtils from '../../utils/CocosUtils';
 import { BundleConfigs } from '../../configs/BundleConfigs';
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
-import LevelMgr from '../../game/LevelMgr';
-import PlayerMgr from '../../game/PlayerMgr';
+import LevelMgr from '../../manager/LevelMgr';
+import PlayerMgr from '../../manager/PlayerMgr';
+import { GetGoldConfig } from '../../configs/GetGoldConfig';
 const { ccclass, property } = _decorator;
-
-
-export interface AddGoldData {
-    id: number;
-    des: string;
-    icon: string;
-    btnLabel: string;
-}
 
 @ccclass('AddGoldItem')
 export class AddGoldItem extends Component {
@@ -24,9 +17,9 @@ export class AddGoldItem extends Component {
     @property(Label)
     des: Label = null!
 
-    private _data: AddGoldData = null!
+    private _data: GetGoldConfig = null!
 
-    public init(data: AddGoldData) {
+    public init(data: GetGoldConfig) {
         this._data = data;
         this.btnLabel.string = data.btnLabel;
         this.des.string = data.des;

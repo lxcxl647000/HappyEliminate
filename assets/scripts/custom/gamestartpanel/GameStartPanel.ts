@@ -2,15 +2,16 @@ import { _decorator, Component, Label, Node } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
-import { Level } from '../../game/Level';
+import { LevelConfig } from '../../configs/LevelConfig';
 import { GoalTypeCounter, GoalValue } from '../../game/goal/GoalTyps';
 import CustomSprite from '../componetUtils/CustomSprite';
-import PlayerMgr from '../../game/PlayerMgr';
+import PlayerMgr from '../../manager/PlayerMgr';
 import { ToolType } from '../../game/tools/ITool';
 import { ItemType } from '../../configs/ItemConfig';
 import EventDef from '../../constants/EventDef';
 import { Constants } from '../../game/Constants';
 import { SelectTool } from './SelectTool';
+import CommonTipsMgr from '../../manager/CommonTipsMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameStartPanel')
@@ -24,14 +25,14 @@ export class GameStartPanel extends PanelComponent {
     @property(Label)
     energyCostLabel: Label = null;
 
-    private _level: Level = null;
+    private _level: LevelConfig = null;
     private _tools: ItemType[] = [ItemType.Boom, ItemType.Steps];
     private _selectTools: { [id: number]: number } = {};
 
     show(option: PanelShowOption): void {
         option.onShowed();
         this._selectTools = {};
-        this._level = option.data as Level;
+        this._level = option.data as LevelConfig;
 
         this._init();
     }
@@ -91,9 +92,10 @@ export class GameStartPanel extends PanelComponent {
 
     onStartClick() {
         if (PlayerMgr.ins.player.energy < Constants.Energy_Cost) {
+            CommonTipsMgr.ins.showTips('体力不足');
             return;
         }
-        PlayerMgr.ins.addEnergy(-Constants.Energy_Cost);
+        PlayerMgr.ins.addEnergy(-Constants.Energy_Cost, true);
         qc.panelRouter.showPanel({
             panel: PanelConfigs.gamePanel,
             onShowed: () => {
@@ -116,12 +118,6 @@ export class GameStartPanel extends PanelComponent {
     }
 
     onAdGetTool() {
-        // test//
-        PlayerMgr.ins.addItem(ItemType.Boom, 1);
-        PlayerMgr.ins.addItem(ItemType.Steps, 1);
-        qc.storage.setObj(Constants.PLAYER_DATA_KEY, PlayerMgr.ins.player);
-        this._initTools();
-        // test// 
 
     }
 }

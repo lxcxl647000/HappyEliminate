@@ -3,10 +3,12 @@ import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framewor
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
 import ListCom from '../../framework/lib/components/scrollviewplus/ListCom';
-import { ExchangeToolConfig } from '../../configs/ExchangeToolConfig';
-import { ExchangeData, ExchangeTool } from './ExchangeTool';
+import { ExchangeTool } from './ExchangeTool';
+import { AddGoldItem } from './AddGoldItem';
 import { GetGoldConfig } from '../../configs/GetGoldConfig';
-import { AddGoldData, AddGoldItem } from './AddGoldItem';
+import ConfigMgr from '../../manager/ConfigMgr';
+import { configConfigs } from '../../configs/configConfigs';
+import { ExchangeToolConfig } from '../../configs/ExchangeToolConfig';
 const { ccclass, property } = _decorator;
 
 @ccclass('AddGoldPanel')
@@ -16,7 +18,7 @@ export class AddGoldPanel extends PanelComponent {
     @property(Node)
     exchangeNode: Node = null;
 
-    private _getGoldDatas: AddGoldData[] = [];
+    private _getGoldDatas: GetGoldConfig[] = [];
 
     show(option: PanelShowOption): void {
         option.onShowed();
@@ -28,22 +30,25 @@ export class AddGoldPanel extends PanelComponent {
     }
 
     private _init() {
+        this.list.numItems = 0;
         this._initExchangeTools();
         this._initGetGoldList();
     }
 
     private _initExchangeTools() {
         let index = 0;
-        for (let key in ExchangeToolConfig) {
+        let configs = ConfigMgr.ins.getConfigArr<ExchangeToolConfig>(configConfigs.exchangeToolConfig);
+        for (let config of configs) {
             let tool = this.exchangeNode.children[index++];
-            tool.getComponent(ExchangeTool).init(ExchangeToolConfig[key] as ExchangeData);
+            tool.getComponent(ExchangeTool).init(config);
         }
     }
 
     private _initGetGoldList() {
         if (this._getGoldDatas.length === 0) {
-            for (let key in GetGoldConfig) {
-                this._getGoldDatas.push(GetGoldConfig[key] as AddGoldData);
+            let configs = ConfigMgr.ins.getConfigArr<GetGoldConfig>(configConfigs.getGoldConfig)
+            for (let config of configs) {
+                this._getGoldDatas.push(config);
             }
         }
         this.list.numItems = this._getGoldDatas.length;

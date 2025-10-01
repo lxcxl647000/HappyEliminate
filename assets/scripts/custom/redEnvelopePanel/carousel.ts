@@ -1,4 +1,5 @@
 import { _decorator, Component, Node, instantiate, tween, Vec3, Tween, assetManager, Sprite, ImageAsset, SpriteFrame, Texture2D, Label } from 'cc';
+import CocosUtils from '../../utils/CocosUtils';
 
 const { ccclass, property } = _decorator;
 
@@ -132,18 +133,6 @@ export class carousel extends Component {
     }
     // 加载远程图片
     setRemoteImage(url: string, nodeSprite: Sprite) {
-        assetManager.loadRemote<ImageAsset>(url, function (err, imageAsset) {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            console.log('没有抛出错误');
-
-            const spriteFrame = new SpriteFrame();
-            const texture = new Texture2D();
-            texture.image = imageAsset;
-            spriteFrame.texture = texture;
-            nodeSprite.spriteFrame = spriteFrame;
-        });
+        CocosUtils.loadRemoteTexture(url, nodeSprite);
     }
 }

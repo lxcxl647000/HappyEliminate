@@ -1,0 +1,14 @@
+[
+    {
+        "id": 1,
+        "icon": "textures/icon_misson",
+        "des": "做任务获得金币",
+        "btnLabel": "去完成"
+    },
+    {
+        "id": 2,
+        "icon": "textures/icon_level",
+        "des": "闯关获得金币",
+        "btnLabel": "去闯关"
+    }
+]

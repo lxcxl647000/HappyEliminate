@@ -1,7 +1,7 @@
 import { _decorator, Component, instantiate, Label, Node } from 'cc';
-import { Level } from '../../game/Level';
+import { LevelConfig } from '../../configs/LevelConfig';
 import { LevelNodeData } from './LevelNodeData';
-import PlayerMgr from '../../game/PlayerMgr';
+import PlayerMgr from '../../manager/PlayerMgr';
 import { qc } from '../../framework/qc';
 import EventDef from '../../constants/EventDef';
 const { ccclass, property } = _decorator;
@@ -25,7 +25,7 @@ export class MapNodeData extends Component {
         qc.eventManager.off(EventDef.Unlock_Map, this._setLockStatus, this);
     }
 
-    public initLevels(levelMap: Map<number, Level>) {
+    public initLevels(levelMap: Map<number, LevelConfig>) {
         let index = 0;
         let keys = levelMap.keys();
         this._mapId = -1;

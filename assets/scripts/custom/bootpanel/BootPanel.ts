@@ -2,7 +2,9 @@ import { _decorator, ProgressBar } from "cc";
 import { PanelComponent, PanelHideOption, PanelShowOption } from "../../framework/lib/router/PanelComponent";
 import { PanelConfigs } from "../../configs/PanelConfigs";
 import { qc } from "../../framework/qc";
-import LevelMgr from "../../game/LevelMgr";
+import LevelMgr from "../../manager/LevelMgr";
+import PoolMgr from "../../manager/PoolMgr";
+import ConfigMgr from "../../manager/ConfigMgr";
 
 const { ccclass, property } = _decorator;
 
@@ -32,11 +34,14 @@ export default class BootPanel extends PanelComponent {
 
     private async _initGame() {
         this._onLoadProgressChanged(0.3, "加载游戏资源...");
-        await LevelMgr.ins.loadLevelData();
+        // await LevelMgr.ins.loadLevelData();
+        await ConfigMgr.ins.loadConfigs();
         this._onLoadProgressChanged(0.5, "加载游戏资源...");
         await qc.panelRouter.loadAsync(PanelConfigs.mainPanel);
         this._onLoadProgressChanged(.7, "加载游戏资源...");
         await qc.panelRouter.loadAsync(PanelConfigs.gamePanel);
+        this._onLoadProgressChanged(.8, "加载游戏资源...");
+        await PoolMgr.ins.preloadPool();
 
         // 打开主界面
         this._onLoadProgressChanged(1.0);

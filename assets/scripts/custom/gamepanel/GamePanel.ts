@@ -2,7 +2,7 @@ import { _decorator, director, instantiate, Label, Node, Prefab, randomRangeInt,
 import { LevelGridLayout } from './LevelGridLayout';
 import { CellScript } from './CellScript';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
-import { Level } from '../../game/Level';
+import { LevelConfig } from '../../configs/LevelConfig';
 import { ScroeRule } from '../../game/ScoreRule';
 import { GoalProgress } from '../../game/goal/GoalProgress';
 import { IGoalScript } from '../../game/goal/GoalTyps';
@@ -13,8 +13,8 @@ import { ProgressScript } from './ProgressScript';
 import { EffectLineStarScript } from './EffectLineStarScript';
 import { DiaLogScript } from './DiaLogScript';
 import { qc } from '../../framework/qc';
-import LevelMgr from '../../game/LevelMgr';
-import PlayerMgr from '../../game/PlayerMgr';
+import LevelMgr from '../../manager/LevelMgr';
+import PlayerMgr from '../../manager/PlayerMgr';
 import { PanelConfigs } from '../../configs/PanelConfigs';
 import EventDef from '../../constants/EventDef';
 import CocosUtils from '../../utils/CocosUtils';
@@ -26,6 +26,8 @@ import { BoomMatchTool } from '../../game/tools/BoomMatchTool';
 import { ColMatchTool } from '../../game/tools/ColMatchTool';
 import { RowMatchTool } from '../../game/tools/RowMatchTool';
 import { ItemType } from '../../configs/ItemConfig';
+import { GameSelectToolBtn } from './GameSelectToolBtn';
+import { GameExchangeTool } from './GameExchangeTool';
 const { ccclass, property } = _decorator;
 
 class GameStaus {
@@ -81,13 +83,17 @@ export class GamePanel extends PanelComponent {
     toolMask: Node = null;
     @property(Node)
     toolsCopy: Node = null;
+    @property(Node)
+    toolTitle: Node = null;
 
     @property(Node)
     selectToolFrom: Node = null;
+    @property(GameExchangeTool)
+    exchangeTool: GameExchangeTool = null;
 
     // 
-    private levelConfig: Level = null;
-    private levelData: Level = null;
+    private levelConfig: LevelConfig = null;
+    private levelData: LevelConfig = null;
 
     // 记录游戏状态
     private scoreValue: ScroeRule = new ScroeRule();
@@ -104,6 +110,9 @@ export class GamePanel extends PanelComponent {
     private isFirstStableHappened: boolean = false;
     public getIsFirstStableHappened() { return this.isFirstStableHappened; }
 
+    private _isFinish: boolean = false;
+    public get isFinish() { return this._isFinish; }
+
     // 游戏状态，用来判断游戏是否结束
     private gameStatus: GameStaus = new GameStaus();
 
@@ -116,11 +125,13 @@ export class GamePanel extends PanelComponent {
 
     private _seletToolFromGameStart: { [id: number]: number } = {};
 
+    private _selectTools: ToolType[] = [ToolType.TYPE_HAMMER, ToolType.RANDOM_GRID, ToolType.TYPE_BOOM, ToolType.TYPE_STEPS];
+
 
     show(option: PanelShowOption): void {
         option.onShowed();
         let { level, selectTools } = option.data;
-        this.levelConfig = level as Level;
+        this.levelConfig = level as LevelConfig;
         this._seletToolFromGameStart = selectTools as { [id: number]: number };
     }
 
@@ -133,8 +144,10 @@ export class GamePanel extends PanelComponent {
             this.levelConfig = LevelMgr.ins.getLevel(PlayerMgr.ins.player.mapId, PlayerMgr.ins.player.level);
         }
 
+        this._initTools();
+
         // 初始化内容
-        this.levelData = new Level(this.levelConfig);
+        this.levelData = new LevelConfig(this.levelConfig);
         this.initViews(this.levelData);
 
         this.levelValue.string = this.levelData.levelIndex.toString();
@@ -202,11 +215,12 @@ export class GamePanel extends PanelComponent {
 
                     // 检查游戏是否结束
                     if (this.levelGoal.isComplete()) {
-                        // this.gameStatus.gameSuccess = true;
+                        this._isFinish = true;
                         this.processLeftSteps(() => {
                             this.gameStatus.gameSuccess = true;
                         });
                     } else if (this.stepsValue <= 0) {
+                        this._isFinish = true;
                         this.gameStatus.gameFailed = true;
                         this.processLeftSteps();
                     }
@@ -219,8 +233,9 @@ export class GamePanel extends PanelComponent {
                         func();
                     });
                 }
-
-                func();
+                else {
+                    func();
+                }
             }
         });
     }
@@ -228,12 +243,14 @@ export class GamePanel extends PanelComponent {
     start() {
         qc.eventManager.on(EventDef.Resurrection, this._resurrection, this);
         qc.eventManager.on(EventDef.UseStepsTool, this._addSteps, this);
+        qc.eventManager.on(EventDef.Game_Select_Tool, this._useTool, this);
         this._init();
     }
 
     protected onDestroy(): void {
         qc.eventManager.off(EventDef.Resurrection, this._resurrection, this);
         qc.eventManager.off(EventDef.UseStepsTool, this._addSteps, this);
+        qc.eventManager.off(EventDef.Game_Select_Tool, this._useTool, this);
     }
 
     private noNeedToCheckGameStatus: boolean = false;
@@ -244,7 +261,7 @@ export class GamePanel extends PanelComponent {
         this.noNeedToCheckGameStatus = this.checkGameStatus();
     }
 
-    private initViews(levelConfig: Level) {
+    private initViews(levelConfig: LevelConfig) {
 
         this.stepsValue = levelConfig.steps;
         this.scoreValue.init();
@@ -263,7 +280,7 @@ export class GamePanel extends PanelComponent {
      * 根据关卡的目标，生成不同的目标Node
      * @param levelConfig 
      */
-    private initGoalAndProgressViews(levelConfig: Level) {
+    private initGoalAndProgressViews(levelConfig: LevelConfig) {
         let { goalScript } = GoalFactorys.appendGoalNode(levelConfig.goal, this.goalPrefabs, this.goalLayoutNode);
         this.levelGoal = goalScript;
         this.goalProgress = this.levelGoal.getGoal();
@@ -407,6 +424,9 @@ export class GamePanel extends PanelComponent {
         dialogScript.setScore(this.goalProgress.score);
         dialogScript.setStarCounter(this.progressNode.getComponent(ProgressScript).getStarCountr());
         dialogScript.setSuccess(success, this.levelData);
+        if (success) {
+            dialogScript.setRewards(this.levelData.rewards, Math.random() > .5 ? true : false);
+        }
 
         dialogScript.show({
             onConform: () => {
@@ -481,27 +501,12 @@ export class GamePanel extends PanelComponent {
         this.gameStatus.progressFinish = false;
         this.gameStatus.stepLeftReduceComplete = false;
         this.noNeedToCheckGameStatus = false;
+        this._isFinish = false;
     }
 
     private _addSteps(steps: number) {
         this.stepsValue += steps;
         this.updateStepNode();
-    }
-
-    onHammerClick() {
-        this.showToolMask(ToolType.TYPE_HAMMER);
-    }
-
-    onSortClick() {
-        this.levelGridScript.randomGrid();
-    }
-
-    onBoomClick() {
-        this.showToolMask(ToolType.TYPE_BOOM);
-    }
-
-    onAddStepsClick() {
-        this.levelGridScript.useStepsTool();
     }
 
     private _findGoalTarget(type: CellType): Node {
@@ -526,12 +531,15 @@ export class GamePanel extends PanelComponent {
     public showToolMask(type: ToolType) {
         this._useToolType = type;
         this.toolMask.active = true;
+        this.toolTitle.getChildByName('des').getComponent(Label).string = type === ToolType.TYPE_HAMMER ? '点击任意一格敲碎障碍' : '点击任意地方可大范围消除';
+        this.toolTitle.active = true;
         this.toolsCopy.getChildByName(ToolType[type]).active = true;
     }
 
     public hideToolMask() {
         this._useToolType = ToolType.INVALID;
         this.toolMask.active = false;
+        this.toolTitle.active = false;
         for (let child of this.toolsCopy.children) {
             child.active = false;
         }
@@ -545,44 +553,72 @@ export class GamePanel extends PanelComponent {
             }
         }
         let count = tools.length;
-        for (let tool of tools) {
-            const lineStarNode = instantiate(this.lineStarPrefab);
-            this.node.addChild(lineStarNode);
-            let randomCell = +tool === ToolType.TYPE_STEPS ? null : this.levelGridScript.grid.randomCell();
-            let fromPos = CocosUtils.setNodeToTargetPos(lineStarNode, this.selectToolFrom);
-            let toPos = CocosUtils.setNodeToTargetPos(lineStarNode, randomCell ? randomCell.node : this.stepsValueNode);
-            let effectLineStarScript = lineStarNode.getComponent(EffectLineStarScript);
-            effectLineStarScript.setDuration(.4);
-            effectLineStarScript.setPath(fromPos, toPos);
-            effectLineStarScript.startMove(() => {
-                if (randomCell) {
-                    let iTool: ITool = new BoomMatchTool();
-                    if (!randomCell.node) {
-                        ConstStatus.getInstance().fillState.fillWithTool(randomCell, iTool);
-                    }
-                    else {
-                        let cellScript: CellScript = randomCell.node.getComponent(CellScript);
-                        if (cellScript) {
-                            cellScript.setToolType(+tool);
-                            ConstStatus.getInstance().fillState.setWithTool(randomCell, iTool);
+        if (count > 0) {
+            for (let tool of tools) {
+                const lineStarNode = instantiate(this.lineStarPrefab);
+                this.node.addChild(lineStarNode);
+                let randomCell = +tool === ToolType.TYPE_STEPS ? null : this.levelGridScript.grid.randomCell();
+                let fromPos = CocosUtils.setNodeToTargetPos(lineStarNode, this.selectToolFrom);
+                let toPos = CocosUtils.setNodeToTargetPos(lineStarNode, randomCell ? randomCell.node : this.stepsValueNode);
+                let effectLineStarScript = lineStarNode.getComponent(EffectLineStarScript);
+                effectLineStarScript.setDuration(.4);
+                effectLineStarScript.setPath(fromPos, toPos);
+                effectLineStarScript.startMove(() => {
+                    if (randomCell) {
+                        let iTool: ITool = new BoomMatchTool();
+                        if (!randomCell.node) {
+                            ConstStatus.getInstance().fillState.fillWithTool(randomCell, iTool);
+                        }
+                        else {
+                            let cellScript: CellScript = randomCell.node.getComponent(CellScript);
+                            if (cellScript) {
+                                cellScript.setToolType(+tool);
+                                ConstStatus.getInstance().fillState.setWithTool(randomCell, iTool);
+                            }
+                        }
+                        if (--count === 0) {
+                            cb && cb();
                         }
                     }
-                    if (--count === 0) {
-                        cb && cb();
+                    else {
+                        this._addSteps(Constants.Tool_Add_Steps);
+                        if (--count === 0) {
+                            cb && cb();
+                        }
                     }
-                }
-                else {
-                    this._addSteps(Constants.Tool_Add_Steps);
-                    if (--count === 0) {
-                        cb && cb();
-                    }
-                }
-                let itemType = +tool === ToolType.TYPE_STEPS ? ItemType.Steps : ItemType.Boom;
-                if (PlayerMgr.ins.player.backPack[itemType]) {
-                    PlayerMgr.ins.player.backPack[itemType] -= 1;
-                    qc.storage.setObj(Constants.PLAYER_DATA_KEY, PlayerMgr.ins.player);
-                }
-            });
+                    let itemType = +tool === ToolType.TYPE_STEPS ? ItemType.Steps : ItemType.Boom;
+                    PlayerMgr.ins.addItem(itemType, -1, true);
+                });
+            }
+        }
+        else {
+            cb && cb();
+        }
+    }
+
+    private _useTool(type: ToolType) {
+        switch (type) {
+            case ToolType.TYPE_HAMMER:
+            case ToolType.TYPE_BOOM:
+                this.showToolMask(type);
+                break;
+            case ToolType.TYPE_STEPS:
+                this.levelGridScript.useStepsTool();
+                qc.eventManager.emit(EventDef.Game_Select_Tool_Success, type);
+                break;
+            case ToolType.RANDOM_GRID:
+                this.levelGridScript.randomGrid();
+                qc.eventManager.emit(EventDef.Game_Select_Tool_Success, type);
+                break;
+        }
+    }
+
+    private _initTools() {
+        for (let i = 0; i < this._selectTools.length; i++) {
+            let toolBtn = this.tools.children[i].getComponent(GameSelectToolBtn);
+            if (toolBtn) {
+                toolBtn.init(this._selectTools[i], this, this.exchangeTool);
+            }
         }
     }
 }

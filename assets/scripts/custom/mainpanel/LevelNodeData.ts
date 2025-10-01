@@ -1,7 +1,7 @@
 import { _decorator, Component, Label, Node } from 'cc';
 import CustomSprite from '../componetUtils/CustomSprite';
-import { Level } from '../../game/Level';
-import PlayerMgr from '../../game/PlayerMgr';
+import { LevelConfig } from '../../configs/LevelConfig';
+import PlayerMgr from '../../manager/PlayerMgr';
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
 import EventDef from '../../constants/EventDef';
@@ -16,7 +16,7 @@ export class LevelNodeData extends Component {
     @property(CustomSprite)
     levelStatus: CustomSprite = null;
 
-    private _levelData: Level = null;
+    private _levelData: LevelConfig = null;
 
     protected onEnable(): void {
         qc.eventManager.on(EventDef.Update_Stars, this._updateStars, this);
@@ -40,7 +40,7 @@ export class LevelNodeData extends Component {
         }
     }
 
-    updateLevel(data: Level) {
+    updateLevel(data: LevelConfig) {
         this._levelData = data;
 
         this.levelLabel.string = this._levelData.levelIndex.toString();

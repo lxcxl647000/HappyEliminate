@@ -1,4 +1,5 @@
 import { _decorator, Component, assetManager, Sprite, ImageAsset, SpriteFrame, Texture2D, Label } from 'cc';
+import CocosUtils from '../utils/CocosUtils';
 const { ccclass, property } = _decorator;
 
 @ccclass('taskItems')
@@ -29,17 +30,7 @@ export class taskItems extends Component {
 
     // 加载远程图片
     setRemoteImage(url: string, nodeSprite: Sprite) {
-        assetManager.loadRemote<ImageAsset>(url, function (err, imageAsset) {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            const spriteFrame = new SpriteFrame();
-            const texture = new Texture2D();
-            texture.image = imageAsset;
-            spriteFrame.texture = texture;
-            nodeSprite.spriteFrame = spriteFrame;
-        });
+        CocosUtils.loadRemoteTexture(url, nodeSprite);
     }
 
     setData(data: any) {
@@ -66,7 +57,7 @@ export class taskItems extends Component {
     }
 
     // 去完成
-    handleComplete () {}
+    handleComplete() { }
 }
 
 

@@ -3,6 +3,7 @@ import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framewor
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
 import CustomSprite from '../componetUtils/CustomSprite';
+import CocosUtils from '../../utils/CocosUtils';
 
 const { ccclass, property } = _decorator;
 
@@ -26,7 +27,7 @@ export class userinfoPanel extends PanelComponent {
     remake: Label = null;
     @property(Node)
     whiteBox: Node = null;
-    
+
 
 
 
@@ -158,19 +159,7 @@ export class userinfoPanel extends PanelComponent {
 
     // 加载远程图片
     setRemoteImage(url: string, nodeSprite: Sprite) {
-        assetManager.loadRemote<ImageAsset>(url, function (err, imageAsset) {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            console.log('没有抛出错误');
-
-            const spriteFrame = new SpriteFrame();
-            const texture = new Texture2D();
-            texture.image = imageAsset;
-            spriteFrame.texture = texture;
-            nodeSprite.spriteFrame = spriteFrame;
-        });
+        CocosUtils.loadRemoteTexture(url, nodeSprite);
     }
     closeModel() {
         qc.panelRouter.hide({

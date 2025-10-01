@@ -1,17 +1,14 @@
 import { _decorator, Component, Label, Node, Sprite } from 'cc';
 import CocosUtils from '../../utils/CocosUtils';
 import { BundleConfigs } from '../../configs/BundleConfigs';
-import PlayerMgr from '../../game/PlayerMgr';
-import { qc } from '../../framework/qc';
-import { Constants } from '../../game/Constants';
+import PlayerMgr from '../../manager/PlayerMgr';
+import GetItemMgr from '../../manager/GetItemMgr';
+import CommonTipsMgr from '../../manager/CommonTipsMgr';
+import { ExchangeToolConfig } from '../../configs/ExchangeToolConfig';
+import ConfigMgr from '../../manager/ConfigMgr';
+import { ItemConfig } from '../../configs/ItemConfig';
+import { configConfigs } from '../../configs/configConfigs';
 const { ccclass, property } = _decorator;
-
-export interface ExchangeData {
-    id: number;
-    name: string;
-    icon: string;
-    exchange: number;
-}
 
 @ccclass('ExchangeTool')
 export class ExchangeTool extends Component {
@@ -20,21 +17,23 @@ export class ExchangeTool extends Component {
     @property(Sprite)
     icon: Sprite = null!
 
-    private _data: ExchangeData = null!
+    private _data: ExchangeToolConfig = null!
 
-    public init(data: ExchangeData) {
+    public init(data: ExchangeToolConfig) {
         this._data = data;
         this.gold.string = `${data.exchange}金币`;
-        CocosUtils.loadTextureFromBundle(BundleConfigs.iconBundle, data.icon, this.icon);
+        let item = ConfigMgr.ins.getConfig<ItemConfig>(configConfigs.itemConfig, data.itemType);
+        if (item) {
+            CocosUtils.loadTextureFromBundle(BundleConfigs.iconBundle, item.icon, this.icon);
+        }
     }
 
     onClickTool() {
         if (PlayerMgr.ins.player.gold < this._data.exchange) {
+            CommonTipsMgr.ins.showTips('金币不足');
             return;
         }
-        PlayerMgr.ins.addGold(-this._data.exchange);
-        PlayerMgr.ins.addItem(this._data.id, 1);
-        qc.storage.setObj(Constants.PLAYER_DATA_KEY, PlayerMgr.ins.player);
+        GetItemMgr.ins.showGetItem(this._data.itemType, 1, false, this._data.exchange);
     }
 }
 

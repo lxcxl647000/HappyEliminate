@@ -1,0 +1,50 @@
+[
+    {
+        "id": 1,
+        "itemtype": 1,
+        "num": 10,
+        "weight": 20
+    },
+    {
+        "id": 2,
+        "itemtype": -1,
+        "num": 0,
+        "weight": 20
+    },
+    {
+        "id": 3,
+        "itemtype": 2,
+        "num": 10,
+        "weight": 20
+    },
+    {
+        "id": 4,
+        "itemtype": 3,
+        "num": 10,
+        "weight": 20
+    },
+    {
+        "id": 5,
+        "itemtype": 4,
+        "num": 10,
+        "weight": 10
+    },
+    {
+        "id": 6,
+        "itemtype": -1,
+        "num": 0,
+        "weight": 20
+    },
+    {
+        "id": 7,
+        "itemtype": 5,
+        "num": 10,
+        "weight": 10
+    },
+    {
+        "id": 8,
+        "itemtype": 6,
+        "num": 10,
+        "weight": 10
+    }
+]

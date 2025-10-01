@@ -1,12 +1,17 @@
-import { _decorator, Label, Node } from 'cc';
+import { _decorator, instantiate, Label, Node, Sprite, UITransform } from 'cc';
 import { StarUtils } from './StarUtils';
 import { DiaLogBaseScript, IDialogOption } from './DiaLogBaseScript';
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
 import EventDef from '../../constants/EventDef';
-import { Level } from '../../game/Level';
+import { LevelConfig } from '../../configs/LevelConfig';
 import { GoalTypeCounter, GoalValue } from '../../game/goal/GoalTyps';
 import CustomSprite from '../componetUtils/CustomSprite';
+import { ItemConfig, ItemType } from '../../configs/ItemConfig';
+import ConfigMgr from '../../manager/ConfigMgr';
+import { configConfigs } from '../../configs/configConfigs';
+import CocosUtils from '../../utils/CocosUtils';
+import { BundleConfigs } from '../../configs/BundleConfigs';
 const { ccclass, property } = _decorator;
 
 @ccclass('DiaLogScript')
@@ -36,8 +41,22 @@ export class DiaLogScript extends DiaLogBaseScript {
     @property(Node)
     targetParent: Node = null;
 
+    @property(Node)
+    rewardBg: Node = null;
+    @property(Node)
+    rewardTmp: Node = null;
+    @property(Node)
+    normalLayout: Node = null;
+    @property(Node)
+    doubleLayout: Node = null;
+    @property(Node)
+    doubleNode: Node = null;
+
     // 成功还是失败
     private success: boolean = false;
+
+    private _normalHeight: number = 240;
+    private _doubleHeight: number = 342;
 
     update(deltaTime: number) {
 
@@ -51,12 +70,34 @@ export class DiaLogScript extends DiaLogBaseScript {
         this.scoreLabelNode.getComponent(Label).string = JSON.stringify(score);
     }
 
-    setSuccess(success: boolean, level: Level) {
+    setSuccess(success: boolean, level: LevelConfig) {
         this.success = success;
         this.lightNode.active = this.successNode.active = this.success;
         this.failedNode.active = !this.success;
         if (!this.success) {
             this._setTarget(level);
+        }
+    }
+
+    public setRewards(rewards: { type: ItemType, count: number }[], isDouble: boolean) {
+        this.rewardBg.getComponent(UITransform).height = isDouble ? this._doubleHeight : this._normalHeight;
+        this._initReward(rewards, this.normalLayout);
+        this.doubleNode.active = isDouble;
+        if (isDouble) {
+            this._initReward(rewards, this.doubleLayout);
+        }
+    }
+
+    private _initReward(rewards: { type: ItemType, count: number }[], parent: Node) {
+        for (let reward of rewards) {
+            let node = instantiate(this.rewardTmp);
+            node.active = true;
+            node.parent = parent;
+            let item = ConfigMgr.ins.getConfig<ItemConfig>(configConfigs.itemConfig, reward.type);
+            if (item) {
+                CocosUtils.loadTextureFromBundle(BundleConfigs.iconBundle, item.icon, node.getComponent(Sprite));
+            }
+            node.getComponentInChildren(Label).string = "+" + reward.count;
         }
     }
 
@@ -87,7 +128,7 @@ export class DiaLogScript extends DiaLogBaseScript {
         qc.eventManager.emit(EventDef.Resurrection);
     }
 
-    private _setTarget(level: Level) {
+    private _setTarget(level: LevelConfig) {
         if (level) {
             let goal = level.goal as GoalValue;
             if (goal) {
