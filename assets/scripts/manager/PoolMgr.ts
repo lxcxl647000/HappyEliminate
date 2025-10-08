@@ -5,13 +5,15 @@ import { BundleConfigs } from "../configs/BundleConfigs";
 export default class PoolMgr {
     private nodePools: { [index: string]: NodePool } = null;
     private preloadConfig: { bundle: string, path: string, defaultNum: number }[] = [
-        { bundle: BundleConfigs.commonBundle, path: 'prefabs/commonTips', defaultNum: 3 }
+        { bundle: BundleConfigs.commonBundle, path: 'prefabs/commonTips', defaultNum: 2 },
+        { bundle: BundleConfigs.gameBundle, path: 'prefabs/RowLineLight', defaultNum: 2 },
+        { bundle: BundleConfigs.gameBundle, path: 'prefabs/ColLineLight', defaultNum: 2 },
+        { bundle: BundleConfigs.gameBundle, path: 'prefabs/ColLineLight', defaultNum: 2 },
+        { bundle: BundleConfigs.gameBundle, path: 'prefabs/BoomLight', defaultNum: 2 },
     ];
 
     private static _ins: PoolMgr;
     public static get ins(): PoolMgr {
-
-
         if (!this._ins) {
             this._ins = new PoolMgr();
         }
@@ -64,6 +66,7 @@ export default class PoolMgr {
         let pool = this.nodePools[key];
         if (!pool) {
             pool = new NodePool();
+            this.nodePools[key] = pool;
         }
         let node = pool.get();
         if (!node) {
@@ -84,13 +87,18 @@ export default class PoolMgr {
         if (!node.isValid) {
             return;
         }
+        if (!this.nodePools) {
+            this.nodePools = {};
+        }
         node.removeFromParent();
         let key = node['poolkey'];
         if (key) {
             let pool = this.nodePools[key];
-            if (pool) {
-                pool.put(node);
+            if (!pool) {
+                pool = new NodePool();
+                this.nodePools[key] = pool;
             }
+            pool.put(node);
         }
     }
 }

@@ -2,6 +2,8 @@ import { Vec2 } from "cc";
 import { Cell } from "../Types";
 import { ITool, ToolType } from "./ITool";
 import { ToolsStateEnterData } from "../gridstate/ToolsState";
+import { CellScript } from "../../custom/gamepanel/CellScript";
+import { Constants } from "../Constants";
 
 /**
  * 周围的消除
@@ -28,7 +30,20 @@ export class BoomMatchTool implements ITool {
             });
         }
 
-        // 没有动画，执行完成直接回调
-        onComplete();
+        let cellScript = data.cell.node.getComponent(CellScript);
+        if (cellScript) {
+            cellScript.activeBgLight();
+            cellScript.playBoomMatchAnimation(() => {
+                cellScript.hideBgLight();
+            });
+            setTimeout(() => {
+                cellScript.boomLightAni(() => {
+                    onComplete();
+                });
+            }, Constants.BoomLightDelayTime);
+        }
+        else {
+            onComplete();
+        }
     }
 }

@@ -22,9 +22,11 @@ export class Constants {
     static GRID_CELL_BG_SIZE_SCALE: number = 0.95;
 
     // 消除动画时长
-    static CELL_DISAPPEAR_DURATION: number = 0.3;
+    static CELL_DISAPPEAR_DURATION: number = 0.165;
+    // 消除动画中光效延时出现时间
+    static CELL_DISAPPEAR_LIGHT_DELAY: number = .433;
     // 下落动画时长
-    static CELL_DROP_DURATION: number = 0.2;
+    static CELL_DROP_DURATION: number = 0.166;
     // 移动到目标位置的时长
     static CELL_MOVE_TO_GOAL_DURATION: number = 0.5;
     // 进度条变化动画
@@ -53,6 +55,9 @@ export class Constants {
     public static Energy_Cost = 10;
     // 幸运转盘每天总使用次数//
     public static LuckyTurntable_TotalNum = 10;
+
+    public static LineLightDelayTime: number = (18 / 30) * 1000;
+    public static BoomLightDelayTime: number = (20 / 30) * 1000;
 }
 
 

@@ -306,7 +306,6 @@ export class GamePanel extends PanelComponent {
                 } else {
                     this.stepsValue--;
                 }
-                const lastValue = this.scoreValue.score;
                 this.scoreValue.updateStepsLeft(1);
                 this.updateScoreAndProgress();
                 this.updateStepNode();

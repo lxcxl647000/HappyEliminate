@@ -51,8 +51,8 @@ export class SwapState extends StateWithMachine {
                     this.listener.onSwapStep(data.fromCell, data.toCell);
                 }
                 // 交换中是否有道具//
-                this._handleSwapTools(data);
-                this.stateMachine.transitionTo(ConstStatus.getInstance().findMatchState, findMatchData);
+                let isTool = this._handleSwapTools(data);
+                !isTool && this.stateMachine.transitionTo(ConstStatus.getInstance().findMatchState, findMatchData);
             });
         }
     }
@@ -78,6 +78,8 @@ export class SwapState extends StateWithMachine {
                     swapCell: cell
                 } as ToolsStateEnterData
             );
+            return true;
         }
+        return false;
     }
 }

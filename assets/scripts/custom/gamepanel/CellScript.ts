@@ -1,7 +1,10 @@
-import { _decorator, Component, EventTouch, Input, instantiate, Node, Prefab, Sprite, SpriteFrame, tween, Vec2, Vec3 } from 'cc';
+import { _decorator, Animation, Component, EventTouch, Input, instantiate, Node, Prefab, Sprite, SpriteFrame, tween, UITransform, Vec2, Vec3 } from 'cc';
 import { CellType } from '../../game/Types';
 import { ToolType } from '../../game/tools/ITool';
 import { Constants } from '../../game/Constants';
+import CocosUtils from '../../utils/CocosUtils';
+import PoolMgr from '../../manager/PoolMgr';
+import { BundleConfigs } from '../../configs/BundleConfigs';
 const { ccclass, property } = _decorator;
 
 // 描述Cell中Node的状态
@@ -25,6 +28,10 @@ export interface OnCellNodeTouchListener {
 export class CellScript extends Component {
     @property(Prefab)
     explosionPrefab: Prefab;
+    @property(Prefab)
+    disappearLightPrefab: Prefab;
+    @property(Node)
+    cellBgLight: Node;
 
     @property([SpriteFrame])
     spriteFrameList: SpriteFrame[] = new Array<SpriteFrame>();
@@ -56,10 +63,15 @@ export class CellScript extends Component {
 
     // 是否初始化
     private inited: boolean = false;
+
+    private _playDisappearAni = false;
+
     private checkInit() {
         if (!this.inited) {
             this.inited = true;
-            this.sprite = this.getComponent(Sprite);
+            // this.sprite = this.getComponent(Sprite);
+            let icon = this.node.getChildByName('icon');
+            this.sprite = icon ? icon.getComponent(Sprite) : this.getComponent(Sprite);
 
             this.textureConfg = new Map<CellType, { sprite: SpriteFrame, name: string }>();
             this.textureConfg[CellType.TYPE_1] = { sprite: this.spriteFrameList[0], name: this.spriteFrameList[0].name };
@@ -175,20 +187,46 @@ export class CellScript extends Component {
     // 消失动画,动画执行完毕后，移除node
     disappearAnimate(onComplete?: () => void) {
         this.cellStatus = CellNodeStatus.REMOVE_START;
-        tween(this.node)
+        let spriteNode = this.node.getChildByName('icon');
+        if (!spriteNode) {
+            spriteNode = this.node;
+        }
+
+        if (this.disappearLightPrefab) {
+            this.scheduleOnce(() => {
+                let lightNode = instantiate(this.disappearLightPrefab);
+                this.node.addChild(lightNode);
+            }, Constants.CELL_DISAPPEAR_LIGHT_DELAY);
+        }
+
+        if (this._playDisappearAni) {
+            this._playDisappearAni = false;
+            this.cellStatus = CellNodeStatus.REMOVE_FINISH;
+            if (onComplete) {
+                onComplete();
+            }
+            // 动画完成就移除自己
+            this.node.removeFromParent();
+            return;
+        }
+        tween(spriteNode)
             .call(() => {
                 this.cellStatus = CellNodeStatus.REMOVING;
-                let explosionNode = instantiate(this.explosionPrefab);
-                this.node.addChild(explosionNode);
+                // let explosionNode = instantiate(this.explosionPrefab);
+                // this.node.addChild(explosionNode);
             })
-            .to(Constants.CELL_DISAPPEAR_DURATION, { scale: new Vec3(0.1, 0.1, 0) })
+            .to(Constants.CELL_DISAPPEAR_DURATION, { scale: new Vec3(1, 1, 1) })
+            .to(Constants.CELL_DISAPPEAR_DURATION, { scale: new Vec3(1.2, 1.2, 1) })
+            .to(Constants.CELL_DISAPPEAR_DURATION, { scale: new Vec3(0, 0, 1) })
             .call(() => {
                 this.cellStatus = CellNodeStatus.REMOVE_FINISH;
                 if (onComplete) {
                     onComplete();
                 }
                 // 动画完成就移除自己
-                this.node.removeFromParent();
+                this.scheduleOnce(() => {
+                    this.node.removeFromParent();
+                }, Constants.CELL_DISAPPEAR_LIGHT_DELAY);
             })
             .start()
             .removeSelf();
@@ -342,6 +380,111 @@ export class CellScript extends Component {
                 // animation??
             }
         }
+    }
+
+    public playScaleAnimation() {
+        let ani = this.node.getComponent(Animation);
+        if (ani) {
+            ani.play('cellScale');
+        }
+    }
+
+    public activeBgLight() {
+        if (this.cellBgLight) {
+            this.cellBgLight.active = true;
+        }
+    }
+
+    public hideBgLight() {
+        if (this.cellBgLight) {
+            let ani = this.cellBgLight.getComponent(Animation);
+            if (ani) {
+                ani.play('bgLight_disappear');
+            }
+        }
+    }
+
+    // rowmatchtool//
+    public playRowMatchAnimation(cb: Function) {
+        this._playDisappearAni = true;
+        let ani = this.node.getComponent(Animation);
+        if (ani) {
+            ani.once(Animation.EventType.FINISHED, () => {
+                cb && cb();
+            });
+            ani.play('rowMatch');
+        }
+    }
+
+    public rowLineLightAni(cb: Function) {
+        PoolMgr.ins.getNodeFromPool(BundleConfigs.gameBundle, 'prefabs/RowLineLight', (line: Node) => {
+            line.parent = this.node.parent;
+            line.setPosition(this.node.position);
+            let ani = line.getComponent(Animation);
+            if (ani) {
+                ani.once(Animation.EventType.FINISHED, () => {
+                    PoolMgr.ins.putNodeToPool(line);
+                });
+                ani.play();
+                cb && cb();
+            }
+        });
+    }
+
+    // colmatchtool//
+    public playColMatchAnimation(cb: Function) {
+        this._playDisappearAni = true;
+        let ani = this.node.getComponent(Animation);
+        if (ani) {
+            ani.once(Animation.EventType.FINISHED, () => {
+                cb && cb();
+            });
+            ani.play('colMatch');
+        }
+    }
+
+    public colLineLightAni(cb: Function) {
+        PoolMgr.ins.getNodeFromPool(BundleConfigs.gameBundle, 'prefabs/ColLineLight', (line: Node) => {
+            line.parent = this.node.parent;
+            line.setPosition(this.node.position);
+            let ani = line.getComponent(Animation);
+            if (ani) {
+                ani.once(Animation.EventType.FINISHED, () => {
+                    PoolMgr.ins.putNodeToPool(line);
+                });
+                ani.play();
+                cb && cb();
+            }
+        });
+    }
+
+    // boommatchtool//
+    public playBoomMatchAnimation(cb: Function) {
+        this._playDisappearAni = true;
+        let ani = this.node.getComponent(Animation);
+        if (ani) {
+            ani.once(Animation.EventType.FINISHED, () => {
+                cb && cb();
+            });
+            ani.play('boomMatch');
+        }
+    }
+
+    public boomLightAni(cb: Function) {
+        PoolMgr.ins.getNodeFromPool(BundleConfigs.gameBundle, 'prefabs/BoomLight', (boom: Node) => {
+            boom.parent = this.node.parent;
+            boom.setPosition(this.node.position);
+            let ani = boom.getComponent(Animation);
+            if (ani) {
+                ani.once(Animation.EventType.FINISHED, () => {
+                    PoolMgr.ins.putNodeToPool(boom);
+                });
+                ani.play();
+                setTimeout(() => {
+                    cb && cb();
+                }, (6 / 30) * 1000);
+            }
+        });
     }
 }
 

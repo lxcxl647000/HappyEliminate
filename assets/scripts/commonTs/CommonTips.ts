@@ -21,7 +21,7 @@ export class CommonTips extends Component {
                     .to(0.5, { opacity: 0 }) // 逐渐变透明
             )
             .call(() => {
-                // PoolMgr.ins.pu
+                PoolMgr.ins.putNodeToPool(this.node);
             })
             .start();
     }

@@ -123,6 +123,8 @@ export class FillState extends StateWithMachine {
                                 } as FindMatchStateEnterData
                             );
                         }
+
+                        cellScript.playScaleAnimation();
                     });
                 }
             }

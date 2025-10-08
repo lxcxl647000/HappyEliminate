@@ -196,6 +196,10 @@ export class LevelGridLayout extends Component {
         let nodeSacle = new Vec3(nodeSize.width / nodeSpriteTransform.width, nodeSize.height / nodeSpriteTransform.height, 1);
         // 修改scale 可以让node的子元素也变化
         node.setScale(nodeSacle);
+        let icon = node.getChildByName("icon");
+        if (icon) {
+            icon.setScale(1 / nodeSacle.x, 1 / nodeSacle.y, 1);
+        }
 
         // this.node.addChild(node);
         this.cellParent.addChild(node);
