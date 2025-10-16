@@ -35,5 +35,5 @@ export default class EventDef {
     public static UpdateVibrateStatus = 'UpdateVibrateStatus';
     public static SelectBoomGuide = 'SelectBoomGuide';
     public static PassTargetGuide = 'PassTargetGuide';
-
+    public static UpdateMusicStatus = 'UpdateMusicStatus';
 }

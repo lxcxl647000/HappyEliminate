@@ -15,7 +15,7 @@ import PoolMgr from '../../manager/PoolMgr';
 import { BundleConfigs } from '../../configs/BundleConfigs';
 import CocosUtils from '../../utils/CocosUtils';
 import CustomSprite from '../componetUtils/CustomSprite';
-import { shezhiMgr } from '../../manager/shezhiMgr';
+import { SettingMgr } from '../../manager/SettingMgr';
 
 const { ccclass, property } = _decorator;
 
@@ -35,6 +35,8 @@ export class MainPanel extends PanelComponent {
     flyToTarget: Node = null;
     @property(CustomSprite)
     soundSprite: CustomSprite = null;
+    @property(CustomSprite)
+    musicSprite: CustomSprite = null;
     @property(Animation)
     guideAni: Animation = null;
     @property(CustomSprite)
@@ -71,6 +73,7 @@ export class MainPanel extends PanelComponent {
         qc.eventManager.on(EventDef.GamePanelToMainPanel, this._gamePanelToMainPanel, this);
         qc.eventManager.on(EventDef.FlyRedPackAnimation, this._flyRedPackAnimation, this);
         qc.eventManager.on(EventDef.UpdateSoundStatus, this._updateSoundStatus, this);
+        qc.eventManager.on(EventDef.UpdateMusicStatus, this._updateMusicStatus, this);
         qc.eventManager.on(EventDef.UpdateVibrateStatus, this._updateVibrateStatus, this);
         this.levelLabel.string = `第${PlayerMgr.ins.userInfo.summary.latest_passed_level + 1}关`;
     }
@@ -83,6 +86,7 @@ export class MainPanel extends PanelComponent {
         qc.eventManager.off(EventDef.FlyRedPackAnimation, this._flyRedPackAnimation, this);
         qc.eventManager.off(EventDef.UpdateSoundStatus, this._updateSoundStatus, this);
         qc.eventManager.off(EventDef.UpdateVibrateStatus, this._updateVibrateStatus, this);
+        qc.eventManager.off(EventDef.UpdateMusicStatus, this._updateMusicStatus, this);
     }
 
     private _initMap() {
@@ -297,15 +301,28 @@ export class MainPanel extends PanelComponent {
 
     onMusic() {
         musicMgr.ins.playSound('click');
-        if (this.soundSprite.index === 0) {
+        if (this.musicSprite.index === 0) {
             musicMgr.ins.stopMusic();
-            shezhiMgr.YinyueEnabled = false;
-            shezhiMgr.init();
+            SettingMgr.ins.musicEnabled = false;
+            SettingMgr.ins.initMusic();
         }
         else {
-            shezhiMgr.YinyueEnabled = true;
-            shezhiMgr.init();
+            SettingMgr.ins.musicEnabled = true;
+            SettingMgr.ins.initMusic();
             musicMgr.ins.playMusic('bg_music');
+        }
+        qc.eventManager.emit(EventDef.UpdateMusicStatus);
+    }
+
+    onSound() {
+        musicMgr.ins.playSound('click');
+        if (this.soundSprite.index === 0) {
+            SettingMgr.ins.soundEnabled = false;
+            SettingMgr.ins.initSound();
+        }
+        else {
+            SettingMgr.ins.soundEnabled = true;
+            SettingMgr.ins.initSound();
         }
         qc.eventManager.emit(EventDef.UpdateSoundStatus);
     }
@@ -321,22 +338,26 @@ export class MainPanel extends PanelComponent {
     }
 
     private _updateSoundStatus() {
-        this.soundSprite.index = shezhiMgr.YinyueEnabled ? 0 : 1;
+        this.soundSprite.index = SettingMgr.ins.soundEnabled ? 0 : 1;
+    }
+
+    private _updateMusicStatus() {
+        this.musicSprite.index = SettingMgr.ins.musicEnabled ? 0 : 1;
     }
 
     onVibrate() {
         musicMgr.ins.playSound('click');
         if (this.vibrateSprite.index === 0) {
-            shezhiMgr.vibrateEnabled = false;
+            SettingMgr.ins.vibrateEnabled = false;
         }
         else {
-            shezhiMgr.vibrateEnabled = true;
+            SettingMgr.ins.vibrateEnabled = true;
         }
         qc.eventManager.emit(EventDef.UpdateVibrateStatus);
     }
 
     private _updateVibrateStatus() {
-        this.vibrateSprite.index = shezhiMgr.vibrateEnabled ? 0 : 1;
+        this.vibrateSprite.index = SettingMgr.ins.vibrateEnabled ? 0 : 1;
     }
 }
 

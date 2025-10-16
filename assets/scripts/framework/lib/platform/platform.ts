@@ -1,4 +1,4 @@
-import { shezhiMgr } from "../../../manager/shezhiMgr";
+import { SettingMgr } from "../../../manager/SettingMgr";
 import adapter from "./adapter/adapter";
 import platform_bilibili from "./platform_bilibili";
 import platform_interface, { rewardedVideoAd } from "./platform_interface";
@@ -56,7 +56,7 @@ export default class platform implements platform_interface {
     }
 
     vibrateShort(cb?: Function): void {
-        if (shezhiMgr.vibrateEnabled) {
+        if (SettingMgr.ins.vibrateEnabled) {
             this._platform.vibrateShort(cb);
         }
     }

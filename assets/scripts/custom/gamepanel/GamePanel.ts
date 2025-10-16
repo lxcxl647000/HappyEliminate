@@ -31,9 +31,10 @@ import { GameExchangeTool } from './GameExchangeTool';
 import ItemMgr, { IItem } from '../../manager/ItemMgr';
 import { musicMgr } from '../../manager/musicMgr';
 import CustomSprite from '../componetUtils/CustomSprite';
-import { shezhiMgr } from '../../manager/shezhiMgr';
+import { SettingMgr } from '../../manager/SettingMgr';
 import GuideMgr, { GuideType } from '../../manager/GuideMgr';
 import CommonTipsMgr from '../../manager/CommonTipsMgr';
+import { GameShowTarget } from './GameShowTarget';
 const { ccclass, property } = _decorator;
 class GameStaus {
     progressFinish: boolean = false;
@@ -101,7 +102,11 @@ export class GamePanel extends PanelComponent {
     @property(CustomSprite)
     soundSprite: CustomSprite = null;
     @property(CustomSprite)
+    musicSprite: CustomSprite = null;
+    @property(CustomSprite)
     vibrateSprite: CustomSprite = null;
+    @property(GameShowTarget)
+    gameShowTarget: GameShowTarget = null;
 
     private levelConfig: LevelConfig = null;
     public levelData: LevelConfig = null;
@@ -224,7 +229,7 @@ export class GamePanel extends PanelComponent {
                         if (!this.isFirstStableHappened) {
                             this.isFirstStableHappened = true;
 
-                            this._checkGuide();
+                            this._showGameTarget();
                         }
                         else {
                             if (GuideMgr.ins.checkGuide(GuideType.Force_Level_2_Use_ColMatch) && this.levelData.levelIndex === 2) {
@@ -281,11 +286,13 @@ export class GamePanel extends PanelComponent {
         qc.eventManager.on(EventDef.UseStepsTool, this._addSteps, this);
         qc.eventManager.on(EventDef.Game_Select_Tool, this._useTool, this);
         qc.eventManager.on(EventDef.UpdateSoundStatus, this._updateSoundStatus, this);
+        qc.eventManager.on(EventDef.UpdateMusicStatus, this._updateMusicStatus, this);
         qc.eventManager.on(EventDef.UpdateVibrateStatus, this._updateVibrateStatus, this);
         qc.eventManager.on(EventDef.SelectBoomGuide, this._selectBoomGuide, this);
         qc.eventManager.on(EventDef.PassTargetGuide, this._passTargetGuide, this);
         this._init();
         this._updateSoundStatus();
+        this._updateMusicStatus();
         this._updateVibrateStatus();
     }
 
@@ -294,6 +301,7 @@ export class GamePanel extends PanelComponent {
         qc.eventManager.off(EventDef.UseStepsTool, this._addSteps, this);
         qc.eventManager.off(EventDef.Game_Select_Tool, this._useTool, this);
         qc.eventManager.off(EventDef.UpdateSoundStatus, this._updateSoundStatus, this);
+        qc.eventManager.off(EventDef.UpdateMusicStatus, this._updateMusicStatus, this);
         qc.eventManager.off(EventDef.UpdateVibrateStatus, this._updateVibrateStatus, this);
         qc.eventManager.off(EventDef.SelectBoomGuide, this._selectBoomGuide, this);
         qc.eventManager.off(EventDef.PassTargetGuide, this._passTargetGuide, this);
@@ -714,7 +722,7 @@ export class GamePanel extends PanelComponent {
 
     private _checkGuide() {
         // test
-        // GuideMgr.ins.lastGuideType = GuideType.Force_Level_1_Left_Steps;
+        // GuideMgr.ins.lastGuideType = GuideType.Invalid;
         // test
 
         // 第1关消除强制引导
@@ -737,23 +745,31 @@ export class GamePanel extends PanelComponent {
 
     onSoundClick() {
         if (this.soundSprite.index === 0) {
-            musicMgr.ins.stopMusic();
-            shezhiMgr.YinyueEnabled = false;
-            shezhiMgr.init();
+            SettingMgr.ins.soundEnabled = false;
         }
         else {
-            shezhiMgr.YinyueEnabled = true;
-            shezhiMgr.init();
+            SettingMgr.ins.soundEnabled = true;
         }
+        SettingMgr.ins.initSound();
         qc.eventManager.emit(EventDef.UpdateSoundStatus);
+    }
+    onMusicClick() {
+        if (this.musicSprite.index === 0) {
+            SettingMgr.ins.musicEnabled = false;
+        }
+        else {
+            SettingMgr.ins.musicEnabled = true;
+        }
+        SettingMgr.ins.initMusic();
+        qc.eventManager.emit(EventDef.UpdateMusicStatus);
     }
 
     onVibrationClick() {
         if (this.vibrateSprite.index === 0) {
-            shezhiMgr.vibrateEnabled = false;
+            SettingMgr.ins.vibrateEnabled = false;
         }
         else {
-            shezhiMgr.vibrateEnabled = true;
+            SettingMgr.ins.vibrateEnabled = true;
         }
         qc.eventManager.emit(EventDef.UpdateVibrateStatus);
     }
@@ -775,10 +791,14 @@ export class GamePanel extends PanelComponent {
     }
 
     private _updateSoundStatus() {
-        this.soundSprite.index = shezhiMgr.YinyueEnabled ? 0 : 1;
+        this.soundSprite.index = SettingMgr.ins.soundEnabled ? 0 : 1;
+    }
+    private _updateMusicStatus() {
+        this.musicSprite.index = SettingMgr.ins.musicEnabled ? 0 : 1;
     }
 
     onSettingClick() {
+        musicMgr.ins.playSound('click');
         if (!this.isFirstStableHappened) {
             return;
         }
@@ -786,7 +806,7 @@ export class GamePanel extends PanelComponent {
     }
 
     private _updateVibrateStatus() {
-        this.vibrateSprite.index = shezhiMgr.vibrateEnabled ? 0 : 1;
+        this.vibrateSprite.index = SettingMgr.ins.vibrateEnabled ? 0 : 1;
     }
 
     private _selectBoomGuide() {
@@ -844,5 +864,13 @@ export class GamePanel extends PanelComponent {
         if (toolNode) {
             GuideMgr.ins.forceGuideUseTool(toolNode, this.node, GuideType.Force_Level_3_Use_Boom, null);
         }
+    }
+
+    private _showGameTarget() {
+        this.gameShowTarget.showTarget(this.levelConfig);
+        setTimeout(() => {
+            this.gameShowTarget.hideTarget();
+            this._checkGuide();
+        }, 800);
     }
 }

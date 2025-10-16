@@ -3,7 +3,6 @@ import { Cell } from "../game/Types";
 import PoolMgr from "./PoolMgr";
 import { BundleConfigs } from "../configs/BundleConfigs";
 import { Guide, IGuide } from "../commonTs/Guide";
-import { Grid } from "../game/Grid";
 import { ItemType } from "../configs/ItemConfig";
 import PlayerMgr from "./PlayerMgr";
 

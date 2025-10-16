@@ -2,7 +2,7 @@
   "ver": "1.0.27",
   "importer": "image",
   "imported": true,
-  "uuid": "9b03eb69-4553-4529-af14-af4892bcd193",
+  "uuid": "10d0c184-f92d-48c9-af3e-8b887fb96c2d",
   "files": [
     ".json",
     ".png"
@@ -10,14 +10,14 @@
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "9b03eb69-4553-4529-af14-af4892bcd193@6c48a",
-      "displayName": "音乐效果",
+      "uuid": "10d0c184-f92d-48c9-af3e-8b887fb96c2d@6c48a",
+      "displayName": "木板",
       "id": "6c48a",
       "name": "texture",
       "userData": {
         "wrapModeS": "clamp-to-edge",
         "wrapModeT": "clamp-to-edge",
-        "imageUuidOrDatabaseUri": "9b03eb69-4553-4529-af14-af4892bcd193",
+        "imageUuidOrDatabaseUri": "10d0c184-f92d-48c9-af3e-8b887fb96c2d",
         "isUuid": true,
         "visible": false,
         "minfilter": "linear",
@@ -34,8 +34,8 @@
     },
     "f9941": {
       "importer": "sprite-frame",
-      "uuid": "9b03eb69-4553-4529-af14-af4892bcd193@f9941",
-      "displayName": "音乐效果",
+      "uuid": "10d0c184-f92d-48c9-af3e-8b887fb96c2d@f9941",
+      "displayName": "木板",
       "id": "f9941",
       "name": "spriteFrame",
       "userData": {
@@ -45,10 +45,10 @@
         "offsetY": 0,
         "trimX": 0,
         "trimY": 0,
-        "width": 77,
-        "height": 79,
-        "rawWidth": 77,
-        "rawHeight": 79,
+        "width": 680,
+        "height": 270,
+        "rawWidth": 680,
+        "rawHeight": 270,
         "borderTop": 0,
         "borderBottom": 0,
         "borderLeft": 0,
@@ -60,17 +60,17 @@
         "meshType": 0,
         "vertices": {
           "rawPosition": [
-            -38.5,
-            -39.5,
+            -340,
+            -135,
             0,
-            38.5,
-            -39.5,
+            340,
+            -135,
             0,
-            -38.5,
-            39.5,
+            -340,
+            135,
             0,
-            38.5,
-            39.5,
+            340,
+            135,
             0
           ],
           "indexes": [
@@ -83,12 +83,12 @@
           ],
           "uv": [
             0,
-            79,
-            77,
-            79,
+            270,
+            680,
+            270,
             0,
             0,
-            77,
+            680,
             0
           ],
           "nuv": [
@@ -102,18 +102,18 @@
             1
           ],
           "minPos": [
-            -38.5,
-            -39.5,
+            -340,
+            -135,
             0
           ],
           "maxPos": [
-            38.5,
-            39.5,
+            340,
+            135,
             0
           ]
         },
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "9b03eb69-4553-4529-af14-af4892bcd193@6c48a",
+        "imageUuidOrDatabaseUri": "10d0c184-f92d-48c9-af3e-8b887fb96c2d@6c48a",
         "atlasUuid": "",
         "trimType": "auto"
       },
@@ -129,6 +129,6 @@
     "type": "sprite-frame",
     "hasAlpha": true,
     "fixAlphaTransparencyArtifacts": false,
-    "redirect": "9b03eb69-4553-4529-af14-af4892bcd193@6c48a"
+    "redirect": "10d0c184-f92d-48c9-af3e-8b887fb96c2d@6c48a"
   }
 }

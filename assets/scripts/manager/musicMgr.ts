@@ -1,5 +1,5 @@
 import { _decorator, AudioClip, AudioSource, AudioSourceComponent, Component, Node } from 'cc';
-import { shezhiMgr } from './shezhiMgr';
+import { SettingMgr } from './SettingMgr';
 import CocosUtils from '../utils/CocosUtils';
 import { BundleConfigs } from '../configs/BundleConfigs';
 const { ccclass, property } = _decorator;
@@ -47,7 +47,7 @@ export class musicMgr extends Component {
      * @param audio 音乐名
      */
     public async playMusic(audio: string) {
-        if (!shezhiMgr.YinyueEnabled) {
+        if (!SettingMgr.ins.musicEnabled) {
             return;
         }
         CocosUtils.loadFromBundle<AudioClip>(BundleConfigs.audioBundle, audio, AudioClip).then((clip: AudioClip) => {
@@ -59,11 +59,11 @@ export class musicMgr extends Component {
     * 播放一次性音效
     */
     public async playSound(audio: string) {
-        if (!shezhiMgr.YinyueEnabled) {
+        if (!SettingMgr.ins.soundEnabled) {
             return;
         }
         CocosUtils.loadFromBundle<AudioClip>(BundleConfigs.audioBundle, audio, AudioClip).then((clip: AudioClip) => {
-            this.soundComp.playOneShot(clip, shezhiMgr.YinxiaoValue);
+            this.soundComp.playOneShot(clip, SettingMgr.ins.soundVal);
         });
     }
 }

@@ -2,7 +2,7 @@
   "ver": "1.0.27",
   "importer": "image",
   "imported": true,
-  "uuid": "e075f019-0d90-4768-aa15-4f09c767bd29",
+  "uuid": "9bd97063-20f5-4d98-89c4-7525791d765f",
   "files": [
     ".json",
     ".png"
@@ -10,14 +10,14 @@
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "e075f019-0d90-4768-aa15-4f09c767bd29@6c48a",
-      "displayName": "游戏中-设置弹窗",
+      "uuid": "9bd97063-20f5-4d98-89c4-7525791d765f@6c48a",
+      "displayName": "音效",
       "id": "6c48a",
       "name": "texture",
       "userData": {
         "wrapModeS": "clamp-to-edge",
         "wrapModeT": "clamp-to-edge",
-        "imageUuidOrDatabaseUri": "e075f019-0d90-4768-aa15-4f09c767bd29",
+        "imageUuidOrDatabaseUri": "9bd97063-20f5-4d98-89c4-7525791d765f",
         "isUuid": true,
         "visible": false,
         "minfilter": "linear",
@@ -34,8 +34,8 @@
     },
     "f9941": {
       "importer": "sprite-frame",
-      "uuid": "e075f019-0d90-4768-aa15-4f09c767bd29@f9941",
-      "displayName": "游戏中-设置弹窗",
+      "uuid": "9bd97063-20f5-4d98-89c4-7525791d765f@f9941",
+      "displayName": "音效",
       "id": "f9941",
       "name": "spriteFrame",
       "userData": {
@@ -45,10 +45,10 @@
         "offsetY": 0,
         "trimX": 0,
         "trimY": 0,
-        "width": 720,
-        "height": 1280,
-        "rawWidth": 720,
-        "rawHeight": 1280,
+        "width": 68,
+        "height": 79,
+        "rawWidth": 68,
+        "rawHeight": 79,
         "borderTop": 0,
         "borderBottom": 0,
         "borderLeft": 0,
@@ -60,17 +60,17 @@
         "meshType": 0,
         "vertices": {
           "rawPosition": [
-            -360,
-            -640,
+            -34,
+            -39.5,
             0,
-            360,
-            -640,
+            34,
+            -39.5,
             0,
-            -360,
-            640,
+            -34,
+            39.5,
             0,
-            360,
-            640,
+            34,
+            39.5,
             0
           ],
           "indexes": [
@@ -83,12 +83,12 @@
           ],
           "uv": [
             0,
-            1280,
-            720,
-            1280,
+            79,
+            68,
+            79,
             0,
             0,
-            720,
+            68,
             0
           ],
           "nuv": [
@@ -102,18 +102,18 @@
             1
           ],
           "minPos": [
-            -360,
-            -640,
+            -34,
+            -39.5,
             0
           ],
           "maxPos": [
-            360,
-            640,
+            34,
+            39.5,
             0
           ]
         },
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "e075f019-0d90-4768-aa15-4f09c767bd29@6c48a",
+        "imageUuidOrDatabaseUri": "9bd97063-20f5-4d98-89c4-7525791d765f@6c48a",
         "atlasUuid": "",
         "trimType": "auto"
       },
@@ -129,6 +129,6 @@
     "type": "sprite-frame",
     "hasAlpha": true,
     "fixAlphaTransparencyArtifacts": false,
-    "redirect": "e075f019-0d90-4768-aa15-4f09c767bd29@6c48a"
+    "redirect": "9bd97063-20f5-4d98-89c4-7525791d765f@6c48a"
   }
 }

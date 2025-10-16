@@ -100,30 +100,30 @@ export class GameStartPanel extends PanelComponent {
     }
 
     async onStartClick() {
-        // musicMgr.ins.playSound('click');
-        // await LevelMgr.ins.sendLevelToServer(this._level.levelIndex)
-        // await PlayerMgr.ins.getHomeData()
-        // PlayerMgr.ins.getEnergy()
-        // if (PlayerMgr.ins.userInfo.props.strength >= 10) {
-        //     qc.panelRouter.showPanel({
-        //         panel: PanelConfigs.gamePanel,
-        //         onShowed: () => {
+        musicMgr.ins.playSound('click');
+        await LevelMgr.ins.sendLevelToServer(this._level.levelIndex)
+        await PlayerMgr.ins.getHomeData()
+        PlayerMgr.ins.getEnergy()
+        if (PlayerMgr.ins.userInfo.props.strength >= 10) {
+            qc.panelRouter.showPanel({
+                panel: PanelConfigs.gamePanel,
+                onShowed: () => {
 
-        //         },
-        //         data: { level: this._level, selectTools: this._selectTools }
-        //     });
-        //     this._hidePanel();
-        // }
+                },
+                data: { level: this._level, selectTools: this._selectTools }
+            });
+            this._hidePanel();
+        }
 
         //test
-        qc.panelRouter.showPanel({
-            panel: PanelConfigs.gamePanel,
-            onShowed: () => {
+        // qc.panelRouter.showPanel({
+        //     panel: PanelConfigs.gamePanel,
+        //     onShowed: () => {
 
-            },
-            data: { level: this._level, selectTools: this._selectTools }
-        });
-        this._hidePanel();
+        //     },
+        //     data: { level: this._level, selectTools: this._selectTools }
+        // });
+        // this._hidePanel();
     }
 
     private _updateSelectTool(itemType: ItemType, num: number) {
