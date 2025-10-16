@@ -1,5 +1,6 @@
 import { Size, Vec2, Vec3, Node, randomRangeInt, UITransform } from 'cc';
 import { Cell, CellType, GridItemType } from './Types';
+import PlayerMgr from '../manager/PlayerMgr';
 
 export interface IDropOptions {
     /**
@@ -45,7 +46,7 @@ export class Grid {
 
     // 网格背景，初始化之后不会被改变
     gridItemBg: GridItemType[][];
-    constructor(grid: GridItemType[][], cellSize: number, cellTypes: CellType[]) {
+    constructor(grid: GridItemType[][], cellSize: number, cellTypes: CellType[], cell_grid: CellType[][]) {
         this.rows = grid.length;
         this.cols = grid[0].length;
         this.gridItemBg = grid;
@@ -55,33 +56,36 @@ export class Grid {
         this.lbPos = new Vec3(0);
         this.cellTyps = cellTypes;
 
-        this.init();
+        this.init(cell_grid);
 
     }
 
-    private init() {
-        this.cells = this.createCells(this.cols, this.rows);
+    private init(cell_grid: CellType[][]) {
+        this.cells = this.createCells(this.cols, this.rows, cell_grid);
     }
 
-    private createCells(rows: number, cols: number): Cell[][] {
+    private createCells(rows: number, cols: number, cell_grid: CellType[][]): Cell[][] {
         const cells: Cell[][] = [];
         for (let i = 0; i < rows; i++) {
             const row: Cell[] = [];
             for (let j = 0; j < cols; j++) {
-                row.push(this.createCell(i, j));
+                row.push(this.createCell(i, j, cell_grid));
             }
             cells.push(row);
         }
         return cells;
     }
 
-    private createCell(i: number, j: number) {
-
+    private createCell(i: number, j: number, cell_grid: CellType[][]) {
         let cell = new Cell();
         // 如果Grid是墙壁或者无效，则保持Cell为Invalid
         if (this.canPutNodeGridItem(i, j)) {
-            // 随机生成类型
-            cell.type = this.randomCellType();
+            if (cell_grid) {
+                cell.type = cell_grid[i][j];
+            }
+            else {
+                cell.type = this.randomCellType();
+            }
         }
         this.updateCellInfo(i, j, cell);
         return cell;

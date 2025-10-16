@@ -1,4 +1,4 @@
-import { GridItemType } from '../game/Types';
+import { CellType, GridItemType } from '../game/Types';
 import { GoalTypeCounter, GoalValue } from '../game/goal/GoalTyps';
 
 export class LevelConfig {
@@ -20,6 +20,9 @@ export class LevelConfig {
         [GridItemType.NORMAL, GridItemType.NORMAL, GridItemType.NORMAL, GridItemType.NORMAL, GridItemType.NORMAL]
     ]
 
+    cell_grid: CellType[][] = null;
+    guide_cells: number[][] = null;
+
     // 是否完成，分数如何
     complete: boolean = false;
     starCount: number = -1;
@@ -28,6 +31,7 @@ export class LevelConfig {
     star3score: number = 10000;
     mapId: number = 0;
     rewards: { type: number, count: number }[] = [];
+    unlock_stars: number = 0;
 
     constructor(level: LevelConfig) {
         this.levelIndex = level.levelIndex;
@@ -56,10 +60,13 @@ export class LevelConfig {
         this.types = level.types;
         this.gridName = level.gridName;
         this.grid = level.grid;
+        this.cell_grid = level.cell_grid;
+        this.guide_cells = level.guide_cells;
         this.complete = level.complete;
         this.starCount = level.starCount;
         this.star3score = level.star3score;
         this.mapId = level.mapId;
         this.rewards = level.rewards;
+        this.unlock_stars = level.unlock_stars || 0;
     }
 }

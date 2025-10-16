@@ -1,6 +1,24 @@
 import { LevelConfig } from "../configs/LevelConfig";
 import ConfigMgr from "./ConfigMgr";
 import { configConfigs } from "../configs/configConfigs";
+import { httpMgr } from "../framework/lib/net/httpMgr";
+import { qc } from "../framework/qc";
+import { PanelConfigs } from "../configs/PanelConfigs";
+
+export interface PassData {
+    latest_passed_level: number;
+    passed_levels: number;
+    total_stars: number;
+    total_score: number;
+    pass_status: number;
+    rewards: PassReward[];
+}
+
+export interface PassReward {
+    type: number;
+    type_name: string;
+    amount: number;
+}
 
 export default class LevelMgr {
     private static _instance: LevelMgr = null;
@@ -42,5 +60,30 @@ export default class LevelMgr {
             }
         }
         return this._maps.get(mapId);
+    }
+
+    public async sendLevelToServer(level: number) {
+       await httpMgr.ins.xhrRequest('/game/attemptBegin', 'GET', { level_no: level });
+    }
+
+    public async sendLevelPassToServer(level_no: number, stars: number, score: number, map_on: number, cb: Function) {
+        let res = await httpMgr.ins.xhrRequest<PassData>('/game/submit', 'GET', { level_no, score, stars, map_on });
+        if (res) {
+            cb && cb(res.data);
+        }
+    }
+
+    public goToLevel(mapId: number, level: number, cb: Function) {
+        if (level === 0) {
+            level += 1;
+        }
+        let levelConfig = this.getLevel(mapId, level);
+        qc.panelRouter.showPanel({
+            panel: PanelConfigs.gameStartPanel,
+            onShowed: () => {
+                cb && cb();
+            },
+            data: levelConfig
+        });
     }
 }

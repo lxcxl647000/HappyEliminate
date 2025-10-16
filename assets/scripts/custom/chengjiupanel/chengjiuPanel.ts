@@ -4,6 +4,10 @@ import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
 import { contentItem } from './contentItem';
 import ListCom from '../../framework/lib/components/scrollviewplus/ListCom';
+import AchievementApi from '../../api/Achievement';
+import CommonTipsMgr from '../../manager/CommonTipsMgr';
+import LevelMgr from '../../manager/LevelMgr';
+import PlayerMgr from '../../manager/PlayerMgr';
 const { ccclass, property } = _decorator;
 @ccclass('chengjiuPanel')
 export class chengjiuPanel extends PanelComponent {
@@ -15,7 +19,7 @@ export class chengjiuPanel extends PanelComponent {
     taskListNode: Node = null;
 
     @property(ListCom)
-    list:ListCom = null;
+    list: ListCom = null;
 
     taskList: any[] = []
 
@@ -23,6 +27,7 @@ export class chengjiuPanel extends PanelComponent {
         // console.log(this.tmp);
         log('------------------');
         option.onShowed();
+        this.init();
     }
     // 每次打开都会触发
     protected onEnable(): void {
@@ -36,12 +41,13 @@ export class chengjiuPanel extends PanelComponent {
     }
     // 只会触发一次
     start() {
-        this.init();
+
     }
     update(deltaTime: number) {
 
     }
     closeModel() {
+        this.list.numItems = 0;
         qc.panelRouter.hide({
             panel: PanelConfigs.chengjiuPanel,
             onHided: () => {
@@ -50,134 +56,15 @@ export class chengjiuPanel extends PanelComponent {
             }
         });
     }
-    init() {
-        this.taskList = [{
-            name: '任务1',
-            taskAllNum: 10000,
-            taskNum: 5000,
-            taskProgress: 0.5,
-            taskState: 1,
-            Reward: [
-                { type: 1, num: 20 },
-                { type: 2, num: 10 },
-                { type: 2, num: 10 },
-                { type: 2, num: 10 },
-            ]
+    async init() {
+        let data = await AchievementApi.ins.getAchievementList();
 
-        },
-        {
-            name: '任务2',
-            taskAllNum: 10,
-            taskNum: 6,
-            taskProgress: 0.6,
-            taskState: 0,
-            Reward: [
-                { type: 1, num: 20 },
-            ]
+        this.taskList = data.data
+        console.log('成就列表数据', this.taskList);
 
-        },
-        {
-            name: '任务2',
-            taskAllNum: 10,
-            taskNum: 6,
-            taskProgress: 0.6,
-            taskState: 0,
-            Reward: [
-                { type: 1, num: 20 },
-            ]
+        this.list.numItems = this.taskList.length;
 
-        },
-        {
-            name: '任务2',
-            taskAllNum: 10,
-            taskNum: 6,
-            taskProgress: 0.6,
-            taskState: 0,
-            Reward: [
-                { type: 1, num: 20 },
-            ]
 
-        },
-        {
-            name: '任务2',
-            taskAllNum: 10,
-            taskNum: 6,
-            taskProgress: 0.6,
-            taskState: 0,
-            Reward: [
-                { type: 1, num: 20 },
-            ]
-
-        },
-        {
-            name: '任务2',
-            taskAllNum: 10,
-            taskNum: 6,
-            taskProgress: 0.6,
-            taskState: 0,
-            Reward: [
-                { type: 1, num: 20 },
-            ]
-
-        },
-        {
-            name: '任务2',
-            taskAllNum: 10,
-            taskNum: 6,
-            taskProgress: 0.6,
-            taskState: 0,
-            Reward: [
-                { type: 1, num: 20 },
-            ]
-
-        },
-        {
-            name: '任务2',
-            taskAllNum: 10,
-            taskNum: 6,
-            taskProgress: 0.6,
-            taskState: 0,
-            Reward: [
-                { type: 1, num: 20 },
-            ]
-
-        },
-        {
-            name: '任务2',
-            taskAllNum: 10,
-            taskNum: 6,
-            taskProgress: 0.6,
-            taskState: 0,
-            Reward: [
-                { type: 1, num: 20 },
-            ]
-
-        },
-        {
-            name: '任务2',
-            taskAllNum: 10,
-            taskNum: 6,
-            taskProgress: 0.6,
-            taskState: 0,
-            Reward: [
-                { type: 1, num: 20 },
-            ]
-
-        }
-    ]
-
-    this.list.numItems = this.taskList.length;
-
-        // this.taskList.forEach(async (item, index) => {
-        //     let itemNode = instantiate(this.taskNode);
-
-        //     itemNode.active = true;
-
-        //     await itemNode.getComponent(contentItem).setData(item)
-        //     console.log(1111111111111);
-
-        //     this.taskListNode.addChild(itemNode);
-        // })
 
     }
 
@@ -186,6 +73,32 @@ export class chengjiuPanel extends PanelComponent {
         let chengjiu = item.getComponent(contentItem);
         if (chengjiu) {
             chengjiu.setData(this.taskList[index]);
+        }
+    }
+    submitBtn(e: any) {
+        console.log(e.currentTarget);
+
+        if (e.currentTarget['data'] == 1) {
+            AchievementApi.ins.claimAchievement({ achievementId: e.currentTarget['achievementId'] }).then((res) => {
+                console.log(res);
+                CommonTipsMgr.ins.showTips('领取成功');
+                PlayerMgr.ins.getHomeData()
+                // PlayerMgr.ins.addGold()
+                // PlayerMgr.ins.addItem()
+                this.init()
+            })
+        } else if (e.currentTarget['data'] == 2) {
+            CommonTipsMgr.ins.showTips('已领取');
+            console.log('已领取');
+
+        }
+        else {
+            this.closeModel()
+            let level = PlayerMgr.ins.userInfo.summary.latest_passed_level + 1;
+            let mapid = PlayerMgr.ins.userInfo.summary.map_on;
+            LevelMgr.ins.goToLevel(mapid, level, null)
+            // CommonTipsMgr.ins.showTips('去完成任务');
+            console.log('完成任务')
         }
     }
 }

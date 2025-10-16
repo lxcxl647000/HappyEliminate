@@ -20,12 +20,12 @@ export class EnergyAndGold extends Component {
         if (this.isGold) {
             this.icon.index = 0;
             qc.eventManager.on(EventDef.Update_Gold, this._updateGold, this);
-            num = PlayerMgr.ins.player.gold;
+            num = PlayerMgr.ins.userInfo.props.integral;
         }
         else {
             this.icon.index = 1;
             qc.eventManager.on(EventDef.Update_Energy, this._updateEnergy, this);
-            num = PlayerMgr.ins.player.energy;
+            num = PlayerMgr.ins.userInfo.props.strength;
         }
         this.numLabel.init(num);
     }
@@ -40,11 +40,11 @@ export class EnergyAndGold extends Component {
     }
 
     private _updateGold() {
-        this.numLabel.numAnima(PlayerMgr.ins.player.gold);
+        this.numLabel.numAnima(PlayerMgr.ins.userInfo.props.integral);
     }
 
     private _updateEnergy() {
-        this.numLabel.numAnima(PlayerMgr.ins.player.energy);
+        this.numLabel.numAnima(PlayerMgr.ins.userInfo.props.strength);
     }
 }
 

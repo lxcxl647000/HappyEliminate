@@ -280,7 +280,6 @@ export default class PanelRouter {
             let panelLayerNode = this._layerNodeMap.get(option.panel.layerZIndex);
             if (panelLayerNode == null) {
                 panelLayerNode = new Node();
-                panelLayerNode.setSiblingIndex(option.panel.layerZIndex);
                 // 为图层添加 Widget 组件，扩充至全屏尺寸
                 let widget: Widget = panelLayerNode.addComponent(Widget);
                 widget.top = 0;
@@ -294,6 +293,7 @@ export default class PanelRouter {
                 widget.alignMode = Widget.AlignMode.ON_WINDOW_RESIZE;
                 // 将图层节点添加到根节点中
                 this._rootNode.addChild(panelLayerNode);
+                panelLayerNode.setSiblingIndex(option.panel.index);
                 // 缓存层级节点
                 this._layerNodeMap.set(option.panel.layerZIndex, panelLayerNode);
             }

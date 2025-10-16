@@ -1,9 +1,10 @@
-import { _decorator, Component, instantiate, Label, Node } from 'cc';
+import { _decorator, Component, instantiate, Label, Layout, Node, ProgressBar } from 'cc';
 import { LevelConfig } from '../../configs/LevelConfig';
 import { LevelNodeData } from './LevelNodeData';
 import PlayerMgr from '../../manager/PlayerMgr';
 import { qc } from '../../framework/qc';
 import EventDef from '../../constants/EventDef';
+import LevelMgr from '../../manager/LevelMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('MapNodeData')
@@ -14,15 +15,21 @@ export class MapNodeData extends Component {
     levels: Node = null;
     @property(Node)
     lock: Node = null;
+    @property(Label)
+    lockDes: Label = null;
+    @property(ProgressBar)
+    lockProgress: ProgressBar = null;
 
     private _mapId: number = -1;
 
     protected start(): void {
         qc.eventManager.on(EventDef.Unlock_Map, this._setLockStatus, this);
+        qc.eventManager.on(EventDef.Update_Stars, this._updateLockDes, this);
     }
 
     protected onDestroy(): void {
         qc.eventManager.off(EventDef.Unlock_Map, this._setLockStatus, this);
+        qc.eventManager.off(EventDef.Update_Stars, this._updateLockDes, this);
     }
 
     public initLevels(levelMap: Map<number, LevelConfig>) {
@@ -42,10 +49,37 @@ export class MapNodeData extends Component {
             }
         }
         this._setLockStatus();
+        this._updateLockDes();
     }
 
     private _setLockStatus() {
-        this.lock.active = PlayerMgr.ins.player.mapId === this._mapId;
+        let isActive = this.lock.active;
+        let isLock = PlayerMgr.ins.userInfo.summary.map_on === this._mapId;
+        if (isActive === false && isLock) {
+            let layout = this.node.parent.getComponent(Layout);
+            if (layout) {
+                layout.enabled = true;
+                setTimeout(() => {
+                    layout.enabled = false;
+                }, 50);
+            }
+        }
+        this.lock.active = isLock;
+    }
+
+    private _updateLockDes() {
+        if (this.lock.active) {
+            let str = '';
+            let map = LevelMgr.ins.getMap(this._mapId + 1);
+            if (map) {
+                let level = map.values().next();
+                if (level && level.value.unlock_stars) {
+                    str = `收集胜利星${PlayerMgr.ins.userInfo.summary.total_stars}/${level.value.unlock_stars}`;
+                    this.lockProgress.progress = PlayerMgr.ins.userInfo.summary.total_stars / level.value.unlock_stars;
+                }
+            }
+            this.lockDes.string = str;
+        }
     }
 }
 

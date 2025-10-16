@@ -1,4 +1,4 @@
-import { _decorator, instantiate, Label, Node, Sprite, UITransform } from 'cc';
+import { _decorator, Animation, instantiate, Label, Node, Sprite, UITransform } from 'cc';
 import { StarUtils } from './StarUtils';
 import { DiaLogBaseScript, IDialogOption } from './DiaLogBaseScript';
 import { qc } from '../../framework/qc';
@@ -13,6 +13,11 @@ import { configConfigs } from '../../configs/configConfigs';
 import CocosUtils from '../../utils/CocosUtils';
 import { BundleConfigs } from '../../configs/BundleConfigs';
 import PlayerMgr from '../../manager/PlayerMgr';
+import { PassReward } from '../../manager/LevelMgr';
+import { musicMgr } from '../../manager/musicMgr';
+import { rewardedVideoAd } from '../../framework/lib/platform/platform_interface';
+import { baseConfig } from '../../configs/baseConfig';
+import CommonTipsMgr from '../../manager/CommonTipsMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('DiaLogScript')
@@ -32,12 +37,20 @@ export class DiaLogScript extends DiaLogBaseScript {
 
     @property(Node)
     successNode: Node;
+    @property(Node)
+    successStarNode: Node;
+    @property(Node)
+    successStarEmptyNode: Node;
 
     @property(Node)
     lightNode: Node;
+    @property(Node)
+    lightNode2: Node;
 
     @property(Node)
     failedNode: Node;
+    @property(Node)
+    failedStarNode: Node;
 
     @property(Node)
     targetParent: Node = null;
@@ -52,6 +65,8 @@ export class DiaLogScript extends DiaLogBaseScript {
     doubleLayout: Node = null;
     @property(Node)
     doubleNode: Node = null;
+    @property(Node)
+    continueBtnNode: Node = null;
     @property(UITransform)
     bg: UITransform = null;
 
@@ -62,14 +77,32 @@ export class DiaLogScript extends DiaLogBaseScript {
     private _doubleHeight: number = 342;
     private _normalBgHeight: number = 567;
     private _doubleBgHeight: number = 670;
-    private _rewards: { type: ItemType, count: number }[] = [];
+    private _continueBtnNormalPosY: number = -317;
+    private _continueBtnDoublePosY: number = -419;
+    private _rewards: PassReward[] = [];
     private _isDouble: boolean = false;
 
     update(deltaTime: number) {
 
     }
 
+    start(): void {
+
+    }
+
+    show(opt?: IDialogOption): void {
+        this.dialogOpt = opt;
+        let ani = this.getComponent(Animation);
+        if (ani) {
+            let aniName = this.success ? 'pass_success' : 'pass_fail';
+            ani.play(aniName);
+        }
+    }
+
     setStarCounter(counter: number) {
+        if (counter === 0) {
+            counter = 1;
+        }
         StarUtils.changeNodeByCounter(counter, this.star1Node, this.star2Node, this.star3Node);
     }
 
@@ -79,23 +112,28 @@ export class DiaLogScript extends DiaLogBaseScript {
 
     setSuccess(success: boolean, level: LevelConfig) {
         this.success = success;
-        this.lightNode.active = this.successNode.active = this.success;
-        this.failedNode.active = !this.success;
+        this.successStarEmptyNode.active = this.successStarNode.active = this.lightNode2.active = this.lightNode.active = this.successNode.active = this.success;
+        this.failedStarNode.active = this.failedNode.active = !this.success;
         if (!this.success) {
             this._setTarget(level);
         }
+        else {
+            musicMgr.ins.playMusic('victory');
+        }
     }
 
-    public setRewards(rewards: { type: ItemType, count: number }[], isDouble: boolean) {
+    public setRewards(rewards: PassReward[], isDouble: boolean = false) {
         this._rewards = rewards;
         this._isDouble = isDouble;
         if (isDouble) {
             this.rewardBg.height = this._doubleHeight;
             this.bg.height = this._doubleBgHeight;
+            this.continueBtnNode.setPosition(this.continueBtnNode.position.x, this._continueBtnDoublePosY);
         }
         else {
             this.rewardBg.height = this._normalHeight;
             this.bg.height = this._normalBgHeight;
+            this.continueBtnNode.setPosition(this.continueBtnNode.position.x, this._continueBtnNormalPosY);
         }
         this._initReward(rewards, this.normalLayout);
         this.doubleNode.active = isDouble;
@@ -104,7 +142,7 @@ export class DiaLogScript extends DiaLogBaseScript {
         }
     }
 
-    private _initReward(rewards: { type: ItemType, count: number }[], parent: Node) {
+    private _initReward(rewards: PassReward[], parent: Node) {
         for (let reward of rewards) {
             let node = instantiate(this.rewardTmp);
             node.active = true;
@@ -113,11 +151,12 @@ export class DiaLogScript extends DiaLogBaseScript {
             if (item) {
                 CocosUtils.loadTextureFromBundle(BundleConfigs.iconBundle, item.icon, node.getComponent(Sprite));
             }
-            node.getComponentInChildren(Label).string = "+" + reward.count;
+            node.getComponentInChildren(Label).string = "+" + reward.amount;
         }
     }
 
     onContinueClick() {
+        musicMgr.ins.playSound('click');
         if (this.dialogOpt && this.dialogOpt.onConform) {
             this.dialogOpt.onConform();
         }
@@ -127,25 +166,41 @@ export class DiaLogScript extends DiaLogBaseScript {
     }
 
     onCloseClick() {
+        musicMgr.ins.playSound('click');
         qc.panelRouter.hide({
             panel: PanelConfigs.gamePanel,
             onHided: () => {
+                qc.eventManager.emit(EventDef.GamePanelToMainPanel);
+
                 qc.panelRouter.destroy({
                     panel: PanelConfigs.gamePanel,
                 });
             },
         });
+        musicMgr.ins.stopMusic();
+        musicMgr.ins.playMusic('bg_music');
         if (this.success) {
             this._getRewards();
         }
     }
 
     addStepsByAd() {
-        this.node.active = false;
-        qc.eventManager.emit(EventDef.Resurrection);
+        let ad: rewardedVideoAd = {
+            adUnitId: baseConfig.adUnitIds[0],
+            successCb: () => {
+                this.node.active = false;
+                qc.eventManager.emit(EventDef.Resurrection);
+            }
+        }
+        qc.platform.showRewardedAd(ad);
     }
 
     addStepsByGold() {
+        if (PlayerMgr.ins.userInfo.props.integral < 200) {
+            CommonTipsMgr.ins.showTips('金币不足');
+            return;
+        }
+        PlayerMgr.ins.addGold(-200);
         this.node.active = false;
         qc.eventManager.emit(EventDef.Resurrection);
     }
@@ -169,10 +224,9 @@ export class DiaLogScript extends DiaLogBaseScript {
     }
 
     private _getRewards() {
-        let rewardCount = 0;
         for (let reward of this._rewards) {
-            let count = this._isDouble ? reward.count * 2 : reward.count;
-            PlayerMgr.ins.addItem(reward.type, count, ++rewardCount === this._rewards.length);
+            let count = this._isDouble ? reward.amount * 2 : reward.amount;
+            PlayerMgr.ins.addItem(reward.type, count);
         }
     }
 }

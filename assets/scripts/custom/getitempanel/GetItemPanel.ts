@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node, Sprite } from 'cc';
+import { _decorator, Animation, Component, Label, Node, Sprite } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
@@ -11,6 +11,8 @@ import PlayerMgr from '../../manager/PlayerMgr';
 import CommonTipsMgr from '../../manager/CommonTipsMgr';
 import ConfigMgr from '../../manager/ConfigMgr';
 import { configConfigs } from '../../configs/configConfigs';
+import ItemMgr, { IItem } from '../../manager/ItemMgr';
+import EventDef from '../../constants/EventDef';
 const { ccclass, property } = _decorator;
 
 @ccclass('GetItemPanel')
@@ -27,6 +29,10 @@ export class GetItemPanel extends PanelComponent {
     desLabel: Label = null;
     @property(Sprite)
     icon: Sprite = null;
+    @property(Node)
+    propsNode: Node = null;
+    @property(Node)
+    redPackNode: Node = null;
 
     private _itemType: ItemType = null;
     private _num: number = 0;
@@ -41,26 +47,39 @@ export class GetItemPanel extends PanelComponent {
         let { type, num, isAdBtn, costGold, isNormal } = option.data;
         this._itemType = type;
         this._num = num;
-        this._isAdBtn = isAdBtn;
-        this._isNormal = isNormal;
-        this._costGold = costGold | 0;
-        this._itemData = ConfigMgr.ins.getConfig<ItemConfig>(configConfigs.itemConfig, this._itemType);
-        this._init();
+        if (type !== ItemType.RedPack) {
+            this._isAdBtn = isAdBtn;
+            this._isNormal = isNormal;
+            this._costGold = costGold | 0;
+            this._itemData = ConfigMgr.ins.getConfig<ItemConfig>(configConfigs.itemConfig, this._itemType);
+        }
+        this._init(type);
+
+        let aniName = type === ItemType.RedPack ? 'showAni_red' : 'showAni';
+        this.getComponent(Animation).play(aniName);
     }
     hide(option: PanelHideOption): void {
         option.onHided();
     }
 
-    private _init() {
-        this.adBtn.active = this._isAdBtn;
-        this.goldBtn.active = this._costGold > 0;
-        if (this.goldBtn.active) {
-            this.goldBtn.getComponentInChildren(Label).string = `${this._costGold}兑换`;
+    private _init(type: ItemType) {
+        if (type === ItemType.RedPack) {
+            this.propsNode.active = false;
+            this.redPackNode.active = true;
         }
-        this.normalBtn.active = this._isNormal;
-        this.numLabel.string = `${this._itemData.name}  *${this._num}`;
-        this.desLabel.string = this._itemData.des;
-        CocosUtils.loadTextureFromBundle(BundleConfigs.iconBundle, this._itemData.big_icon, this.icon);
+        else {
+            this.propsNode.active = true;
+            this.redPackNode.active = false;
+            this.adBtn.active = this._isAdBtn;
+            this.goldBtn.active = this._costGold > 0;
+            if (this.goldBtn.active) {
+                this.goldBtn.getComponentInChildren(Label).string = `${this._costGold}兑换`;
+            }
+            this.normalBtn.active = this._isNormal;
+            this.numLabel.string = `${this._itemData.name}  *${this._num}`;
+            this.desLabel.string = this._itemData.des;
+            CocosUtils.loadTextureFromBundle(BundleConfigs.iconBundle, this._itemData.big_icon, this.icon);
+        }
     }
 
     private _hidePanel() {
@@ -69,7 +88,7 @@ export class GetItemPanel extends PanelComponent {
 
     onClickClose() {
         if (this.adBtn.active || this.normalBtn.active) {
-            PlayerMgr.ins.addItem(this._itemType, this._num, true);
+            PlayerMgr.ins.addItem(this._itemType, this._num);
         }
         this._hidePanel();
     }
@@ -78,7 +97,7 @@ export class GetItemPanel extends PanelComponent {
         let ad: rewardedVideoAd = {
             adUnitId: baseConfig.adUnitIds[0],
             successCb: () => {
-                PlayerMgr.ins.addItem(this._itemType, 2 * this._num, true);
+                PlayerMgr.ins.addItem(this._itemType, 2 * this._num);
                 this._hidePanel();
             }
         };
@@ -86,18 +105,38 @@ export class GetItemPanel extends PanelComponent {
     }
 
     onGoldBtn() {
-        if (PlayerMgr.ins.player.gold < this._costGold) {
+        if (PlayerMgr.ins.userInfo.props.integral < this._costGold) {
             CommonTipsMgr.ins.showTips('金币不足');
             return;
         }
-        PlayerMgr.ins.addGold(-this._costGold, false);
-        PlayerMgr.ins.addItem(this._itemType, this._num, true);
+
+        let item: IItem = ItemMgr.ins.getItem(this._itemType);
+        if (item) {
+            ItemMgr.ins.exchangeItem(item.type, 1, () => {
+                PlayerMgr.ins.addGold(-item.price);
+                PlayerMgr.ins.addItem(this._itemType, 1);
+            });
+        }
         this._hidePanel();
     }
 
     onNormalBtn() {
-        PlayerMgr.ins.addItem(this._itemType, this._num, true);
+        PlayerMgr.ins.addItem(this._itemType, this._num);
         this._hidePanel();
+    }
+
+    onOpenRedPack() {
+        qc.panelRouter.showPanel({
+            panel: PanelConfigs.redEnvelopeModelPanel,
+            onShowed: () => {
+                this._hidePanel();
+            },
+            data: {
+                type: 1, amount: this._num, closeFunc: () => {
+                    qc.eventManager.emit(EventDef.FlyRedPackAnimation);
+                }
+            }
+        });
     }
 }
 

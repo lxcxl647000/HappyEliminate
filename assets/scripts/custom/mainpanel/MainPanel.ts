@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node } from 'cc';
+import { _decorator, Animation, Component, Label, Node, tween } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
@@ -9,6 +9,14 @@ import EventDef from '../../constants/EventDef';
 import ListCom from '../../framework/lib/components/scrollviewplus/ListCom';
 import { MapNodeData } from './MapNodeData';
 import { baseConfig } from '../../configs/baseConfig';
+import ItemMgr from '../../manager/ItemMgr';
+import { musicMgr } from '../../manager/musicMgr';
+import PoolMgr from '../../manager/PoolMgr';
+import { BundleConfigs } from '../../configs/BundleConfigs';
+import CocosUtils from '../../utils/CocosUtils';
+import CustomSprite from '../componetUtils/CustomSprite';
+import { shezhiMgr } from '../../manager/shezhiMgr';
+
 const { ccclass, property } = _decorator;
 
 @ccclass('MainPanel')
@@ -21,15 +29,36 @@ export class MainPanel extends PanelComponent {
     setting: Node = null;
     @property(Node)
     gm: Node = null;
+    @property(Node)
+    flyRedPack: Node = null;
+    @property(Node)
+    flyToTarget: Node = null;
+    @property(CustomSprite)
+    soundSprite: CustomSprite = null;
+    @property(Animation)
+    guideAni: Animation = null;
+    @property(CustomSprite)
+    vibrateSprite: CustomSprite = null;
 
     private _currentLevel: LevelConfig = null;
+    private _vibrateFlag = false;
 
     show(option: PanelShowOption): void {
+        if (!this._vibrateFlag) {
+            this._vibrateFlag = true;
+            qc.platform.vibrateShort();
+        }
+        qc.platform.reportScene(304);
+        musicMgr.ins.playMusic('bg_music');
         option.onShowed();
-
+        if (PlayerMgr.ins.userInfo.prompt.show == 1) {
+            this.redPackBtn()
+        }
+        qc.platform.fromOtherAppToShowAd();
         this.gm.active = baseConfig.gm;
         this._updateLevel(false);
         this._initMap();
+        ItemMgr.ins.getItemList(null);
     }
     hide(option: PanelHideOption): void {
 
@@ -39,18 +68,30 @@ export class MainPanel extends PanelComponent {
         qc.eventManager.on(EventDef.Unlock_Map, this._unlockMap, this);
         qc.eventManager.on(EventDef.Update_Level, this._updateLevel, this);
         qc.eventManager.on(EventDef.Jump_Level, this._jumpToLevel, this);
-        this.levelLabel.string = `第${PlayerMgr.ins.player.level}关`;
+        qc.eventManager.on(EventDef.GamePanelToMainPanel, this._gamePanelToMainPanel, this);
+        qc.eventManager.on(EventDef.FlyRedPackAnimation, this._flyRedPackAnimation, this);
+        qc.eventManager.on(EventDef.UpdateSoundStatus, this._updateSoundStatus, this);
+        qc.eventManager.on(EventDef.UpdateVibrateStatus, this._updateVibrateStatus, this);
+        this.levelLabel.string = `第${PlayerMgr.ins.userInfo.summary.latest_passed_level + 1}关`;
     }
 
     protected onDisable(): void {
         qc.eventManager.off(EventDef.Update_Level, this._updateLevel, this);
         qc.eventManager.off(EventDef.Unlock_Map, this._unlockMap, this);
         qc.eventManager.off(EventDef.Jump_Level, this._jumpToLevel, this);
+        qc.eventManager.off(EventDef.GamePanelToMainPanel, this._gamePanelToMainPanel, this);
+        qc.eventManager.off(EventDef.FlyRedPackAnimation, this._flyRedPackAnimation, this);
+        qc.eventManager.off(EventDef.UpdateSoundStatus, this._updateSoundStatus, this);
+        qc.eventManager.off(EventDef.UpdateVibrateStatus, this._updateVibrateStatus, this);
     }
 
     private _initMap() {
-        this.mapList.numItems = PlayerMgr.ins.player.mapId;
-        this._jumpToLevel(PlayerMgr.ins.player.mapId, PlayerMgr.ins.player.level);
+        let level = PlayerMgr.ins.userInfo.summary.latest_passed_level + 1;
+        let mapId = PlayerMgr.ins.userInfo.summary.map_on;
+        this.mapList.numItems = mapId;
+        this._jumpToLevel(mapId, level);
+
+        this._showGuide();
     }
 
     private _jumpToLevel(mapId: number, level: number) {
@@ -73,21 +114,25 @@ export class MainPanel extends PanelComponent {
     }
 
     private _updateLevel(needUpdateNext: boolean) {
+        let level = PlayerMgr.ins.userInfo.summary.latest_passed_level;
+        let nextLevel = level + 1;
+        let mapId = PlayerMgr.ins.userInfo.summary.map_on;
         if (needUpdateNext) {
-            qc.eventManager.emit(EventDef.Active_Next_Level, PlayerMgr.ins.player.level);
+            qc.eventManager.emit(EventDef.Active_Next_Level, level);
         }
-        this._currentLevel = LevelMgr.ins.getLevel(PlayerMgr.ins.player.mapId, PlayerMgr.ins.player.level);
-        this.levelLabel.string = `第${PlayerMgr.ins.player.level}关`;
+        this._currentLevel = LevelMgr.ins.getLevel(mapId, nextLevel);
+        this.levelLabel.string = `第${nextLevel}关`;
 
-        this._jumpToLevel(PlayerMgr.ins.player.mapId, PlayerMgr.ins.player.level);
+        this._jumpToLevel(mapId, nextLevel);
     }
 
     private _unlockMap() {
         // qc.eventManager.emit(EventDef.Map_Lock_Status);
+        let mapId = PlayerMgr.ins.userInfo.summary.map_on;
         this.mapList.numItems = 0;
-        this.mapList.numItems = PlayerMgr.ins.player.mapId;
+        this.mapList.numItems = mapId;
         setTimeout(() => {
-            this.mapList.scrollTo(PlayerMgr.ins.player.mapId - 1);
+            this.mapList.scrollTo(mapId - 1);
 
         }, 500);
         // this.mapList.scrollTo(PlayerMgr.ins.player.mapId - 1);
@@ -96,6 +141,8 @@ export class MainPanel extends PanelComponent {
     }
 
     onStartBtn() {
+        qc.platform.vibrateShort();
+        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.gameStartPanel,
             onShowed: () => {
@@ -105,6 +152,7 @@ export class MainPanel extends PanelComponent {
         });
     }
     userInfoBTn() {
+        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.userInfoPanel,
             onShowed: () => {
@@ -114,6 +162,8 @@ export class MainPanel extends PanelComponent {
     }
     // 签到
     signBtn() {
+        musicMgr.ins.playSound('click');
+        // return;
         qc.panelRouter.showPanel({
             panel: PanelConfigs.signPanel,
             onShowed: () => {
@@ -122,6 +172,7 @@ export class MainPanel extends PanelComponent {
         });
     }
     chengjiuBtn() {
+        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.chengjiuPanel,
             onShowed: () => {
@@ -131,6 +182,7 @@ export class MainPanel extends PanelComponent {
     }
     // 我的背包
     backpackBtn() {
+        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.backpackPanel,
             onShowed: () => {
@@ -140,6 +192,7 @@ export class MainPanel extends PanelComponent {
     }
     // 体力兑换
     exchangeBtn() {
+        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.exchangePanel,
             onShowed: () => {
@@ -149,10 +202,12 @@ export class MainPanel extends PanelComponent {
     }
 
     onSettingBtn() {
+        musicMgr.ins.playSound('click');
         this.setting.active = !this.setting.active;
     }
 
     onRedPackBtn() {
+        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.redEnvelopePanel,
             onShowed: () => {
@@ -162,6 +217,7 @@ export class MainPanel extends PanelComponent {
     }
     // 任务中心
     taskBtn() {
+        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.taskPanel,
             onShowed: () => {
@@ -170,10 +226,12 @@ export class MainPanel extends PanelComponent {
     }
     // 红包弹窗
     redPackBtn() {
+        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.redEnvelopeModelPanel,
             onShowed: () => {
             },
+            data: { type: 0 }
         });
     }
 
@@ -183,6 +241,7 @@ export class MainPanel extends PanelComponent {
     }
 
     onGoldBtn() {
+        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.addGoldPanel,
             onShowed: () => {
@@ -191,6 +250,7 @@ export class MainPanel extends PanelComponent {
     }
 
     onLuckyTurntableBtn() {
+        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.luckyTurntablePanel,
             onShowed: () => {
@@ -204,6 +264,79 @@ export class MainPanel extends PanelComponent {
             onShowed: () => {
             },
         });
+    }
+
+    onCashBtn() {
+        musicMgr.ins.playSound('click');
+        qc.panelRouter.showPanel({
+            panel: PanelConfigs.cashPanel,
+            onShowed: () => {
+            },
+        })
+    }
+
+    private async _gamePanelToMainPanel() {
+        await PlayerMgr.ins.getHomeData();
+        if (PlayerMgr.ins.userInfo.prompt.show == 1 && PlayerMgr.ins.userInfo.prompt.type == 2 && PlayerMgr.ins.userInfo.prompt.can_open == 1) {
+            this.redPackBtn();
+        }
+        this._showGuide();
+    }
+
+    private _flyRedPackAnimation() {
+        // PoolMgr.ins.getNodeFromPool(BundleConfigs.commonBundle, 'prefabs/FlyRedPack', (node: Node) => {
+        //     let toPos = CocosUtils.setNodeToTargetPos(node, this.flyToTarget);
+        //     this.flyRedPack.addChild(node);
+        //     tween(node)
+        //         .to(1.7, { position: toPos })
+        //         .call(() => {
+        //             PoolMgr.ins.putNodeToPool(node);
+        //         });
+        // });
+    }
+
+    onMusic() {
+        musicMgr.ins.playSound('click');
+        if (this.soundSprite.index === 0) {
+            musicMgr.ins.stopMusic();
+            shezhiMgr.YinyueEnabled = false;
+            shezhiMgr.init();
+        }
+        else {
+            shezhiMgr.YinyueEnabled = true;
+            shezhiMgr.init();
+            musicMgr.ins.playMusic('bg_music');
+        }
+        qc.eventManager.emit(EventDef.UpdateSoundStatus);
+    }
+
+    private _showGuide() {
+        if (!PlayerMgr.ins.userInfo.current_level || PlayerMgr.ins.userInfo.current_level.length === 0) {
+            this.guideAni.node.active = true;
+            this.guideAni.play('guide_y');
+        }
+        else {
+            this.guideAni.node.active = false;
+        }
+    }
+
+    private _updateSoundStatus() {
+        this.soundSprite.index = shezhiMgr.YinyueEnabled ? 0 : 1;
+    }
+
+    onVibrate() {
+        musicMgr.ins.playSound('click');
+        if (this.vibrateSprite.index === 0) {
+            shezhiMgr.vibrateEnabled = false;
+        }
+        else {
+            shezhiMgr.vibrateEnabled = true;
+        }
+        qc.eventManager.emit(EventDef.UpdateVibrateStatus);
+    }
+
+    private _updateVibrateStatus() {
+        this.vibrateSprite.index = shezhiMgr.vibrateEnabled ? 0 : 1;
     }
 }
 

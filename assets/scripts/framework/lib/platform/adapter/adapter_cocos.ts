@@ -7,6 +7,14 @@ import adapter_interface from "./adapter_interface";
  */
 export default class adapter_cocos implements adapter_interface {
     public onTaobao(): boolean {
-        return sys.platform === sys.Platform.TAOBAO_MINI_GAME && !globalThis['my'];
+        return sys.platform === sys.Platform.TAOBAO_MINI_GAME && globalThis['my'] !== undefined;
+    }
+
+    public onWx(): boolean {
+        return sys.platform === sys.Platform.WECHAT_GAME;
+    }
+
+    public onBilibili(): boolean {
+        return sys.platform === sys.Platform.WECHAT_GAME;
     }
 }

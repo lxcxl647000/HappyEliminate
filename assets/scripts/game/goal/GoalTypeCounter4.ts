@@ -52,18 +52,18 @@ export class GoalTypeCounter4 extends Component implements IGoalScript {
         return this.goalProgress;
     }
 
-    private updateTypes(types: GoalTypeCounter[]) {
+    private updateTypes(types: GoalTypeCounter[], playAni: boolean = false) {
         if (types.length > 0) {
-            this.setTypeWithGoal(this.type1, types[0]);
+            this.setTypeWithGoal(this.type1, types[0], playAni);
         }
         if (types.length > 1) {
-            this.setTypeWithGoal(this.type2, types[1]);
+            this.setTypeWithGoal(this.type2, types[1], playAni);
         }
         if (types.length > 2) {
-            this.setTypeWithGoal(this.type3, types[2]);
+            this.setTypeWithGoal(this.type3, types[2], playAni);
         }
         if (types.length > 3) {
-            this.setTypeWithGoal(this.type4, types[3]);
+            this.setTypeWithGoal(this.type4, types[3], playAni);
         }
     }
 
@@ -76,7 +76,7 @@ export class GoalTypeCounter4 extends Component implements IGoalScript {
         // 根据类型进行更新
         if (progress.types !== null) {
             let types = progress.types;
-            this.updateTypes(types);
+            this.updateTypes(types, true);
         }
     }
 
@@ -94,10 +94,10 @@ export class GoalTypeCounter4 extends Component implements IGoalScript {
     }
 
 
-    private setTypeWithGoal(typeItem: Node, goalItem: GoalTypeCounter) {
+    private setTypeWithGoal(typeItem: Node, goalItem: GoalTypeCounter, playAni: boolean = false) {
         let typeItemScript = typeItem.getComponent(GoalTypeCounterItem);
         typeItemScript.setType(goalItem.cellType);
-        typeItemScript.setNumber(goalItem.counter);
+        typeItemScript.setNumber(goalItem.counter, playAni);
         if (goalItem.counter <= 0) {
             typeItemScript.setComplete(true);
         } else {

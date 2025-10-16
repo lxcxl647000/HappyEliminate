@@ -7,6 +7,7 @@ export class numAnimaTs extends Component {
     @property(Label)
     label: Label = null
     //保留小数点后几位
+    @property(CCInteger)
     public decimalPlaces: number = 0
     // 前缀和后缀
     public qianzhui: string = ''

@@ -27,6 +27,7 @@ import { BoomTool } from '../../game/tools/BoomTool';
 import { GamePanel } from './GamePanel';
 import { qc } from '../../framework/qc';
 import EventDef from '../../constants/EventDef';
+import { GuideType } from '../../manager/GuideMgr';
 
 
 export interface GridListener {
@@ -87,9 +88,9 @@ export class LevelGridLayout extends Component {
         this._gamepanel = gamepanel;
     }
 
-    public init(levelConfig: LevelConfig) {
-        this.grid = new Grid(levelConfig.grid, Constants.GRID_CELL_SIZE, levelConfig.types);
-        this.initGridCells();
+    public init(levelConfig: LevelConfig, isReplay: boolean) {
+        this.grid = new Grid(levelConfig.grid, Constants.GRID_CELL_SIZE, levelConfig.types, levelConfig.cell_grid);
+        this.initGridCells(isReplay);
         this.stopWorld = false;
 
         // 初始化消除状态
@@ -97,8 +98,14 @@ export class LevelGridLayout extends Component {
         this.gridStateMachine = new StateMachine(ConstStatus.getInstance().idelState);
     }
 
+
     start() {
         // 初始化所有的状态
+        // 初始化完成后进行检查
+        this.initConstStatus();
+    }
+
+    public initConstStatus() {
         ConstStatus.getInstance().idelState.setListener(this.listener);
 
         ConstStatus.getInstance().swapState = new SwapState(this.gridStateMachine);
@@ -119,7 +126,6 @@ export class LevelGridLayout extends Component {
         ConstStatus.getInstance().toolsState = new ToolsState(this.gridStateMachine);
         ConstStatus.getInstance().errorState = new ErrorState(this.gridStateMachine);
 
-        // 初始化完成后进行检查
         this.gridStateMachine.transitionTo(
             ConstStatus.getInstance().findMatchState,
             {
@@ -129,7 +135,7 @@ export class LevelGridLayout extends Component {
 
     update(deltaTime: number) {
         if (this.stopWorld) {
-            this.node.removeAllChildren();
+            // this.node.removeAllChildren();
             return;
         }
         this.gridStateMachine.processQueue();
@@ -144,7 +150,10 @@ export class LevelGridLayout extends Component {
     }
 
     //如果cell没有node 就添加一个
-    private initGridCells() {
+    private initGridCells(isReplay: boolean) {
+        if (isReplay) {
+            this.cellParent.removeAllChildren();
+        }
         const rows = this.grid.cells.length;
         const cols = this.grid.cells[0].length;
         for (let i = 0; i < rows; i++) {
@@ -230,6 +239,10 @@ export class LevelGridLayout extends Component {
                 if (this._gamepanel.isFinish) {
                     return;
                 }
+                if (node['guidecantclick']) {
+                    return;
+                }
+
                 if (this._gamepanel.useToolType === ToolType.TYPE_HAMMER) {
                     this._gamepanel.hideToolMask();
                     this.useHammerTool(node);
@@ -271,6 +284,9 @@ export class LevelGridLayout extends Component {
             },
             onMoveDirection: (node: Node, dir: Vec2) => {
                 if (this._gamepanel.isFinish) {
+                    return;
+                }
+                if (node['guidecantclick']) {
                     return;
                 }
                 // 如果不是idel不允许操作
@@ -379,6 +395,7 @@ export class LevelGridLayout extends Component {
                 tool: new HammerTool()
             } as ToolsStateEnterData
         );
+        qc.eventManager.emit(EventDef.HideGuide, GuideType.Force_Level_1_Use_Hammer);
     }
 
     useStepsTool() {
@@ -402,6 +419,7 @@ export class LevelGridLayout extends Component {
                 tool: new BoomTool()
             } as ToolsStateEnterData
         );
+        qc.eventManager.emit(EventDef.HideGuide, GuideType.Force_Level_1_Use_Boom);
     }
 }
 

@@ -38,7 +38,6 @@ export class StateMachine {
 
     public transitionTo(state: IState, data: IEnterData): void {
         this.queue.push({ state, data });
-        // this.processQueue();
     }
 
     public processQueue(): void {
@@ -49,6 +48,7 @@ export class StateMachine {
 
         while (this.queue.length > 0) {
             const { state, data } = this.queue.shift();
+
             if (this.currentState.canTransitionTo(state)) {
                 data.from = this.currentState;
                 this.currentState.onLeave();

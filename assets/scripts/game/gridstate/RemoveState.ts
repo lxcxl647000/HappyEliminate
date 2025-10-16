@@ -1,4 +1,9 @@
+import EventDef from "../../constants/EventDef";
 import { CellScript } from "../../custom/gamepanel/CellScript";
+import { qc } from "../../framework/qc";
+import GuideMgr, { GuideType } from "../../manager/GuideMgr";
+import { musicMgr } from "../../manager/musicMgr";
+import PlayerMgr from "../../manager/PlayerMgr";
 import { Grid } from "../Grid";
 import { Cell } from "../Types";
 import { IEnterData, IState, StateWithMachine } from "../util/StateMachine";
@@ -40,10 +45,17 @@ export class RemoveState extends StateWithMachine {
                 // disappear会移除node
                 // 所以cell.node已经无用置空处理
                 cell.node = null;
-                
+
                 cellScript.disappear(() => {
                     hadRemovedCount++;
                     if (hadRemovedCount === needRemoveCount) {
+                        if (GuideMgr.ins.checkGuide(GuideType.Force_Level_1_Eliminate)) {
+                            qc.eventManager.emit(EventDef.HideGuide, GuideType.Force_Level_1_Eliminate);
+                        }
+                        musicMgr.ins.playSound('score');
+                        if (needRemoveCount >= 4) {
+                            qc.platform.vibrateShort();
+                        }
                         // 全部消除完成
                         console.log('remove finish !');
                         // 消除完成，进入下一个状态
@@ -57,7 +69,7 @@ export class RemoveState extends StateWithMachine {
                             } as FillStateEnterData);
                     }
                 });
-                
+
             }
             // 消除的时候，设置装为未未匹配
             cell.match = false;

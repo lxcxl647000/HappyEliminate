@@ -4,7 +4,7 @@ import { qc } from "../framework/qc";
 import { BundleConfigs } from "../configs/BundleConfigs";
 import { PanelConfigs } from "../configs/PanelConfigs";
 import { baseConfig } from "../configs/baseConfig";
-
+import { httpMgr } from "../framework/lib/net/httpMgr";
 const { ccclass, property } = _decorator;
 
 @ccclass
@@ -18,31 +18,24 @@ export default class MainSceneCtrl extends Component {
     }
 
     async start() {
-        // 加载 Bundle
-        await AssetLoader.loadBundle(BundleConfigs.configBundle);
-        await AssetLoader.loadBundle(BundleConfigs.commonBundle);
-        await AssetLoader.loadBundle(BundleConfigs.iconBundle);
-        await AssetLoader.loadBundle(BundleConfigs.bootBundle);
-        await AssetLoader.loadBundle(BundleConfigs.gameBundle);
-        await AssetLoader.loadBundle(BundleConfigs.mainBundle);
-        await AssetLoader.loadBundle(BundleConfigs.userInfoBundle);
-        await AssetLoader.loadBundle(BundleConfigs.chengjiuBundle);
-        await AssetLoader.loadBundle(BundleConfigs.redEnvelopeBundle);
-        await AssetLoader.loadBundle(BundleConfigs.exchangeBundle);
-        await AssetLoader.loadBundle(BundleConfigs.taskBundle);
-        await AssetLoader.loadBundle(BundleConfigs.redEnvelopeModelBundle);
-        await AssetLoader.loadBundle(BundleConfigs.gameStartBundle);
-        await AssetLoader.loadBundle(BundleConfigs.luckyTurntableBundle);
-        await AssetLoader.loadBundle(BundleConfigs.getItemBundle);
+        // httpMgr.ins.xhrRequest('/public/xcxct', 'GET', { scene: '0', path: '', adzone_id: baseConfig.adzoneId });
 
-        if (baseConfig.gm) await AssetLoader.loadBundle(BundleConfigs.gmBundle);
+        // 加载 Bundle
+        // await AssetLoader.loadBundle(BundleConfigs.configBundle);
+        // await AssetLoader.loadBundle(BundleConfigs.commonBundle);
+        // await AssetLoader.loadBundle(BundleConfigs.audioBundle);
+
+        // await AssetLoader.loadBundle(BundleConfigs.bootBundle);
+
+        // if (baseConfig.gm) await AssetLoader.loadBundle(BundleConfigs.gmBundle);
 
         // 加载启动页
-        await qc.panelRouter.loadAsync(PanelConfigs.bootPanel);
+        // await qc.panelRouter.loadAsync(PanelConfigs.bootPanel);
 
         // 打开启动页
-        qc.panelRouter.show({
-            panel: PanelConfigs.bootPanel,
-        });
+        // qc.panelRouter.show({
+        //     panel: PanelConfigs.bootPanel,
+        // });
     }
 }
+

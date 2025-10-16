@@ -1,11 +1,17 @@
-import { _decorator, assetManager, AssetManager, ImageAsset, SpriteFrame, Component, instantiate, Label, log, Mask, Node, Sprite, Texture2D } from 'cc';
+import { _decorator, assetManager, AssetManager, ImageAsset, SpriteFrame, Component, instantiate, Label, log, Mask, Node, Sprite, Texture2D, Color } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
 import { item } from './taskNode';
+import cgRedEvApi from '../../api/cgRedEv';
+import { carousel } from './carousel';
+import CustomSprite from '../componetUtils/CustomSprite';
+import PlayerMgr from '../../manager/PlayerMgr';
+import LevelMgr from '../../manager/LevelMgr';
+
 
 const { ccclass, property } = _decorator;
-@ccclass('chengjiuPanel')
+@ccclass('redEnvelopePanel')
 export class chengjiuPanel extends PanelComponent {
     @property(Node)
     content: Node = null;
@@ -15,16 +21,19 @@ export class chengjiuPanel extends PanelComponent {
     title: Label = null;
     @property(Label)
     redMoney: Label = null;
+    @property(carousel)
+    carousel: carousel = null;
+    @property(Node)
+    taskopen: Node = null;
+    @property(Node)
+    taskFlag: Node = null;
     taskList: any = []
+    task_done: any = null
     show(option: PanelShowOption): void {
         // console.log(this.tmp);
         log('------------------');
         option.onShowed();
         this.init();
-    }
-    // 每次打开都会触发
-    protected onEnable(): void {
-        // console.log(this.tmp, 111111111);
     }
 
 
@@ -34,13 +43,14 @@ export class chengjiuPanel extends PanelComponent {
     }
     // 只会触发一次
     start() {
-      
-        
+
+
     }
     update(deltaTime: number) {
 
     }
     closeModel() {
+        this.carousel.removeCarousel();
         qc.panelRouter.hide({
             panel: PanelConfigs.redEnvelopePanel,
             onHided: () => {
@@ -50,73 +60,71 @@ export class chengjiuPanel extends PanelComponent {
         });
     }
     init() {
-        this.taskList = [
-            {
-                taskName: '任务1',
-                taskNum: 10,
-                taskAllNum: 100,
-                taskReamake: '闯关100关',
-                taskState: 0,
-                taskImg: 'https://cdn.yundps.com/new/2025/09/18/15/2ad511e08ef0593e6f3b85c834b9ae2c.png'
+        cgRedEvApi.ins.passStatus().then((res) => {
+            this.task_done = res.data.task_done
+            this.carousel.show(res.data.recent)
 
-            },
-            {
-                taskName: '任务1',
-                taskNum: 100,
-                taskAllNum: 100,
-                taskReamake: '闯关100关',
-                taskState: 1,
-                taskImg: 'https://cdn.yundps.com/new/2025/09/18/15/2ad511e08ef0593e6f3b85c834b9ae2c.png'
+            this.taskList = [
+                {
+                    taskName: '任务1',
+                    taskNum: res.data.passed_today,
+                    taskAllNum: 10,
+                    taskReamake: '闯关10关',
+                    taskState: res.data.passed_today >= 10 ? 1 : 0,
+                    taskImg: 0
 
-            },
-            {
-                taskName: '任务1',
-                taskNum: 100,
-                taskAllNum: 100,
-                taskReamake: '闯关100关',
-                taskState: 1,
-                taskImg: 'https://cdn.yundps.com/new/2025/09/18/15/2ad511e08ef0593e6f3b85c834b9ae2c.png'
+                },
+                {
+                    taskName: '任务1',
+                    taskNum: res.data.task_done,
+                    taskAllNum: 10,
+                    taskReamake: '做10个任务',
+                    taskState: res.data.task_done >= 10 ? 1 : 0,
+                    taskImg: 1
 
-            },
-            {
-                taskName: '任务1',
-                taskNum: 100,
-                taskAllNum: 100,
-                taskReamake: '闯关100关',
-                taskState: 1,
-                taskImg: 'https://cdn.yundps.com/new/2025/09/18/15/2ad511e08ef0593e6f3b85c834b9ae2c.png'
-
-            },
-            {
-                taskName: '任务1',
-                taskNum: 100,
-                taskAllNum: 100,
-                taskReamake: '闯关100关',
-                taskState: 1,
-                taskImg: 'https://cdn.yundps.com/new/2025/09/18/15/2ad511e08ef0593e6f3b85c834b9ae2c.png'
-
-            },
-            {
-                taskName: '任务1',
-                taskNum: 100,
-                taskAllNum: 100,
-                taskReamake: '闯关100关',
-                taskState: 1,
-                taskImg: 'https://cdn.yundps.com/new/2025/09/18/15/2ad511e08ef0593e6f3b85c834b9ae2c.png'
-
-            }
-        ]
-        this.taskList.forEach(element => {
-            let itemNode = instantiate(this.item)
-            itemNode.getComponent(item).setDate(element)
-            itemNode.active = true
-            this.content.addChild(itemNode)
+                }
+            ]
+            this.content.removeAllChildren()
+            this.taskList.forEach(element => {
+                let itemNode = instantiate(this.item)
+                itemNode.getComponent(item).setDate(element)
+                itemNode.active = true
+                this.content.addChild(itemNode)
+            });
+            // 显示红包金额
+            this.redMoney.string = '8.8'
+            this.title.string = '最高8.8元，轻松到账'
         });
-        // 显示红包金额
-        this.redMoney.string = '8.8'
-        this.title.string = '最高8.8元，轻松到账'
-    }
 
+    }
+    open() {
+        cgRedEvApi.ins.redpackPassOpen().then((res) => {
+            if (res) {
+                this.taskFlag.getComponent(CustomSprite).index = 1
+                this.taskopen.active = false
+                PlayerMgr.ins.addCash(Number(res.data.amount))
+                this.redMoney.string = Number(res.data.amount).toFixed(2)
+                this.redMoney.color = new Color(243, 23, 23, 255)
+            }
+        });
+    }
+    btnClick(e) {
+        if (e.target.type == 0 && e.target.data == 0) {
+            let level = PlayerMgr.ins.userInfo.summary.latest_passed_level + 1;
+            let mapid = PlayerMgr.ins.userInfo.summary.map_on;
+            LevelMgr.ins.goToLevel(mapid, level, null);
+            this.closeModel()
+        }
+        if (e.target.type == 1 && e.target.data == 0) {
+
+            qc.panelRouter.showPanel({
+                panel: PanelConfigs.taskPanel
+            });
+            this.closeModel()
+            console.log('去完成任务');
+
+        }
+    }
 }
 
 

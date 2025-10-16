@@ -6,10 +6,13 @@ export default class PoolMgr {
     private nodePools: { [index: string]: NodePool } = null;
     private preloadConfig: { bundle: string, path: string, defaultNum: number }[] = [
         { bundle: BundleConfigs.commonBundle, path: 'prefabs/commonTips', defaultNum: 2 },
-        { bundle: BundleConfigs.gameBundle, path: 'prefabs/RowLineLight', defaultNum: 2 },
-        { bundle: BundleConfigs.gameBundle, path: 'prefabs/ColLineLight', defaultNum: 2 },
-        { bundle: BundleConfigs.gameBundle, path: 'prefabs/ColLineLight', defaultNum: 2 },
-        { bundle: BundleConfigs.gameBundle, path: 'prefabs/BoomLight', defaultNum: 2 },
+        { bundle: BundleConfigs.gameBundle, path: 'prefabs/RowLineLight', defaultNum: 1 },
+        { bundle: BundleConfigs.gameBundle, path: 'prefabs/ColLineLight', defaultNum: 1 },
+        { bundle: BundleConfigs.gameBundle, path: 'prefabs/ColLineLight', defaultNum: 1 },
+        { bundle: BundleConfigs.gameBundle, path: 'prefabs/BoomLight', defaultNum: 1 },
+        { bundle: BundleConfigs.gameBundle, path: 'prefabs/CandyLight', defaultNum: 1 },
+        { bundle: BundleConfigs.commonBundle, path: 'prefabs/guideTmp', defaultNum: 1 },
+        // { bundle: BundleConfigs.commonBundle, path: 'prefabs/FlyRedPack', defaultNum: 1 },
     ];
 
     private static _ins: PoolMgr;

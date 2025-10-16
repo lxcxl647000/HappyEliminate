@@ -3,17 +3,24 @@ import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framewor
 import { qc } from '../../framework/qc';
 import CustomSprite from '../componetUtils/CustomSprite';
 import { PanelConfigs } from '../../configs/PanelConfigs';
+import SignApi from '../../api/sign';
+import CocosUtils from '../../utils/CocosUtils';
+import { BundleConfigs } from '../../configs/BundleConfigs';
+import ConfigMgr from '../../manager/ConfigMgr';
+import { configConfigs } from '../../configs/configConfigs';
+import { ItemConfig } from '../../configs/ItemConfig';
+
 const { ccclass, property } = _decorator;
+
 @ccclass('signPanel')
 export class signPanel extends PanelComponent {
     @property(Label)
-    startTime: Label = null;
     @property(Label)
-    endTime: Label = null;
+    dateLabel: Label = null;
     @property(Node)
     rewardNode: Node = null;
     @property(Node)
-    rewardItem: Node = null;
+    rewardImg: Node = null;
     @property(Node)
     receiveNode: Node = null;
     @property(Label)
@@ -22,166 +29,174 @@ export class signPanel extends PanelComponent {
     taskName: Label = null;
 
     init() {
-        let rewardData = [
-            {
-                day_index: 1,
-                label: '已领取',
-                status: 'disabled',
-                // type: 1,
-                // reward: 10
-                rewardList: [
-                    {
-                        type: 1,
-                        reward: 10
-                    }
-                ]
-            },
-            {
-                day_index: 2,
-                label: '已过期',
-                status: 'disabled',
-                rewardList: [
-                    {
-                        type: 2,
-                        reward: 20
-                    }
-                ]
-            },
-            {
-                day_index: 3,
-                label: '今日领',
-                status: 'enabled',
-                rewardList: [
-                    {
-                        type: 3,
-                        reward: 2
-                    }
-                ]
-            },
-            {
-                day_index: 4,
-                label: '明日领',
-                status: 'disabled',
-                rewardList: [
-                    {
-                        type: 4,
-                        reward: 3
-                    }
-                ]
-            },
-            {
-                day_index: 5,
-                label: '',
-                status: 'disabled',
-                rewardList: [
-                    {
-                        type: 3,
-                        reward: 5
-                    }
-                ]
-            },
-            {
-                day_index: 6,
-                label: '',
-                status: 'disabled',
-                rewardList: [
-                    {
-                        type: 1,
-                        reward: 20,
-                    },
-                    {
-                        type: 2,
-                        reward: 2,
-                    },
-                    {
-                        type: 4,
-                        reward: 4,
-                    }
-                ]
-            },
-            {
-                day_index: 7,
-                label: '',
-                status: 'disabled',
-                rewardList: [
-                    {
-                        type: 3,
-                        reward: 4,
-                    }
-                ]
-            }
-        ];
+        SignApi.ins.getGiftList((res) => {
+            console.log('res:', res);
+            this.dateLabel.string = res.date.replace(/(\d+)\.(\d+)-(\d+)\.(\d+)/, '$1月$2日-$3月$4日');
+            let rewardData = res.result;
+            for (let i = 0; i < rewardData.length; i++) {
+                // 父节点
+                let itemNode = instantiate(this.rewardNode);
+                itemNode.active = true;
+                this.rewardNode.parent.addChild(itemNode);
 
-        for (let i = 0; i < rewardData.length; i++) {
-            // 父节点
-            let itemNode = instantiate(this.rewardNode);
-            itemNode.active = true;
-            this.rewardNode.parent.addChild(itemNode);
+                itemNode.getComponentInChildren(Label).string = `第${rewardData[i].day_index}天`;
+                const newRewardData = rewardData.map(item => {
+                    const reward = item.reward;
+                    const rewardTypes = reward.reward_type.split(',').map(type => parseInt(type));
 
-            itemNode.getComponentInChildren(Label).string = `第${rewardData[i].day_index}天`;
+                    const rewardList = rewardTypes.map(type => {
+                        return {
+                            type: type,
+                            rewardCount: type === 1 ? parseInt(reward.gold_num) : parseInt(reward.prop_num)
+                        }
+                    });
 
-            // 奖励类型 type 1: 爱心，2: 金币，3: 锤子，4: 炸弹
-            for (let k = 0; k < rewardData[i].rewardList.length; k++) {
-                let rewardItem = instantiate(this.rewardItem);
+                    return {
+                        ...item,
+                        rewardList: rewardList
+                    }
+                });
 
-                switch (rewardData[i].rewardList[k].type) {
-                    case 1:
-                        rewardItem.getComponent(CustomSprite).index = 0;
-                        rewardItem.getComponentInChildren(Label).string = `${String(rewardData[i].rewardList[k].reward)}体力`;
-                        break;
-                    case 2:
-                        rewardItem.getComponent(CustomSprite).index = 1;
-                        rewardItem.getComponentInChildren(Label).string = `${String(rewardData[i].rewardList[k].reward)}金币`;
-                        break;
-                    case 3:
-                        rewardItem.getComponent(CustomSprite).index = 2;
-                        rewardItem.getComponentInChildren(Label).string = `锤子×${String(rewardData[i].rewardList[k].reward)}`;
-                        break;
-                    case 4:
-                        rewardItem.getComponent(CustomSprite).index = 3;
-                        rewardItem.getComponentInChildren(Label).string = `炸弹×${String(rewardData[i].rewardList[k].reward)}`;
-                        break;
+                const rewardArr = newRewardData[i].rewardList;
+                // 奖励类型 type 1: 金币，2: 锤子，3: 体力，4: 炸弹， 5：主题碎片，6：步数，7：打乱棋盘
+                for (let k = 0; k < rewardArr.length; k++) {
+                    const rewardType = rewardArr[k].type;
+                    let rewardImgItem = itemNode.getChildByName('expiredBg').getChildByName('rewardItemNode');
+                    let rewardImg = instantiate(this.rewardImg);
+                    rewardImg.active = true;
+                    rewardImgItem.addChild(rewardImg);
+                    let itemConfig = ConfigMgr.ins.getConfig<ItemConfig>(configConfigs.itemConfig, rewardType);
+                    if (itemConfig) {
+                        CocosUtils.loadTextureFromBundle(BundleConfigs.iconBundle, itemConfig.icon, rewardImg.getComponent(Sprite));
+                        if (rewardType === 1) {
+                            rewardImg.getComponentInChildren(Label).string = `${String(rewardArr[k].rewardCount)}${itemConfig.name}`;
+                        } else if (rewardType === 5) {
+                            rewardImg.getComponentInChildren(Label).string = `碎片×${String(rewardArr[k].rewardCount)}`;
+                        } else if (rewardType === 7) {
+                            rewardImg.getComponentInChildren(Label).string = `打乱×${String(rewardArr[k].rewardCount)}`;
+                        } else {
+                            rewardImg.getComponentInChildren(Label).string = `${itemConfig.name}×${String(rewardArr[k].rewardCount)}`;
+                        }
+                    }
+
+                    itemNode.getChildByName('expiredBg').getChildByName('rewardItemNode').addChild(rewardImg)
+                    if (newRewardData[i].label === '已过期' || newRewardData[i].label === '已领取') {
+                        rewardImg.getComponent(Sprite).color = new Color(255, 255, 255, 100);
+                    }
                 }
-                rewardItem.active = true;
-                itemNode.getChildByName('expiredBg').getChildByName('rewardItemNode').addChild(rewardItem)
-                if (rewardData[i].label === '已过期' || rewardData[i].label === '已领取') {
-                    rewardItem.getComponent(Sprite).color = new Color(255, 255, 255, 100);
+                if (rewardArr.length > 1) {
+                    itemNode.getChildByName('expiredBg').getComponent(UITransform).width = 284;
+                    itemNode.getChildByName('expiredBg').parent.getComponent(UITransform).width = 284;
+                }
+
+
+                if (newRewardData[i].label === '明日领') {
+                    itemNode.getComponentInChildren(Label).string = newRewardData[i].label;
+                }
+
+                let bgSprite = itemNode.getChildByName('expiredBg').getComponent(CustomSprite);
+                if (newRewardData[i].label === '已过期') {
+                    bgSprite.index = 0;
+                    itemNode.getChildByName('expiredBg').getChildByName('timeoutIcon').active = true;
+                } else if (newRewardData[i].label === '今日领') {
+                    bgSprite.index = 1;
+                    itemNode.getChildByName('expiredBg').getChildByName('redDot').active = true;
+                } else {
+                    bgSprite.index = 2;
+                }
+                if (newRewardData[i].label === '已领取') {
+                    itemNode.getChildByName('expiredBg').getChildByName('claimIcon').active = true;
                 }
             }
-
-
-            if (rewardData[i].label === '明日领') {
-                itemNode.getComponentInChildren(Label).string = rewardData[i].label;
-            }
-
-            let bgSprite = itemNode.getChildByName('expiredBg').getComponent(CustomSprite);
-            if (rewardData[i].label === '已过期') {
-                bgSprite.index = 0;
-                itemNode.getChildByName('expiredBg').getChildByName('timeoutIcon').active = true;
-            } else if (rewardData[i].label === '今日领') {
-                bgSprite.index = 1;
-                itemNode.getChildByName('expiredBg').getChildByName('redDot').active = true;
-            } else {
-                bgSprite.index = 2;
-            }
-            if (rewardData[i].label === '已领取') {
-                itemNode.getChildByName('expiredBg').getChildByName('claimIcon').active = true;
-            }
-
-            if (rewardData[i].rewardList.length > 1) {
-                itemNode.getChildByName('expiredBg').getComponent(UITransform).width = 284;
-                itemNode.getChildByName('expiredBg').parent.getComponent(UITransform).width = 284;
-            }
-        }
-        this.startTime.string = '9月10日';
-        this.endTime.string = '9月17日';
+        });
+        // let rewardData = [
+        //     {
+        //         day_index: 1,
+        //         label: '已领取',
+        //         status: 'disabled',
+        //         reward: [
+        //             {
+        //                 type: 1,
+        //                 reward: 10
+        //             }
+        //         ]
+        //     },
+        //     {
+        //         day_index: 2,
+        //         label: '已过期',
+        //         status: 'disabled',
+        //         reward: [
+        //             {
+        //                 type: 2,
+        //                 reward: 20
+        //             }
+        //         ]
+        //     },
+        //     {
+        //         day_index: 3,
+        //         label: '今日领',
+        //         status: 'enabled',
+        //         reward: [
+        //             {
+        //                 type: 3,
+        //                 reward: 2
+        //             }
+        //         ]
+        //     },
+        //     {
+        //         day_index: 4,
+        //         label: '明日领',
+        //         status: 'disabled',
+        //         reward: [
+        //             {
+        //                 type: 4,
+        //                 reward: 3
+        //             }
+        //         ]
+        //     },
+        //     {
+        //         day_index: 5,
+        //         label: '',
+        //         status: 'disabled',
+        //         reward: [
+        //             {
+        //                 type: 3,
+        //                 reward: 5
+        //             }
+        //         ]
+        //     },
+        //     {
+        //         day_index: 6,
+        //         label: '',
+        //         status: 'disabled',
+        //         reward: [
+        //             {
+        //                 type: 1,
+        //                 reward: 20,
+        //             },
+        //             {
+        //                 type: 2,
+        //                 reward: 2,
+        //             },
+        //             {
+        //                 type: 4,
+        //                 reward: 4,
+        //             }
+        //         ]
+        //     },
+        //     {
+        //         day_index: 7,
+        //         label: '',
+        //         status: 'disabled',
+        //         reward: [
+        //             {
+        //                 type: 3,
+        //                 reward: 4,
+        //             }
+        //         ]
+        //     }
+        // ];
         this.taskName.string = '今日任务：添加到桌面';
-    }
-    start() {
-    }
-
-    update(deltaTime: number) {
-
     }
 
     show(option: PanelShowOption): void {

@@ -17,4 +17,10 @@ export default class adapter implements adapter_interface {
     onTaobao(): boolean {
         return this._adapter.onTaobao();
     }
+    onWx(): boolean {
+        return this._adapter.onWx();
+    }
+    onBilibili(): boolean {
+        return this._adapter.onBilibili();
+    }
 }

@@ -27,6 +27,7 @@ export class CommonTips extends Component {
     }
 
     public setTips(tips: string) {
+        this.uiOpacity.opacity = 255;
         this.tipsLabel.string = tips;
         this._doAnimation()
     }

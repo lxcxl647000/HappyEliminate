@@ -43,7 +43,7 @@ export class Constants {
 
 
     // 用于存本地的key值//
-    public static PLAYER_DATA_KEY: string = "PLAYER_DATA_KEY";
+    // public static PLAYER_DATA_KEY: string = "PLAYER_DATA_KEY";
     public static LUCKY_TURNTABLE_DATA_KEY: string = "LUCKY_TURNTABLE_DATA_KEY";
 
 

@@ -1,377 +1,147 @@
-import { _decorator, Node } from 'cc';
+import { _decorator, Node, Label } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from "../../framework/lib/router/PanelComponent";
 import { qc } from "../../framework/qc";
 import { PanelConfigs } from "../../configs/PanelConfigs";
-import { taskItems } from '../../commonTs/taskItem';
+import { contentItems } from './ExchangeItems';
 import ListCom from '../../framework/lib/components/scrollviewplus/ListCom';
 const { ccclass, property } = _decorator;
+import { strengthApi } from '../../api/exchange';
+import EventDef from "../../constants/EventDef";
+import PlayerMgr from '../../manager/PlayerMgr';
+import { rewardedVideoAd } from "../../framework/lib/platform/platform_interface";
+import { baseConfig } from "../../configs/baseConfig";
+import { ItemType } from "../../configs/ItemConfig";
+import GetItemMgr from "../../manager/GetItemMgr";
+import CommonTipsMgr from "db://assets/scripts/manager/CommonTipsMgr";
 
 @ccclass('ExchangePanel')
 export class ExchangePanel extends PanelComponent {
     @property(ListCom)
     list: ListCom = null;
-    taskList: any[] = [];
+    @property(Label)
+    count: Label = null;
+    @property(Label)
+    title: Label = null;
+    @property(Label)
+    btnLabel: Label = null;
+    @property(Node)
+    noDtaNode: Node = null;
+    time: any = null
+
+    private _initList() {
+        this.noDtaNode.active = strengthApi.ins.taskList.length === 0;
+        this.list.numItems = !strengthApi.ins.taskList ? 0 : strengthApi.ins.taskList.length;
+    }
 
     init() {
-        this.taskList = [
-            {
-                "id": "239",
-                "title": "玩一玩开心抓猫猫",
-                "subtitle": "逛15s或通2关领奖励",
-                "button_text": "去挑战",
-                "list_order": "-20000",
-                "image": "https://cdn.yundps.com/new/2025/08/14/10/8c0aae80affa891276250f96566a5b0a.webp",
-                "task_type": "23",
-                "is_single": "0",
-                "jump_url": "alipays://platformapi/startapp?appId=20000067&url=https%3A%2F%2Fmarket.m.taobao.com%2Fapp%2Fstarlink%2Fwakeup-transit%2Fpages%2Fdownload%3Fstar_id%3D3113%26env%3Dminiapp%26slk_force_set_request%3Dtrue%26targetUrl%3Dhttps%253A%252F%252Fm.duanqu.com%253F_ariver_appid%253D3000000136119813%2526_mp_code%253Dtb%2526_container_type%253Dgm%2526hdkf_share_info%253DtaskSign%25253Dtask2021004116636198_16_178%252526adTime%25253D30%2526hdkf_share_info%253DtaskSign%25253Dtask_2021005173621564_4_239%252526adTime%25253D15",
-                "jump_appid": "",
-                "jump_pages": "",
-                "extra_data": "",
-                "integral": "0",
-                "money": "0.01",
-                "reward_type": "1",
-                "is_dev": "0",
-                "is_minute_repeat": "0",
-                "browse_time": "15",
-                "owner_id": "1",
-                "status": "1",
-                "life_task_id": "0",
-                "is_virtual": "0",
-                "life_order": "239",
-                "last_click_time": "1755532798",
-                "today_click_amount": "0",
-                "today_limit_click_amount": "500000",
-                "total_click_amount": "6",
-                "total_limit_click_amount": "0",
-                "scene_id": "",
-                "ad_id": "",
-                "group_id": "0",
-                "xcx_name": "",
-                "xcx_logo": "",
-                "is_block": "0",
-                "finish_num": "1",
-                "is_recommend": "0",
-                "flow_id": "",
-                "corner": "",
-                "template": "",
-                "temp_type": "",
-                "transfer_config": "infoAd,insertAd,link",
-                "transfer_title": "哈哈哈",
-                "tag": "special",
-                "category_id": "32",
-                "isComplete": 0,
-                "finish_complete_num": 0,
-                "friends_status": 0
-            },
-            {
-                "id": "240",
-                "title": "玩一玩开心抓猫猫",
-                "subtitle": "逛30s或通2关领奖励",
-                "button_text": "去挑战",
-                "list_order": "-20000",
-                "image": "https://cdn.yundps.com/new/2025/08/14/10/8c0aae80affa891276250f96566a5b0a.webp",
-                "task_type": "23",
-                "is_single": "0",
-                "jump_url": "alipays://platformapi/startapp?appId=20000067&url=https%3A%2F%2Fmarket.m.taobao.com%2Fapp%2Fstarlink%2Fwakeup-transit%2Fpages%2Fdownload%3Fstar_id%3D3113%26env%3Dminiapp%26slk_force_set_request%3Dtrue%26targetUrl%3Dhttps%253A%252F%252Fm.duanqu.com%253F_ariver_appid%253D3000000136119813%2526_mp_code%253Dtb%2526_container_type%253Dgm%2526hdkf_share_info%253DtaskSign%25253Dtask2021004116636198_16_178%252526adTime%25253D30%2526hdkf_share_info%253DtaskSign%25253Dtask_2021005173621564_4_240%252526adTime%25253D30",
-                "jump_appid": "",
-                "jump_pages": "",
-                "extra_data": "",
-                "integral": "0",
-                "money": "0.01",
-                "reward_type": "1",
-                "is_dev": "0",
-                "is_minute_repeat": "0",
-                "browse_time": "30",
-                "owner_id": "1",
-                "status": "1",
-                "life_task_id": "0",
-                "is_virtual": "0",
-                "life_order": "240",
-                "last_click_time": "1755532798",
-                "today_click_amount": "0",
-                "today_limit_click_amount": "500000",
-                "total_click_amount": "3",
-                "total_limit_click_amount": "0",
-                "scene_id": "",
-                "ad_id": "",
-                "group_id": "0",
-                "xcx_name": "",
-                "xcx_logo": "",
-                "is_block": "0",
-                "finish_num": "1",
-                "is_recommend": "0",
-                "flow_id": "",
-                "corner": "",
-                "template": "",
-                "temp_type": "",
-                "transfer_config": "infoAd,insertAd,link",
-                "transfer_title": "",
-                "tag": "special",
-                "category_id": "32",
-                "isComplete": 0,
-                "finish_complete_num": 0,
-                "friends_status": 0
-            },
-            {
-                "id": "234",
-                "title": "小程序外部",
-                "subtitle": "小程序外部",
-                "button_text": "去完成",
-                "list_order": "-10000",
-                "image": "https://cdn.yundps.com/new/2025/07/16/14/a81bb8cd2af61e010088208f582523f7.webp",
-                "task_type": "2",
-                "is_single": "0",
-                "jump_url": "",
-                "jump_appid": "2021005173649533",
-                "jump_pages": "pages/goldPrice/index",
-                "extra_data": "",
-                "integral": "0",
-                "money": "0.01",
-                "reward_type": "1",
-                "is_dev": "0",
-                "is_minute_repeat": "0",
-                "browse_time": "60",
-                "owner_id": "1",
-                "status": "1",
-                "life_task_id": "0",
-                "is_virtual": "0",
-                "life_order": "234",
-                "last_click_time": "1757001598",
-                "today_click_amount": "0",
-                "today_limit_click_amount": "500",
-                "total_click_amount": "3",
-                "total_limit_click_amount": "0",
-                "scene_id": "",
-                "ad_id": "",
-                "group_id": "0",
-                "xcx_name": "",
-                "xcx_logo": "",
-                "is_block": "0",
-                "finish_num": "1",
-                "is_recommend": "0",
-                "flow_id": "",
-                "corner": "",
-                "template": "",
-                "temp_type": "",
-                "transfer_config": "infoAd,insertAd,link",
-                "transfer_title": "",
-                "tag": "special",
-                "category_id": "32",
-                "isComplete": 0,
-                "finish_complete_num": 0,
-                "friends_status": 0
-            },
-            {
-                "id": "222",
-                "title": "指定外部",
-                "subtitle": "指定外部",
-                "button_text": "去看看",
-                "list_order": "-10000",
-                "image": "https://cdn.yundps.com/new/2025/07/31/14/ce49bff8f0767b39583dcd0266f739d1.jpg",
-                "task_type": "8",
-                "is_single": "0",
-                "jump_url": "",
-                "jump_appid": "",
-                "jump_pages": "tbopen://m.taobao.com/tbopen/index.html?h5Url=https%3A%2F%2Fm.duanqu.com%3F_ariver_appid%3D3000000136636894%26_mp_code%3Dtb%26_container_type%3Dgm%26hdkf_from%3Dhdkf_gamecenter",
-                "extra_data": "",
-                "integral": "100",
-                "money": 0.01,
-                "reward_type": 1,
-                "is_dev": "0",
-                "is_minute_repeat": "0",
-                "browse_time": "60",
-                "owner_id": "1",
-                "status": "1",
-                "life_task_id": "0",
-                "is_virtual": "0",
-                "life_order": "222",
-                "last_click_time": "1757001598",
-                "today_click_amount": "0",
-                "today_limit_click_amount": "10000",
-                "total_click_amount": "4",
-                "total_limit_click_amount": "0",
-                "scene_id": "",
-                "ad_id": "",
-                "group_id": "0",
-                "xcx_name": "",
-                "xcx_logo": "",
-                "is_block": "0",
-                "finish_num": "1",
-                "is_recommend": "0",
-                "flow_id": "",
-                "corner": "",
-                "template": "",
-                "temp_type": "",
-                "transfer_config": "infoAd,insertAd,link",
-                "transfer_title": "测试哈哈哈哈哈",
-                "tag": "special",
-                "category_id": "32",
-                "isComplete": 0,
-                "finish_complete_num": 0,
-                "friends_status": 0
-            },
-            {
-                "id": "186",
-                "title": "邀请好友",
-                "subtitle": "邀请好友",
-                "button_text": "邀请好友",
-                "list_order": "-1000",
-                "image": "https://cdn.yundps.com/new/2025/08/07/15/ea83d30a19318672298ca092b95eb8fa.jpg",
-                "task_type": "7",
-                "is_single": "1",
-                "jump_url": "",
-                "jump_appid": "",
-                "jump_pages": "",
-                "extra_data": "",
-                "integral": "0",
-                "money": "0.01",
-                "reward_type": "1",
-                "start_date": "1747065600",
-                "end_date": "1778601600",
-                "time_list": "[[\"000051\", \"235951\"]]",
-                "is_dev": "0",
-                "is_minute_repeat": "0",
-                "browse_time": "10",
-                "owner_id": "1",
-                "status": "1",
-                "life_task_id": "0",
-                "is_virtual": "0",
-                "life_order": "186",
-                "last_click_time": "1754582399",
-                "today_click_amount": "0",
-                "today_limit_click_amount": "1000",
-                "total_click_amount": "28",
-                "total_limit_click_amount": "5000",
-                "scene_id": "",
-                "ad_id": "",
-                "group_id": "0",
-                "xcx_name": "",
-                "xcx_logo": "",
-                "is_block": "0",
-                "finish_num": "10",
-                "is_recommend": "0",
-                "flow_id": "",
-                "corner": "王者",
-                "template": "https://cdn.yundps.com/new/2025/06/03/10/e37a1a3a0e0c7f91beddaca16909f44e.png",
-                "temp_type": "2",
-                "transfer_config": "",
-                "transfer_title": "",
-                "tag": "index",
-                "category_id": "33",
-                "isComplete": 0,
-                "finish_complete_num": 0,
-                "completeStatus": 0
-            },
-            {
-                "id": "218",
-                "title": "动动有金打卡任务",
-                "subtitle": "8/12/18/21点",
-                "button_text": "去领取",
-                "list_order": "-30",
-                "image": "https://cdn.yundps.com/new/2025/07/30/14/118d9985e21264274e07833c97f8a067.png",
-                "task_type": "17",
-                "is_single": "0",
-                "jump_url": "",
-                "jump_appid": "",
-                "jump_pages": "",
-                "extra_data": "",
-                "integral": "0",
-                "money": "0.01",
-                "reward_type": "1",
-                "is_dev": "0",
-                "is_minute_repeat": "0",
-                "browse_time": "3",
-                "owner_id": "1",
-                "status": "1",
-                "life_task_id": "0",
-                "is_virtual": "0",
-                "life_order": "218",
-                "last_click_time": "1754582399",
-                "today_click_amount": "0",
-                "today_limit_click_amount": "1000",
-                "total_click_amount": "89",
-                "total_limit_click_amount": "5000",
-                "scene_id": "",
-                "ad_id": "",
-                "group_id": "0",
-                "xcx_name": "",
-                "xcx_logo": "",
-                "is_block": "0",
-                "finish_num": "4",
-                "is_recommend": "0",
-                "flow_id": "",
-                "corner": "",
-                "template": "",
-                "temp_type": "",
-                "transfer_config": "",
-                "transfer_title": "",
-                "tag": "index",
-                "category_id": "33",
-                "isComplete": 0,
-                "finish_complete_num": 0,
-                "completeStatus": 0,
-                "friends_status": 0
-            },
-            {
-                "id": "176",
-                "title": "跳转小程序",
-                "subtitle": "跳转小程序任务",
-                "button_text": "去完成",
-                "list_order": "6",
-                "image": "https://cdn.yundps.com/new/2025/07/16/14/a81bb8cd2af61e010088208f582523f7.webp",
-                "task_type": "2",
-                "is_single": "0",
-                "jump_url": "",
-                "jump_appid": "2021005127618338",
-                "jump_pages": "pages/index/index?taskType=fish",
-                "extra_data": "",
-                "integral": "0",
-                "money": "0.01",
-                "reward_type": "1",
-                "is_dev": "0",
-                "is_minute_repeat": "0",
-                "browse_time": "5",
-                "owner_id": "1",
-                "status": "1",
-                "life_task_id": "0",
-                "is_virtual": "0",
-                "life_order": "176",
-                "last_click_time": "1754495999",
-                "today_click_amount": "0",
-                "today_limit_click_amount": "500",
-                "total_click_amount": "26",
-                "total_limit_click_amount": "0",
-                "scene_id": "",
-                "ad_id": "",
-                "group_id": "0",
-                "xcx_name": "",
-                "xcx_logo": "",
-                "is_block": "0",
-                "finish_num": "1",
-                "is_recommend": "0",
-                "flow_id": "",
-                "corner": "",
-                "template": "",
-                "temp_type": "",
-                "transfer_config": "",
-                "transfer_title": "",
-                "tag": "special",
-                "category_id": "32",
-                "isComplete": 0,
-                "finish_complete_num": 0,
-                "friends_status": 0
+        this.count.string = `x${PlayerMgr.ins.userInfo.props.strength.toString()}`;
+        strengthApi.ins.getStrengthTasks((res) => {
+            this._initList();
+            const oData = res.strength_video;
+            if (oData.done === oData.limit) {
+                this.btnLabel.string = '已达上限';
+            } else {
+                this.btnLabel.string = '立即获得';
             }
-        ];
-        this.list.numItems = this.taskList.length;
+        })
+        if (PlayerMgr.ins.userInfo.props.strength >= 100) {
+            this.title.node.parent.active = false;
+        } else {
+            this.title.node.parent.active = true;
+        }
+
+
+    }
+    clearTIME(time: number) {
+        this.title.string = `${this.formatTimestampToMMSS(time)}后+1`;
+        if (PlayerMgr.ins.userInfo.props.strength >= 100) {
+            this.title.node.parent.active = false;
+        } else {
+            this.title.node.parent.active = true;
+        }
+    }
+    private formatTimestampToMMSS(timestamp: number): string {
+        // 转换为秒
+        const totalSeconds = Math.floor(timestamp / 1000);
+
+        // 计算分钟和秒数
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+
+        // 使用三元运算符处理前导零
+        return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+    private _updateList() {
+        strengthApi.ins.getStrengthTasks(() => {
+            this.list.numItems = 0;
+            this._initList();
+        });
     }
 
-
-    start() {
-
+    onRenderRenwuItem(item: Node, index: number) {
+        item.active = true;
+        let taskItem = item.getComponent(contentItems);
+        if (taskItem) {
+            taskItem.initData(strengthApi.ins.taskList[index]);
+        }
     }
 
-    update(deltaTime: number) {
+    _onshow(res) {
+        // this.init();
+    }
 
+    _updateCount() {
+        this.count.string = `x${PlayerMgr.ins.userInfo.props.strength.toString()}`;
+    }
+
+    protected onEnable(): void {
+        qc.eventManager.on(EventDef.OnShow, this._onshow, this);
+        qc.eventManager.on(EventDef.Update_ExchangeList, this._updateList, this);
+        qc.eventManager.on(EventDef.Update_RewardCount, this._updateCount, this);
+        qc.eventManager.on(EventDef.Close_Strength_Timer, this.clearTIME, this)
+        // this.init();
+    }
+
+    protected onDisable(): void {
+        qc.eventManager.off(EventDef.OnShow, this._onshow, this);
+        qc.eventManager.off(EventDef.Update_ExchangeList, this._updateList, this);
+        qc.eventManager.off(EventDef.Update_RewardCount, this._updateCount, this);
+        qc.eventManager.off(EventDef.Close_Strength_Timer, this.clearTIME, this)
+    }
+
+    // 关闭弹框
+    handleClosePop() {
+        qc.panelRouter.hide({
+            panel: PanelConfigs.exchangePanel
+        })
+    }
+
+    // 观看视频领取体力
+    handleWatchVideo() {
+        let ad: rewardedVideoAd = {
+            adUnitId: baseConfig.adUnitIds[0],
+            successCb: (res) => {
+                
+            },
+            failCb: (res) => {
+                if (res.isCompleted) {
+                    strengthApi.ins.strengthClaim((data) => {
+                        const count = Number(data.strength) - Number(PlayerMgr.ins.userInfo.props.strength)
+                        PlayerMgr.ins.addEnergy(count);
+                        GetItemMgr.ins.showGetItem(ItemType.Energy, count);
+                        qc.eventManager.emit(EventDef.Update_RewardCount);
+                        if (data.done === 3) {
+                            this.btnLabel.string = '已达上限';
+                        } else {
+                            this.btnLabel.string = '立即获得';
+                        }
+                    });
+                } else {
+                    CommonTipsMgr.ins.showTips('未完成广告浏览');
+                }
+            },
+        }
+        qc.platform.showRewardedAd(ad);
     }
 
     show(option: PanelShowOption): void {
@@ -381,20 +151,6 @@ export class ExchangePanel extends PanelComponent {
 
     hide(option: PanelHideOption): void {
         option.onHided();
-    }
-    // 关闭弹框
-    handleClosePop() {
-        qc.panelRouter.hide({
-            panel: PanelConfigs.exchangePanel
-        })
-    }
-
-    onRenderRenwuItem(item: Node, index: number) {
-        item.active = true;
-        let taskItem = item.getComponent(taskItems);
-        if (taskItem) {
-            taskItem.setData(this.taskList[index]);
-        }
     }
 }
 

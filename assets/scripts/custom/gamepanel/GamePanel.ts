@@ -1,4 +1,4 @@
-import { _decorator, director, instantiate, Label, Node, Prefab, randomRangeInt, Vec3 } from 'cc';
+import { _decorator, instantiate, Label, log, Node, Prefab, Tween, tween, UITransform, Vec2, Vec3 } from 'cc';
 import { LevelGridLayout } from './LevelGridLayout';
 import { CellScript } from './CellScript';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
@@ -13,8 +13,8 @@ import { ProgressScript } from './ProgressScript';
 import { EffectLineStarScript } from './EffectLineStarScript';
 import { DiaLogScript } from './DiaLogScript';
 import { qc } from '../../framework/qc';
-import LevelMgr from '../../manager/LevelMgr';
-import PlayerMgr from '../../manager/PlayerMgr';
+import LevelMgr, { PassData, PassReward } from '../../manager/LevelMgr';
+import PlayerMgr, { Currentlevel } from '../../manager/PlayerMgr';
 import { PanelConfigs } from '../../configs/PanelConfigs';
 import EventDef from '../../constants/EventDef';
 import CocosUtils from '../../utils/CocosUtils';
@@ -28,8 +28,13 @@ import { RowMatchTool } from '../../game/tools/RowMatchTool';
 import { ItemType } from '../../configs/ItemConfig';
 import { GameSelectToolBtn } from './GameSelectToolBtn';
 import { GameExchangeTool } from './GameExchangeTool';
+import ItemMgr, { IItem } from '../../manager/ItemMgr';
+import { musicMgr } from '../../manager/musicMgr';
+import CustomSprite from '../componetUtils/CustomSprite';
+import { shezhiMgr } from '../../manager/shezhiMgr';
+import GuideMgr, { GuideType } from '../../manager/GuideMgr';
+import CommonTipsMgr from '../../manager/CommonTipsMgr';
 const { ccclass, property } = _decorator;
-
 class GameStaus {
     progressFinish: boolean = false;
     stepLeftReduceComplete: boolean = false;
@@ -91,9 +96,15 @@ export class GamePanel extends PanelComponent {
     @property(GameExchangeTool)
     exchangeTool: GameExchangeTool = null;
 
-    // 
+    @property(Node)
+    settingNode: Node = null;
+    @property(CustomSprite)
+    soundSprite: CustomSprite = null;
+    @property(CustomSprite)
+    vibrateSprite: CustomSprite = null;
+
     private levelConfig: LevelConfig = null;
-    private levelData: LevelConfig = null;
+    public levelData: LevelConfig = null;
 
     // 记录游戏状态
     private scoreValue: ScroeRule = new ScroeRule();
@@ -129,6 +140,7 @@ export class GamePanel extends PanelComponent {
 
 
     show(option: PanelShowOption): void {
+        musicMgr.ins.stopMusic();
         option.onShowed();
         let { level, selectTools } = option.data;
         this.levelConfig = level as LevelConfig;
@@ -139,118 +151,152 @@ export class GamePanel extends PanelComponent {
         option.onHided();
     }
 
-    private _init() {
+    private _init(isReplay: boolean = false) {
         if (!this.levelConfig) {
-            this.levelConfig = LevelMgr.ins.getLevel(PlayerMgr.ins.player.mapId, PlayerMgr.ins.player.level);
+            this.levelConfig = LevelMgr.ins.getLevel(PlayerMgr.ins.userInfo.summary.map_on, PlayerMgr.ins.userInfo.summary.latest_passed_level + 1);
         }
 
-        this._initTools();
+        if (!isReplay) {
+            this._initTools();
+        }
 
         // 初始化内容
         this.levelData = new LevelConfig(this.levelConfig);
-        this.initViews(this.levelData);
+        this.initViews(this.levelData, isReplay);
 
         this.levelValue.string = this.levelData.levelIndex.toString();
 
         //监听游戏操作
         this.levelGridScript = this.levelGrid.getComponent(LevelGridLayout);
         this.levelGridScript.setGamePanel(this);
-        // this.levelGridScript.init(this.levelConfig);
-        this.levelGridScript.init(this.levelData);
-        this.levelGridScript.setGridListener({
-            onSwapStep: (from: Cell, to: Cell) => {
-                if (!this.isFirstStableHappened) {
-                    return;
-                }
+        this.levelGridScript.init(this.levelData, isReplay);
 
-                this.stepsValue--;
-                this.updateStepNode();
-                this.updateGoalNode();
-            },
-            onMatch: (cells: Cell[][]) => {
-                if (!this.isFirstStableHappened) {
-                    return;
-                }
+        if (!isReplay) {
+            this.levelGridScript.setGridListener({
+                onSwapStep: (from: Cell, to: Cell) => {
+                    if (!this.isFirstStableHappened) {
+                        return;
+                    }
 
-                // 消除的时候计分
-                this.scoreValue.update(cells);
+                    this.stepsValue--;
+                    this.updateStepNode();
+                    this.updateGoalNode();
+                },
+                onMatch: (cells: Cell[][]) => {
+                    if (!this.isFirstStableHappened) {
+                        return;
+                    }
 
-                // 计算消除个数
-                if (cells) {
-                    for (const cellItems of cells) {
-                        const reduceSuccessCells = this.goalProgress.processReduceTypeCounter(cellItems);
-                        if (reduceSuccessCells.length > 0) {
-                            // 增加一个动画将元素 移动到target
-                            for (const reduceItem of reduceSuccessCells) {
-                                const moveToTargetNode = instantiate(reduceItem.node);
-                                this.levelGrid.addChild(moveToTargetNode);
+                    // 消除的时候计分
+                    this.scoreValue.update(cells);
 
-                                let goalTarget = this._findGoalTarget(reduceItem.type);
-                                let pos = new Vec3(0, 500, 0);
-                                let moveToTargetCell = moveToTargetNode.getComponent(CellScript)
-                                if (goalTarget) {
-                                    pos = CocosUtils.setNodeToTargetPos(moveToTargetCell.node, goalTarget);
+                    // 计算消除个数
+                    if (cells) {
+                        for (const cellItems of cells) {
+                            const reduceSuccessCells = this.goalProgress.processReduceTypeCounter(cellItems);
+                            if (reduceSuccessCells.length > 0) {
+                                // 增加一个动画将元素 移动到target
+                                for (const reduceItem of reduceSuccessCells) {
+                                    const moveToTargetNode = instantiate(reduceItem.node);
+                                    this.levelGrid.addChild(moveToTargetNode);
+
+                                    let goalTarget = this._findGoalTarget(reduceItem.type);
+                                    let pos = new Vec3(0, 500, 0);
+                                    let moveToTargetCell = moveToTargetNode.getComponent(CellScript)
+                                    if (goalTarget) {
+                                        pos = CocosUtils.setNodeToTargetPos(moveToTargetCell.node, goalTarget);
+                                    }
+                                    moveToTargetCell.moveAndDisappear(pos, () => {
+
+                                        this.updateScoreAndProgress()
+                                        this.updateGoalNode();
+                                        this.gameStatus.matchStableComplete = false;
+                                    });
                                 }
-                                moveToTargetCell.moveAndDisappear(pos, () => {
-
-                                    this.updateScoreAndProgress()
-                                    this.updateGoalNode();
-                                    this.gameStatus.matchStableComplete = false;
-                                });
                             }
                         }
                     }
-                }
 
 
-            },
-            onStable: () => {
-                let func = () => {
+                },
+                onStable: () => {
+                    let func = () => {
+                        if (!this.isFirstStableHappened) {
+                            this.isFirstStableHappened = true;
+
+                            this._checkGuide();
+                        }
+                        else {
+                            if (GuideMgr.ins.checkGuide(GuideType.Force_Level_2_Use_ColMatch) && this.levelData.levelIndex === 2) {
+                                this._useColMatch();
+                                qc.eventManager.emit(EventDef.HideGuide, GuideType.Force_Level_2_Eliminate);
+                            }
+                            if (GuideMgr.ins.checkGuide(GuideType.Force_Level_3_Use_Boom) && this.levelData.levelIndex === 3) {
+                                this._useBoomMatch();
+                            }
+                        }
+
+                        // 停止连续消除计分
+                        this.scoreValue.continueMatchFinish();
+
+                        // 检查游戏是否结束
+                        if (this.levelGoal.isComplete()) {
+                            this._isFinish = true;
+                            this.processLeftSteps(() => {
+                                this.gameStatus.gameSuccess = true;
+                            });
+                        } else if (this.stepsValue <= 0) {
+                            this._isFinish = true;
+                            this.gameStatus.gameFailed = true;
+                            this.processLeftSteps();
+                        }
+
+                        this.gameStatus.matchStableComplete = true;
+
+                        // if (GuideMgr.ins.checkGuide(GuideType.Force_Level_2_Eliminate)) {
+                        //     qc.eventManager.emit(EventDef.HideGuide, GuideType.Force_Level_2_Eliminate);
+                        // }
+                        // if (GuideMgr.ins.checkGuide(GuideType.Force_Level_3_Eliminate)) {
+                        //     qc.eventManager.emit(EventDef.HideGuide, GuideType.Force_Level_3_Eliminate);
+                        // }
+                    };
+
                     if (!this.isFirstStableHappened) {
-                        this.isFirstStableHappened = true;
-                    }
-
-                    // 停止连续消除计分
-                    this.scoreValue.continueMatchFinish();
-
-                    // 检查游戏是否结束
-                    if (this.levelGoal.isComplete()) {
-                        this._isFinish = true;
-                        this.processLeftSteps(() => {
-                            this.gameStatus.gameSuccess = true;
+                        this._setToolFromGameStart(() => {
+                            func();
                         });
-                    } else if (this.stepsValue <= 0) {
-                        this._isFinish = true;
-                        this.gameStatus.gameFailed = true;
-                        this.processLeftSteps();
                     }
-
-                    this.gameStatus.matchStableComplete = true;
-                };
-
-                if (!this.isFirstStableHappened) {
-                    this._setToolFormGameStart(() => {
+                    else {
                         func();
-                    });
+                    }
                 }
-                else {
-                    func();
-                }
-            }
-        });
+            });
+        } else {
+            this.levelGridScript.initConstStatus();
+        }
     }
 
     start() {
         qc.eventManager.on(EventDef.Resurrection, this._resurrection, this);
         qc.eventManager.on(EventDef.UseStepsTool, this._addSteps, this);
         qc.eventManager.on(EventDef.Game_Select_Tool, this._useTool, this);
+        qc.eventManager.on(EventDef.UpdateSoundStatus, this._updateSoundStatus, this);
+        qc.eventManager.on(EventDef.UpdateVibrateStatus, this._updateVibrateStatus, this);
+        qc.eventManager.on(EventDef.SelectBoomGuide, this._selectBoomGuide, this);
+        qc.eventManager.on(EventDef.PassTargetGuide, this._passTargetGuide, this);
         this._init();
+        this._updateSoundStatus();
+        this._updateVibrateStatus();
     }
 
     protected onDestroy(): void {
         qc.eventManager.off(EventDef.Resurrection, this._resurrection, this);
         qc.eventManager.off(EventDef.UseStepsTool, this._addSteps, this);
         qc.eventManager.off(EventDef.Game_Select_Tool, this._useTool, this);
+        qc.eventManager.off(EventDef.UpdateSoundStatus, this._updateSoundStatus, this);
+        qc.eventManager.off(EventDef.UpdateVibrateStatus, this._updateVibrateStatus, this);
+        qc.eventManager.off(EventDef.SelectBoomGuide, this._selectBoomGuide, this);
+        qc.eventManager.off(EventDef.PassTargetGuide, this._passTargetGuide, this);
     }
 
     private noNeedToCheckGameStatus: boolean = false;
@@ -261,13 +307,13 @@ export class GamePanel extends PanelComponent {
         this.noNeedToCheckGameStatus = this.checkGameStatus();
     }
 
-    private initViews(levelConfig: LevelConfig) {
+    private initViews(levelConfig: LevelConfig, isReplay: boolean) {
 
         this.stepsValue = levelConfig.steps;
         this.scoreValue.init();
 
         // 根据类型显示目标
-        this.initGoalAndProgressViews(levelConfig);
+        this.initGoalAndProgressViews(levelConfig, isReplay);
 
         this.updateStepNode();
         this.updateScoreNode();
@@ -280,8 +326,8 @@ export class GamePanel extends PanelComponent {
      * 根据关卡的目标，生成不同的目标Node
      * @param levelConfig 
      */
-    private initGoalAndProgressViews(levelConfig: LevelConfig) {
-        let { goalScript } = GoalFactorys.appendGoalNode(levelConfig.goal, this.goalPrefabs, this.goalLayoutNode);
+    private initGoalAndProgressViews(levelConfig: LevelConfig, isReplay: boolean) {
+        let { goalScript } = GoalFactorys.appendGoalNode(levelConfig.goal, this.goalPrefabs, this.goalLayoutNode, isReplay);
         this.levelGoal = goalScript;
         this.goalProgress = this.levelGoal.getGoal();
 
@@ -343,6 +389,8 @@ export class GamePanel extends PanelComponent {
                         }
                     }
                     randomCells.push(randomCell);
+                    console.log('randomcell ', randomCells.length, '  repeatCount ', repeatCount);
+
                     if (randomCells.length === repeatCount) {
                         this.scheduleOnce(() => {
                             for (let i = 0; i < randomCells.length; i++) {
@@ -394,11 +442,17 @@ export class GamePanel extends PanelComponent {
         console.log("game pass");
         this.levelGridScript.stop();
 
-        // 显示游戏结束弹窗
-        this.showGameDialog(true);
-
         // 更新游戏进度
         this.updateGameStorage();
+        LevelMgr.ins.sendLevelPassToServer(this.levelData.levelIndex,
+            this.progressNode.getComponent(ProgressScript).getStarCountr(),
+            this.scoreValue.score,
+            PlayerMgr.ins.userInfo.summary.map_on,
+            (data: PassData) => {
+                // 显示游戏结束弹窗
+                qc.platform.reportScene(401);
+                this.showGameDialog(true, data.rewards);
+            });
     }
 
     // 更新分数和进度
@@ -417,30 +471,36 @@ export class GamePanel extends PanelComponent {
     }
 
 
-    private showGameDialog(success: boolean) {
+    private showGameDialog(success: boolean, rewards?: PassReward[]) {
         this.dialogNode.active = true;
         let dialogScript = this.dialogNode.getComponent(DiaLogScript);
         dialogScript.setScore(this.goalProgress.score);
         dialogScript.setStarCounter(this.progressNode.getComponent(ProgressScript).getStarCountr());
         dialogScript.setSuccess(success, this.levelData);
         if (success) {
-            dialogScript.setRewards(this.levelData.rewards, Math.random() > .5 ? true : false);
+            dialogScript.setRewards(rewards);
         }
 
         dialogScript.show({
             onConform: () => {
                 dialogScript.remove();
-
-                qc.panelRouter.hide({
-                    panel: PanelConfigs.gamePanel,
-                    onHided: () => {
-                        qc.panelRouter.destroy({
-                            panel: PanelConfigs.gamePanel,
-                        });
-                    },
-                });
+                this._backToMainPanel();
             }
         })
+    }
+
+    private _backToMainPanel() {
+        qc.panelRouter.hide({
+            panel: PanelConfigs.gamePanel,
+            onHided: () => {
+                qc.eventManager.emit(EventDef.GamePanelToMainPanel);
+                qc.panelRouter.destroy({
+                    panel: PanelConfigs.gamePanel,
+                });
+            },
+        });
+        musicMgr.ins.stopMusic();
+        musicMgr.ins.playMusic('bg_music');
     }
 
     private updateGameStorage() {
@@ -458,28 +518,44 @@ export class GamePanel extends PanelComponent {
         if (this.levelData.starCount === 0) {
             this.levelData.starCount = 1;
         }
-        PlayerMgr.ins.player.stars[this.levelData.levelIndex] = this.levelData.starCount;
+
+        let levelInfo: Currentlevel = {
+            level_no: this.levelData.levelIndex,
+            best_score: this.scoreValue.score,
+            best_stars: this.levelData.starCount,
+            play_times: 0,
+            pass_status: '',
+            create_time: '',
+            update_time: ''
+        };
+        PlayerMgr.ins.setLevelInfo(levelInfo);
+        PlayerMgr.ins.userInfo.summary.total_stars += this.levelData.starCount;
+        PlayerMgr.ins.userInfo.summary.total_score += this.scoreValue.score;
         qc.eventManager.emit(EventDef.Update_Stars, this.levelData.levelIndex, this.levelData.starCount);
-        if (this.levelData.levelIndex >= PlayerMgr.ins.player.level) {
+        if (this.levelData.levelIndex > PlayerMgr.ins.userInfo.summary.latest_passed_level) {
             let nextLevel = this.levelData.levelIndex + 1;
-            let mapId = PlayerMgr.ins.player.mapId;
+            let mapId = PlayerMgr.ins.userInfo.summary.map_on;
             if (LevelMgr.ins.getLevel(mapId, nextLevel)) {
-                PlayerMgr.ins.player.level = nextLevel;
+                PlayerMgr.ins.userInfo.summary.latest_passed_level = this.levelData.levelIndex;
                 qc.eventManager.emit(EventDef.Update_Level, true);
             }
             else {// 解锁下一张地图//
                 mapId += 1;
                 if (LevelMgr.ins.getMap(mapId)) {
-                    PlayerMgr.ins.player.level = nextLevel;
-                    PlayerMgr.ins.player.mapId = mapId;
-                    qc.eventManager.emit(EventDef.Unlock_Map);
+                    let levelConfig = LevelMgr.ins.getLevel(mapId, nextLevel);
+                    // 成功解锁//
+                    if (levelConfig && levelConfig.unlock_stars && PlayerMgr.ins.userInfo.summary.total_stars >= levelConfig.unlock_stars) {
+                        qc.eventManager.emit(EventDef.Unlock_Map);
+                    }
+                }
+                else {
+                    qc.eventManager.emit(EventDef.Jump_Level, PlayerMgr.ins.userInfo.summary.map_on, PlayerMgr.ins.userInfo.summary.latest_passed_level);
                 }
             }
         }
         else {
-            qc.eventManager.emit(EventDef.Jump_Level, PlayerMgr.ins.player.mapId, PlayerMgr.ins.player.level);
+            qc.eventManager.emit(EventDef.Jump_Level, PlayerMgr.ins.userInfo.summary.map_on, PlayerMgr.ins.userInfo.summary.latest_passed_level);
         }
-        qc.storage.setObj(Constants.PLAYER_DATA_KEY, PlayerMgr.ins.player);
     }
 
     private updateStepNode() {
@@ -494,6 +570,10 @@ export class GamePanel extends PanelComponent {
 
     public _resurrection() {
         this._addSteps(Constants.Resurrection_Add_Steps);
+        this._resetStatus();
+    }
+
+    private _resetStatus(isReplay: boolean = false) {
         this.gameStatus.gameFailed = false;
         this.gameStatus.gameSuccess = false;
         this.gameStatus.matchStableComplete = false;
@@ -501,6 +581,9 @@ export class GamePanel extends PanelComponent {
         this.gameStatus.stepLeftReduceComplete = false;
         this.noNeedToCheckGameStatus = false;
         this._isFinish = false;
+        if (isReplay) {
+            this.isFirstStableHappened = false;
+        }
     }
 
     private _addSteps(steps: number) {
@@ -544,7 +627,7 @@ export class GamePanel extends PanelComponent {
         }
     }
 
-    private _setToolFormGameStart(cb: Function) {
+    private _setToolFromGameStart(cb: Function) {
         let tools = [];
         for (let key in this._seletToolFromGameStart) {
             if (this._seletToolFromGameStart[key] > 0) {
@@ -586,7 +669,12 @@ export class GamePanel extends PanelComponent {
                         }
                     }
                     let itemType = +tool === ToolType.TYPE_STEPS ? ItemType.Steps : ItemType.Boom;
-                    PlayerMgr.ins.addItem(itemType, -1, true);
+                    let item: IItem = ItemMgr.ins.getItem(itemType);
+                    if (item) {
+                        ItemMgr.ins.useItem(item.type, this.levelData.levelIndex, () => {
+                            PlayerMgr.ins.addItem(itemType, -1);
+                        });
+                    }
                 });
             }
         }
@@ -610,6 +698,9 @@ export class GamePanel extends PanelComponent {
                 qc.eventManager.emit(EventDef.Game_Select_Tool_Success, type);
                 break;
         }
+        if (this.settingNode.active) {
+            this.settingNode.active = false;
+        }
     }
 
     private _initTools() {
@@ -618,6 +709,140 @@ export class GamePanel extends PanelComponent {
             if (toolBtn) {
                 toolBtn.init(this._selectTools[i], this, this.exchangeTool);
             }
+        }
+    }
+
+    private _checkGuide() {
+        // test
+        // GuideMgr.ins.lastGuideType = GuideType.Force_Level_1_Left_Steps;
+        // test
+
+        // 第1关消除强制引导
+        if (GuideMgr.ins.checkGuide(GuideType.Force_Level_1_Eliminate)) {
+            GuideMgr.ins.forceGuide_Eliminate(this.levelData.guide_cells, this.levelGridScript.grid.cells, this.node, GuideType.Force_Level_1_Eliminate, () => {
+                GuideMgr.ins.level_1_ForceGuideSelectTool(this.tools.getChildByName('HammerBtn'), this.node, ItemType.Hammer, () => {
+                    GuideMgr.ins.forceGuideUseTool(this.levelGridScript.grid.randomCell().node, this.node, GuideType.Force_Level_1_Use_Hammer, null);
+                });
+            });
+        }
+        // 第2关强制引导
+        else if (GuideMgr.ins.checkGuide(GuideType.Force_Level_2_Eliminate)) {
+            GuideMgr.ins.forceGuide_Eliminate(this.levelData.guide_cells, this.levelGridScript.grid.cells, this.node, GuideType.Force_Level_2_Eliminate, null);
+        }
+        // 第3关强制引导
+        else if (GuideMgr.ins.checkGuide(GuideType.Force_Level_3_Eliminate)) {
+            GuideMgr.ins.forceGuide_Eliminate(this.levelData.guide_cells, this.levelGridScript.grid.cells, this.node, GuideType.Force_Level_3_Eliminate, null);
+        }
+    }
+
+    onSoundClick() {
+        if (this.soundSprite.index === 0) {
+            musicMgr.ins.stopMusic();
+            shezhiMgr.YinyueEnabled = false;
+            shezhiMgr.init();
+        }
+        else {
+            shezhiMgr.YinyueEnabled = true;
+            shezhiMgr.init();
+        }
+        qc.eventManager.emit(EventDef.UpdateSoundStatus);
+    }
+
+    onVibrationClick() {
+        if (this.vibrateSprite.index === 0) {
+            shezhiMgr.vibrateEnabled = false;
+        }
+        else {
+            shezhiMgr.vibrateEnabled = true;
+        }
+        qc.eventManager.emit(EventDef.UpdateVibrateStatus);
+    }
+
+    onExitClick() {
+        this.settingNode.active = false;
+        qc.panelRouter.showPanel(
+            {
+                panel: PanelConfigs.gameExitPanel,
+                data: {
+                    onExit: () => { this._backToMainPanel(); },
+                    onReplay: () => {
+                        this._init(true);
+                        this._resetStatus(true);
+                    },
+                }
+            }
+        );
+    }
+
+    private _updateSoundStatus() {
+        this.soundSprite.index = shezhiMgr.YinyueEnabled ? 0 : 1;
+    }
+
+    onSettingClick() {
+        if (!this.isFirstStableHappened) {
+            return;
+        }
+        this.settingNode.active = !this.settingNode.active;
+    }
+
+    private _updateVibrateStatus() {
+        this.vibrateSprite.index = shezhiMgr.vibrateEnabled ? 0 : 1;
+    }
+
+    private _selectBoomGuide() {
+        GuideMgr.ins.level_1_ForceGuideSelectTool(this.tools.getChildByName('BoomBtn'), this.node, ItemType.Boom, () => {
+            GuideMgr.ins.forceGuideUseTool(this.levelGridScript.grid.randomCell().node, this.node, GuideType.Force_Level_1_Use_Boom, null);
+        });
+    }
+
+    private _passTargetGuide() {
+        GuideMgr.ins.level_1_ForceGuideOnlyTips(this.goalLayoutNode, this.node, GuideType.Force_Level_1_Pass_Target, () => {
+            GuideMgr.ins.level_1_ForceGuideOnlyTips(this.stepsValueNode.children[0], this.node, GuideType.Force_Level_1_Left_Steps, null);
+        });
+    }
+
+    private _useColMatch() {
+        let cells = this.levelGridScript.grid.cells;
+        let toolNode: Node = null;
+        let count = 0;
+        for (let i = 0; i < cells.length; i++) {
+            for (let j = 0; j < cells[i].length; j++) {
+                let cell = cells[i][j];
+                if (cell.tool && cell.tool.getType() == ToolType.COL_MATCH) {
+                    toolNode = cell.node;
+                    count++;
+                    if (count === 2) {
+                        break;
+                    }
+                }
+                if (cell.node && cell.node['guidecantclick']) {
+                    cell.node['guidecantclick'] = false;
+                    count++;
+                    if (count === 2) {
+                        break;
+                    }
+                }
+            }
+        }
+        if (toolNode) {
+            GuideMgr.ins.forceGuideUseTool(toolNode, this.node, GuideType.Force_Level_2_Use_ColMatch, null);
+        }
+    }
+
+    private _useBoomMatch() {
+        let cells = this.levelGridScript.grid.cells;
+        let toolNode: Node = null;
+        for (let i = 0; i < cells.length; i++) {
+            for (let j = 0; j < cells[i].length; j++) {
+                let cell = cells[i][j];
+                if (cell.tool && cell.tool.getType() == ToolType.BOOM_MATCH) {
+                    toolNode = cell.node;
+                    break;
+                }
+            }
+        }
+        if (toolNode) {
+            GuideMgr.ins.forceGuideUseTool(toolNode, this.node, GuideType.Force_Level_3_Use_Boom, null);
         }
     }
 }

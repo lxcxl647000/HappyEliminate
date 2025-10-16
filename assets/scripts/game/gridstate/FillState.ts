@@ -11,6 +11,10 @@ import { ColMatchTool } from "../tools/ColMatchTool";
 import { CellScript } from "../../custom/gamepanel/CellScript";
 import { TypeMatchTool } from "../tools/TypeMatchTool";
 import { GamePanel } from "../../custom/gamepanel/GamePanel";
+import { musicMgr } from "../../manager/musicMgr";
+import GuideMgr, { GuideType } from "../../manager/GuideMgr";
+import { qc } from "../../framework/qc";
+import EventDef from "../../constants/EventDef";
 
 export class FillStateEnterData extends IEnterData {
     matches: Cell[][]; // 匹配找到的，用来计算要不要生成道具
@@ -59,6 +63,7 @@ export class FillState extends StateWithMachine {
                 // 消除了创建一个新的Cell
                 cell.type = data.grid.randomCellType();
                 this.fillNewNode(cell);
+                musicMgr.ins.playSound('drop');
             },
             isNeedRemove: (cell: Cell) => {
                 // fill主要是增加node， 如果是有效的而且node为空则需要添加
@@ -192,6 +197,13 @@ export class FillState extends StateWithMachine {
     public fillWithTool(cell: Cell, tool: ITool) {
         cell.tool = tool;
         this.fillNewNode(cell);
+        musicMgr.ins.playSound('drop');
+        if (GuideMgr.ins.checkGuide(GuideType.Force_Level_2_Eliminate)) {
+            qc.eventManager.emit(EventDef.HideGuide, GuideType.Force_Level_2_Eliminate);
+        }
+        if (GuideMgr.ins.checkGuide(GuideType.Force_Level_3_Eliminate)) {
+            qc.eventManager.emit(EventDef.HideGuide, GuideType.Force_Level_3_Eliminate);
+        }
     }
 
     public setWithTool(cell: Cell, tool: ITool) {

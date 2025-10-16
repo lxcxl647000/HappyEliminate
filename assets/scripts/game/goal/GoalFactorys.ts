@@ -15,18 +15,28 @@ export class GoalFactorys {
      * @param goalLayoutNode 因为node的操作，需要在addChild之后完成，所以将此传递进来
      * @returns 
      */
-    public static appendGoalNode(goal: GoalValue | number, prefabs: Prefab[], goalLayoutNode: Node): { goalScript: IGoalScript, goalNode: Node } {
+    public static appendGoalNode(goal: GoalValue | number, prefabs: Prefab[], goalLayoutNode: Node, isReplay: boolean): { goalScript: IGoalScript, goalNode: Node } {
         if (goal instanceof Number) {
 
             let targetGoalComplete = new GoalProgress();
             targetGoalComplete.score = (goal as Number).valueOf();
 
             let prefab = prefabs[GoalType.SCORE];
-            let node = instantiate(prefab);
-            // 先添加到node再更新内容
-            goalLayoutNode.addChild(node);
+            let node: Node = null;
+            if (!isReplay) {
+                node = instantiate(prefab);
+                // 先添加到node再更新内容
+                goalLayoutNode.addChild(node);
+            }
+            else {
+                if (goalLayoutNode.children.length > 0) {
+                    node = goalLayoutNode.children[0];
+                }
+                else {
+                    node = instantiate(prefab);
+                }
+            }
             let goalScore = node.getComponent(GoalScore);
-
             goalScore.setGoal(targetGoalComplete);
 
             return {
@@ -40,9 +50,20 @@ export class GoalFactorys {
                 targetGoalComplete.score = (goalValue.value as Number).valueOf();
 
                 let prefab = prefabs[GoalType.SCORE];
-                let node = instantiate(prefab);
-                // 先添加到node再更新内容
-                goalLayoutNode.addChild(node);
+                let node: Node = null;
+                if (!isReplay) {
+                    node = instantiate(prefab);
+                    // 先添加到node再更新内容
+                    goalLayoutNode.addChild(node);
+                }
+                else {
+                    if (goalLayoutNode.children.length > 0) {
+                        node = goalLayoutNode.children[0];
+                    }
+                    else {
+                        node = instantiate(prefab);
+                    }
+                }
                 let goalScore = node.getComponent(GoalScore);
                 goalScore.setGoal(targetGoalComplete);
 
@@ -55,9 +76,20 @@ export class GoalFactorys {
                 let targetGoalComplete1 = new GoalProgress();
                 targetGoalComplete1.types = goalValue.value as GoalTypeCounter[];
                 let prefab1 = prefabs[GoalType.TYPE_COUNTER];
-                let node1 = instantiate(prefab1);
-                // 先添加到node再更新内容
-                goalLayoutNode.addChild(node1);
+                let node1: Node = null;
+                if (!isReplay) {
+                    node1 = instantiate(prefab1);
+                    // 先添加到node再更新内容
+                    goalLayoutNode.addChild(node1);
+                }
+                else {
+                    if (goalLayoutNode.children.length > 0) {
+                        node1 = goalLayoutNode.children[0];
+                    }
+                    else {
+                        node1 = instantiate(prefab1);
+                    }
+                }
                 let goalScore1 = node1.getComponent(GoalTypeCounter4);
                 goalScore1.setGoal(targetGoalComplete1);
 
@@ -73,9 +105,20 @@ export class GoalFactorys {
         let targetGoalCompleteDefault = new GoalProgress();
         targetGoalCompleteDefault.score = 8888;
         let prefabDefault = prefabs[GoalType.SCORE];
-        let nodeDefault = instantiate(prefabDefault);
-        // 先添加到node再更新内容
-        goalLayoutNode.addChild(nodeDefault);
+        let nodeDefault: Node = null;
+        if (!isReplay) {
+            nodeDefault = instantiate(prefabDefault);
+            // 先添加到node再更新内容
+            goalLayoutNode.addChild(nodeDefault);
+        }
+        else {
+            if (goalLayoutNode.children.length > 0) {
+                nodeDefault = goalLayoutNode.children[0];
+            }
+            else {
+                nodeDefault = instantiate(nodeDefault);
+            }
+        }
         let goalScoreDefault = nodeDefault.getComponent(GoalScore);
         goalScoreDefault.setGoal(targetGoalCompleteDefault);
 

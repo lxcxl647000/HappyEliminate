@@ -26,7 +26,7 @@ export class GMPanel extends PanelComponent {
     }
 
     onClearAllData() {
-        qc.storage.setObj(Constants.PLAYER_DATA_KEY, {});
+        // qc.storage.setObj(Constants.PLAYER_DATA_KEY, {});
     }
 
     onAddItem() {
@@ -39,17 +39,17 @@ export class GMPanel extends PanelComponent {
     }
 
     onLevel() {
-        let str = this.levelInput.textLabel.string;
-        if (isNaN(+str)) return;
-        let level = +str;
-        let curLevel = PlayerMgr.ins.player.level;
-        if (level < curLevel) return;
-        curLevel++;
-        for (let i = curLevel; i <= level; i++) {
-            PlayerMgr.ins.player.stars[i] = 3;
-        }
-        PlayerMgr.ins.player.level = level + 1;
-        qc.storage.setObj(Constants.PLAYER_DATA_KEY, PlayerMgr.ins.player);
+        // let str = this.levelInput.textLabel.string;
+        // if (isNaN(+str)) return;
+        // let level = +str;
+        // let curLevel = PlayerMgr.ins.player.level;
+        // if (level < curLevel) return;
+        // curLevel++;
+        // for (let i = curLevel; i <= level; i++) {
+        //     PlayerMgr.ins.player.stars[i] = 3;
+        // }
+        // PlayerMgr.ins.player.level = level + 1;
+        // qc.storage.setObj(Constants.PLAYER_DATA_KEY, PlayerMgr.ins.player);
     }
 
     onClearLuckyTurntable() {

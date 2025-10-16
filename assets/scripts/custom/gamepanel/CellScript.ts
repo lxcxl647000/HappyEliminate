@@ -5,6 +5,7 @@ import { Constants } from '../../game/Constants';
 import CocosUtils from '../../utils/CocosUtils';
 import PoolMgr from '../../manager/PoolMgr';
 import { BundleConfigs } from '../../configs/BundleConfigs';
+import { musicMgr } from '../../manager/musicMgr';
 const { ccclass, property } = _decorator;
 
 // 描述Cell中Node的状态
@@ -483,6 +484,36 @@ export class CellScript extends Component {
                 setTimeout(() => {
                     cb && cb();
                 }, (6 / 30) * 1000);
+            }
+        });
+    }
+
+    // typematchtool//
+    public playTypeMatchAnimation(cb: Function, aniName: string) {
+        this._playDisappearAni = true;
+        let ani = this.node.getComponent(Animation);
+        if (ani) {
+            ani.once(Animation.EventType.FINISHED, () => {
+                cb && cb();
+            });
+            ani.play(aniName);
+        }
+    }
+
+    public typeLightAni(cb: Function) {
+        PoolMgr.ins.getNodeFromPool(BundleConfigs.gameBundle, 'prefabs/CandyLight', (candy: Node) => {
+            candy.parent = this.node.parent;
+            candy.setSiblingIndex(this.node.getSiblingIndex() - 1);
+            candy.setPosition(this.node.position);
+            let ani = candy.getComponent(Animation);
+            if (ani) {
+                ani.once(Animation.EventType.FINISHED, () => {
+                    PoolMgr.ins.putNodeToPool(candy);
+                });
+                ani.play();
+                setTimeout(() => {
+                    cb && cb();
+                }, (25 / 30) * 1000);
             }
         });
     }

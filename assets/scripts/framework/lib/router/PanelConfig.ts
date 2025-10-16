@@ -16,4 +16,6 @@ export interface PanelConfig {
      * 面板所在的层级节点的ZIndex
      */
     layerZIndex: number;
+
+    index: number;
 }

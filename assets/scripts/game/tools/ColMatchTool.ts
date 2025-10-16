@@ -1,4 +1,7 @@
+import EventDef from "../../constants/EventDef";
 import { CellScript } from "../../custom/gamepanel/CellScript";
+import { qc } from "../../framework/qc";
+import GuideMgr, { GuideType } from "../../manager/GuideMgr";
 import { Constants } from "../Constants";
 import { ToolsStateEnterData } from "../gridstate/ToolsState";
 import { Cell } from "../Types";
@@ -12,6 +15,9 @@ export class ColMatchTool implements ITool {
         return ToolType.COL_MATCH;
     }
     process(data: ToolsStateEnterData, onComplete: () => void) {
+        if (GuideMgr.ins.checkGuide(GuideType.Force_Level_2_Use_ColMatch)) {
+            qc.eventManager.emit(EventDef.HideGuide, GuideType.Force_Level_2_Use_ColMatch);
+        }
         let colSideCells: Cell[] = [];
         let rowSideCells: Cell[] = [];
         if (data.swapCell && data.swapCell.tool && data.swapCell.tool.getType() === ToolType.COL_MATCH) {

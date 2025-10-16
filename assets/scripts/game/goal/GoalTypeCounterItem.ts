@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node, Prefab } from 'cc';
+import { _decorator, Animation, Component, Label, Node, Prefab } from 'cc';
 import { CellType } from '../Types';
 import { CellScript } from '../../custom/gamepanel/CellScript';
 const { ccclass, property } = _decorator;
@@ -22,8 +22,15 @@ export class GoalTypeCounterItem extends Component {
 
     }
 
-    setNumber(num: number) {
-        this.numNode.getComponent(Label).string = 'x' + JSON.stringify(num);
+    setNumber(num: number, playAni: boolean = false) {
+        let numLabel = this.numNode.getComponent(Label);
+        if (playAni) {
+            let oldNum = +numLabel.string.slice(1);
+            if (oldNum !== num) {
+                this.playGoalAni();
+            }
+        }
+        numLabel.string = 'x' + JSON.stringify(num);
     }
 
     setComplete(flag: boolean) {
@@ -35,6 +42,13 @@ export class GoalTypeCounterItem extends Component {
     setType(cellType: CellType) {
         this.cellNode.getComponent(CellScript).setType(cellType);
         this.cellNode.setScale(.9, .9);
+    }
+
+    public playGoalAni() {
+        let ani = this.getComponent(Animation);
+        if (ani) {
+            ani.play();
+        }
     }
 }
 

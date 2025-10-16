@@ -11,4 +11,18 @@ export default class platform_web implements platform_interface {
 
     }
 
+    fromOtherAppToShowAd(): void {
+    }
+
+    reportScene(sceneId: number): void {
+
+    }
+
+    getShareInfo(cb: Function): void {
+
+    }
+
+    vibrateShort(cb?: Function): void {
+
+    }
 }

@@ -8,7 +8,7 @@ import { AddGoldItem } from './AddGoldItem';
 import { GetGoldConfig } from '../../configs/GetGoldConfig';
 import ConfigMgr from '../../manager/ConfigMgr';
 import { configConfigs } from '../../configs/configConfigs';
-import { ExchangeToolConfig } from '../../configs/ExchangeToolConfig';
+import ItemMgr from '../../manager/ItemMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('AddGoldPanel')
@@ -37,10 +37,12 @@ export class AddGoldPanel extends PanelComponent {
 
     private _initExchangeTools() {
         let index = 0;
-        let configs = ConfigMgr.ins.getConfigArr<ExchangeToolConfig>(configConfigs.exchangeToolConfig);
-        for (let config of configs) {
-            let tool = this.exchangeNode.children[index++];
-            tool.getComponent(ExchangeTool).init(config);
+        let items = ItemMgr.ins.itemList;
+        if (items) {
+            for (let item of items) {
+                let tool = this.exchangeNode.children[index++];
+                tool.getComponent(ExchangeTool).init(item);
+            }
         }
     }
 

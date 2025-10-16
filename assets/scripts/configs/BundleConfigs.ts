@@ -3,6 +3,7 @@
  *
  */
 export const BundleConfigs = {
+    audioBundle: "audioBundle",
     gameBundle: "gameBundle",
     mainBundle: "mainBundle",
     bootBundle: "bootBundle",
@@ -22,4 +23,6 @@ export const BundleConfigs = {
     luckyTurntableBundle: 'luckyTurntableBundle',
     gmBundle: 'gmBundle',
     getItemBundle: 'getItemBundle',
+    cashBundle: 'cashBundle',
+    bgztBundle: 'bgztBundle'
 };

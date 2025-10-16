@@ -1,3 +1,4 @@
+import { CellScript } from "../../custom/gamepanel/CellScript";
 import { ToolsStateEnterData } from "../gridstate/ToolsState";
 import { Cell } from "../Types";
 import { ITool, ToolType } from "./ITool";
@@ -10,6 +11,7 @@ export class TypeMatchTool implements ITool {
         return ToolType.TYPE_MATCH;
     }
     process(data: ToolsStateEnterData, onComplete: () => void) {
+        let typeMatchs: Cell[] = [];
         let isClearAll = data.swapCell && data.swapCell.tool
             && data.swapCell.tool.getType() === ToolType.TYPE_MATCH
             && data.tool.getType() === ToolType.TYPE_MATCH;
@@ -17,9 +19,27 @@ export class TypeMatchTool implements ITool {
         data.grid.rangeCells((c: Cell, i: number, j: number) => {
             if (isClearAll || (data.swapCell && c.type === data.swapCell.type && c.tool === null)) {
                 c.match = true;
+                typeMatchs.push(c);
             }
         });
-        // 没有动画，执行完成直接回调
-        onComplete();
+
+        let cellScript = data.cell.node.getComponent(CellScript);
+        if (cellScript) {
+            setTimeout(() => {
+                cellScript.playTypeMatchAnimation(null, 'candyMatch');
+                for (let c of typeMatchs) {
+                    let cellScript = c.node.getComponent(CellScript);
+                    if (cellScript) {
+                        cellScript.playTypeMatchAnimation(null, 'candyMatch2');
+                    }
+                }
+                cellScript.typeLightAni(() => {
+                    onComplete();
+                });
+            }, (5 / 30) * 1000);
+        }
+        else {
+            onComplete();
+        }
     }
 }

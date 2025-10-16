@@ -44,14 +44,15 @@ export class LevelNodeData extends Component {
         this._levelData = data;
 
         this.levelLabel.string = this._levelData.levelIndex.toString();
-        this.levelStatus.index = PlayerMgr.ins.player.level < this._levelData.levelIndex ? 0 : 1;
-        let starCount = PlayerMgr.ins.player.stars[this._levelData.levelIndex] | 0;
+        this.levelStatus.index = PlayerMgr.ins.userInfo.summary.latest_passed_level < this._levelData.levelIndex ? 0 : 1;
+        let levelInfo = PlayerMgr.ins.getLevelsInfo(this._levelData.levelIndex);
+        let starCount = levelInfo ? levelInfo.best_stars : 0;
         this._updateStars(this._levelData.levelIndex, starCount);
     }
 
     onClickLevel() {
         if (this._levelData) {
-            if (this._levelData.levelIndex > PlayerMgr.ins.player.level) {
+            if (this._levelData.levelIndex > PlayerMgr.ins.userInfo.summary.latest_passed_level + 1) {
                 return;
             }
             qc.panelRouter.showPanel({
@@ -68,6 +69,6 @@ export class LevelNodeData extends Component {
         if (level !== this._levelData.levelIndex) {
             return;
         }
-        this.levelStatus.index = PlayerMgr.ins.player.level < this._levelData.levelIndex ? 0 : 1;
+        this.levelStatus.index = PlayerMgr.ins.userInfo.summary.latest_passed_level < this._levelData.levelIndex ? 0 : 1;
     }
 }

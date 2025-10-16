@@ -4,6 +4,10 @@ import { ITool, ToolType } from "./ITool";
 import { ToolsStateEnterData } from "../gridstate/ToolsState";
 import { CellScript } from "../../custom/gamepanel/CellScript";
 import { Constants } from "../Constants";
+import { musicMgr } from "../../manager/musicMgr";
+import GuideMgr, { GuideType } from "../../manager/GuideMgr";
+import { qc } from "../../framework/qc";
+import EventDef from "../../constants/EventDef";
 
 /**
  * 周围的消除
@@ -13,6 +17,9 @@ export class BoomMatchTool implements ITool {
         return ToolType.BOOM_MATCH;
     }
     process(data: ToolsStateEnterData, onComplete: () => void) {
+        if (GuideMgr.ins.checkGuide(GuideType.Force_Level_3_Use_Boom)) {
+            qc.eventManager.emit(EventDef.HideGuide, GuideType.Force_Level_3_Use_Boom);
+        }
         if (data.swapCell && data.swapCell.tool && data.swapCell.tool.getType() === ToolType.BOOM_MATCH) {
             data.grid.rangeCells((c: Cell, i: number, j: number) => {
                 const dis = Vec2.distance(data.cell.gridID, c.gridID);
@@ -37,6 +44,7 @@ export class BoomMatchTool implements ITool {
                 cellScript.hideBgLight();
             });
             setTimeout(() => {
+                musicMgr.ins.playSound('bomb');
                 cellScript.boomLightAni(() => {
                     onComplete();
                 });

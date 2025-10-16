@@ -1,6 +1,9 @@
 import { Base64 } from "js-base64";
 import { hexMD5 } from "./utils/md5";
 import { baseConfig } from "../../../configs/baseConfig";
+import { CommonTips } from "../../../commonTs/CommonTips";
+import CommonTipsMgr from "../../../manager/CommonTipsMgr";
+
 interface ResponseData<T> {
     code: number;
     msg: string;
@@ -59,6 +62,8 @@ export class httpMgr {
                         signStr += key + params[key];
                     }
                 });
+            console.log(signStr, 'signStrsignStrsignStrsignStrsignStrsignStr');
+
             let sign = hexMD5(Base64.encode(signStr));
 
             let xhr = new XMLHttpRequest();
@@ -74,15 +79,19 @@ export class httpMgr {
             xhr.setRequestHeader("timestamp", timestamp);
             xhr.setRequestHeader("token", token);
             xhr.setRequestHeader("sign", sign);
+            console.log('sign', sign);
 
             xhr.onreadystatechange = () => {
                 if (xhr.readyState == 4 && xhr.status == 200) {
+                    console.log(xhr.responseText,'xhr.responseText');
+                    
                     let res = JSON.parse(xhr.responseText);
                     console.log('responseText : ' + api, res);
                     if (res.code === 200) {
                         resolve(res);
                     }
                     else {
+                        CommonTipsMgr.ins.showTips(res.msg);
                         resolve(null);
                     }
                 }
@@ -96,7 +105,19 @@ export class httpMgr {
                 reject();
             };
 
-            xhr.send();
+            if (method === 'POST') {
+                let dataStr = '';
+                Object.keys(data).forEach(key => {
+                    dataStr += key + '=' + encodeURIComponent(data[key]) + '&';
+                })
+                if (dataStr !== '') {
+                    dataStr = dataStr.substring(0, dataStr.lastIndexOf('&'));
+                }
+                xhr.send(dataStr);
+            }
+            else {
+                xhr.send();
+            }
         });
     }
 }

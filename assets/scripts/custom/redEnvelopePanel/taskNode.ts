@@ -6,8 +6,8 @@ const { ccclass, property } = _decorator;
 @ccclass('item')
 export class item extends Component {
 
-    @property(Sprite)
-    leftImg: Sprite = null;
+    @property(Node)
+    leftImg: Node = null;
     @property(Label)
     taskReamake: Label = null;
     @property(Label)
@@ -39,6 +39,7 @@ export class item extends Component {
         this.taskReamake.string = data.taskReamake;
         this.taskAllNum.string = data.taskAllNum;
         this.taskNum.string = data.taskNum;
+        this.submitBtn['type'] = data.taskImg
         if (data.taskState == 1) {
             this.submitBtn['data'] = 1
             this.submitBtn.getComponent(CustomSprite).index = 1;
@@ -48,7 +49,7 @@ export class item extends Component {
             this.submitBtn.getComponent(CustomSprite).index = 0;
             this.submitBtn.getChildByName("Label").getComponent(Label).string = "去完成";
         }
-        this.setRemoteImage(data.taskImg, this.leftImg)
+        this.leftImg.getComponent(CustomSprite).index = data.taskImg;
     }
 }
 

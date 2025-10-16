@@ -12,6 +12,12 @@ import EventDef from '../../constants/EventDef';
 import { Constants } from '../../game/Constants';
 import { SelectTool } from './SelectTool';
 import CommonTipsMgr from '../../manager/CommonTipsMgr';
+import { rewardedVideoAd } from '../../framework/lib/platform/platform_interface';
+import { baseConfig } from '../../configs/baseConfig';
+import GetItemMgr from '../../manager/GetItemMgr';
+import LevelMgr from '../../manager/LevelMgr';
+import { strengthApi } from "db://assets/scripts/api/exchange";
+import { musicMgr } from '../../manager/musicMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameStartPanel')
@@ -42,10 +48,12 @@ export class GameStartPanel extends PanelComponent {
 
     protected onEnable(): void {
         qc.eventManager.on(EventDef.Select_Tool, this._updateSelectTool, this);
+        qc.eventManager.on(EventDef.Update_Item, this._initTools, this);
     }
 
     protected onDisable(): void {
         qc.eventManager.off(EventDef.Select_Tool, this._updateSelectTool, this);
+        qc.eventManager.off(EventDef.Update_Item, this._initTools, this);
     }
 
     private _init() {
@@ -81,6 +89,7 @@ export class GameStartPanel extends PanelComponent {
     }
 
     onCloseClick() {
+        musicMgr.ins.playSound('click');
         this._hidePanel();
     }
 
@@ -90,12 +99,23 @@ export class GameStartPanel extends PanelComponent {
         });
     }
 
-    onStartClick() {
-        if (PlayerMgr.ins.player.energy < Constants.Energy_Cost) {
-            CommonTipsMgr.ins.showTips('体力不足');
-            return;
-        }
-        PlayerMgr.ins.addEnergy(-Constants.Energy_Cost, true);
+    async onStartClick() {
+        // musicMgr.ins.playSound('click');
+        // await LevelMgr.ins.sendLevelToServer(this._level.levelIndex)
+        // await PlayerMgr.ins.getHomeData()
+        // PlayerMgr.ins.getEnergy()
+        // if (PlayerMgr.ins.userInfo.props.strength >= 10) {
+        //     qc.panelRouter.showPanel({
+        //         panel: PanelConfigs.gamePanel,
+        //         onShowed: () => {
+
+        //         },
+        //         data: { level: this._level, selectTools: this._selectTools }
+        //     });
+        //     this._hidePanel();
+        // }
+
+        //test
         qc.panelRouter.showPanel({
             panel: PanelConfigs.gamePanel,
             onShowed: () => {
@@ -118,7 +138,21 @@ export class GameStartPanel extends PanelComponent {
     }
 
     onAdGetTool() {
-
+        musicMgr.ins.playSound('click');
+        let ad: rewardedVideoAd = {
+            adUnitId: baseConfig.adUnitIds[0],
+            successCb: () => {
+            },
+            failCb: (res) => {
+                if (res.isCompleted) {
+                    PlayerMgr.ins.addItem(ItemType.Boom, 1);
+                    GetItemMgr.ins.showGetItem(ItemType.Boom, 1);
+                } else {
+                    CommonTipsMgr.ins.showTips('未完成广告浏览');
+                }
+            }
+        }
+        qc.platform.showRewardedAd(ad);
     }
 }
 

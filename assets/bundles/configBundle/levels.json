@@ -1,17 +1,17 @@
 [
     {
         "levelIndex": 1,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
                 {
                     "cellType":1,
-                    "counter":10
+                    "counter":30
                 },
                 {
                     "cellType":3,
-                    "counter":15
+                    "counter":30
                 }
             ]
         },
@@ -32,6 +32,23 @@
             [1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1]
+        ],
+        "cell_grid":[
+            [1, 2, 3, 4, 1, 2, 3, 4, 1],
+            [2, 3, 4, 1, 2, 3, 4, 1, 2],
+            [3, 4, 3, 2, 3, 4, 1, 2, 3],
+            [4, 1, 1, 3, 4, 1, 2, 3, 4],
+            [1, 2, 1, 4, 1, 2, 3, 4, 1],
+            [2, 3, 4, 1, 2, 3, 4, 1, 2],
+            [3, 4, 1, 2, 3, 4, 1, 2, 3],
+            [4, 1, 2, 3, 4, 1, 2, 3, 4],
+            [1, 2, 3, 4, 1, 2, 3, 4, 1]
+        ],
+        "guide_cells":[
+            [3,2],
+            [4,2],
+            [5,2],
+            [6,2]
         ],
         "complete": false,
         "starCount": -1,
@@ -51,17 +68,17 @@
     },
     {
         "levelIndex": 2,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
                 {
                     "cellType":1,
-                    "counter":15
+                    "counter":30
                 },
                 {
                     "cellType":3,
-                    "counter":20
+                    "counter":30
                 }
             ]
         },
@@ -82,6 +99,21 @@
             [1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1]
+        ],
+        "cell_grid":[
+            [1, 2, 3, 4, 1, 2, 3, 4, 1],
+            [2, 3, 4, 1, 2, 3, 4, 1, 2],
+            [3, 4, 3, 2, 3, 4, 1, 2, 3],
+            [4, 1, 1, 3, 4, 1, 2, 3, 4],
+            [1, 2, 1, 4, 3, 2, 3, 4, 1],
+            [2, 3, 4, 1, 2, 3, 4, 1, 2],
+            [3, 4, 1, 2, 3, 4, 1, 2, 3],
+            [4, 1, 2, 3, 4, 1, 2, 3, 4],
+            [1, 2, 3, 4, 1, 2, 3, 4, 1]
+        ],
+        "guide_cells":[
+            [5,2],
+            [5,3]
         ],
         "complete": false,
         "starCount": -1,
@@ -101,7 +133,7 @@
     },
     {
         "levelIndex": 3,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -133,6 +165,21 @@
             [1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1]
         ],
+        "cell_grid":[
+            [1, 2, 3, 4, 1, 2, 3, 4, 1],
+            [2, 3, 4, 1, 2, 3, 4, 1, 2],
+            [3, 4, 3, 2, 3, 4, 1, 2, 3],
+            [4, 3, 1, 3, 4, 1, 2, 3, 4],
+            [3, 2, 1, 4, 3, 2, 3, 4, 1],
+            [2, 1, 4, 1, 1, 3, 4, 1, 2],
+            [3, 4, 1, 2, 3, 4, 1, 2, 3],
+            [4, 3, 2, 3, 4, 1, 2, 3, 4],
+            [1, 2, 3, 4, 1, 2, 3, 4, 1]
+        ],
+        "guide_cells":[
+            [5,1],
+            [5,2]
+        ],
         "complete": false,
         "starCount": -1,
         "score": 0,
@@ -151,7 +198,7 @@
     },
     {
         "levelIndex": 4,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -201,7 +248,7 @@
     },
     {
         "levelIndex": 5,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -251,7 +298,7 @@
     },
     {
         "levelIndex": 6,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -301,7 +348,7 @@
     },
     {
         "levelIndex": 7,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -351,7 +398,7 @@
     },
     {
         "levelIndex": 8,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -401,7 +448,7 @@
     },
     {
         "levelIndex": 9,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -451,16 +498,24 @@
     },
     {
         "levelIndex": 10,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
                 {
                     "cellType":1,
-                    "counter":15
+                    "counter":20
                 },
                 {
                     "cellType":3,
+                    "counter":20
+                },
+                {
+                    "cellType":2,
+                    "counter":20
+                },
+                {
+                    "cellType":4,
                     "counter":20
                 }
             ]
@@ -501,7 +556,7 @@
     },
     {
         "levelIndex": 11,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -551,7 +606,7 @@
     },
     {
         "levelIndex": 12,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -601,7 +656,7 @@
     },
     {
         "levelIndex": 13,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -651,7 +706,7 @@
     },
     {
         "levelIndex": 14,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -701,7 +756,7 @@
     },
     {
         "levelIndex": 15,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -751,7 +806,7 @@
     },
     {
         "levelIndex": 16,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -801,7 +856,7 @@
     },
     {
         "levelIndex": 17,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -851,7 +906,7 @@
     },
     {
         "levelIndex": 18,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -901,7 +956,7 @@
     },
     {
         "levelIndex": 19,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -951,7 +1006,7 @@
     },
     {
         "levelIndex": 20,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1001,7 +1056,7 @@
     },
     {
         "levelIndex": 21,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1047,11 +1102,12 @@
                 "type":2,
                 "count":10
             }
-        ]
+        ],
+        "unlock_stars":36
     },
     {
         "levelIndex": 22,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1101,7 +1157,7 @@
     },
     {
         "levelIndex": 23,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1151,7 +1207,7 @@
     },
     {
         "levelIndex": 24,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1201,7 +1257,7 @@
     },
     {
         "levelIndex": 25,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1259,7 +1315,7 @@
     },
     {
         "levelIndex": 26,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1309,7 +1365,7 @@
     },
     {
         "levelIndex": 27,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1359,7 +1415,7 @@
     },
     {
         "levelIndex": 28,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1409,7 +1465,7 @@
     },
     {
         "levelIndex": 29,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1459,7 +1515,7 @@
     },
     {
         "levelIndex": 30,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1509,7 +1565,7 @@
     },
     {
         "levelIndex": 31,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1559,7 +1615,7 @@
     },
     {
         "levelIndex": 32,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1609,7 +1665,7 @@
     },
     {
         "levelIndex": 33,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1659,7 +1715,7 @@
     },
     {
         "levelIndex": 34,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1709,7 +1765,7 @@
     },
     {
         "levelIndex": 35,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1759,7 +1815,7 @@
     },
     {
         "levelIndex": 36,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1813,7 +1869,7 @@
     },
     {
         "levelIndex": 37,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1867,7 +1923,7 @@
     },
     {
         "levelIndex": 38,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1921,7 +1977,7 @@
     },
     {
         "levelIndex": 39,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [
@@ -1971,7 +2027,7 @@
     },
     {
         "levelIndex": 40,
-        "steps": 25,
+        "steps": 10,
         "goal": {
             "type":1,
             "value": [

@@ -1,10 +1,17 @@
-import { _decorator, Node, instantiate, Label, Color, UITransform, Sprite } from 'cc';
+import { _decorator, Animation, Color, EventTouch, instantiate, Label, Node, UITransform } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from "../../framework/lib/router/PanelComponent";
 import { qc } from "../../framework/qc";
 import { PanelConfigs } from "../../configs/PanelConfigs";
 import CustomSprite from '../componetUtils/CustomSprite';
 import { taskItems } from '../../commonTs/taskItem';
+import { renwuMgr } from '../../manager/TaskMgr';
+import CommonTipsMgr from '../../manager/CommonTipsMgr';
+import GetItemMgr from '../../manager/GetItemMgr';
+import PlayerMgr from '../../manager/PlayerMgr';
+import EventDef from '../../constants/EventDef';
 import ListCom from '../../framework/lib/components/scrollviewplus/ListCom';
+import { ItemType } from '../../configs/ItemConfig';
+
 const { ccclass, property } = _decorator;
 
 @ccclass('TaskPanel')
@@ -14,432 +21,208 @@ export class TaskPanel extends PanelComponent {
     @property(Node)
     stageNode: Node = null;
     @property(Node)
+    stageNodeParent: Node = null;
+    @property(Node)
     progressBarNode: Node = null;
-    taskList: any[] = [];
-    taskRewardState: any = {};
+    @property(Node)
+    noDtaNode: Node = null;
+    private taskRewardState: any = {};
+
+    // 阶段性奖励
+    private async getRewardStages() {
+        renwuMgr.ins.getTaskRewardStages(res => {
+            this.stageNodeParent.destroyAllChildren();
+            this.taskRewardState = res;
+
+            for (let i = 0; i < this.taskRewardState.list.length; i++) {
+                let itemNode = instantiate(this.stageNode);
+                itemNode.active = true;
+                this.stageNodeParent.addChild(itemNode);
+
+                if (i === 0 || i === 2 || i === 4) {
+                    if (this.taskRewardState.list[i].claimed === 2) { // 已领取
+                        itemNode.getComponent(Animation).stop();
+                        itemNode.getComponentInChildren(CustomSprite).index = 2;
+                    }
+                    else if (this.taskRewardState.list[i].claimed === 1) {
+                        itemNode.getComponent(Animation).play();
+                        itemNode.getComponentInChildren(CustomSprite).index = 0;
+                    }
+                    else {
+                        itemNode.getComponentInChildren(CustomSprite).index = 0;
+                    }
+                }
+                if (i === 1 || i === 3) {
+                    if (this.taskRewardState.list[i].claimed === 2) { // 已领取
+                        itemNode.getComponent(Animation).stop();
+                        itemNode.getComponentInChildren(CustomSprite).index = 3;
+
+                    }
+                    else if (this.taskRewardState.list[i].claimed === 1) {
+                        itemNode.getComponent(Animation).play();
+                        itemNode.getComponentInChildren(CustomSprite).index = 1;
+                    }
+                    else {
+                        itemNode.getComponentInChildren(CustomSprite).index = 1;
+                    }
+                }
+
+                let stage = itemNode.getChildByName('stage');
+                stage['item'] = this.taskRewardState.list[i];
+                if (this.taskRewardState.list[i].claimed === 2) { // 已领取
+                    itemNode.getChildByName('completeIcon').active = true;
+                    itemNode.getComponentInChildren(Label).string = '已完成';
+                    itemNode.getComponentInChildren(Label).color = new Color(187, 147, 110, 255);
+                } else {
+                    itemNode.getComponentInChildren(Label).string = `完成${this.taskRewardState.list[i].stage}次`;
+                }
+            }
+            // 进度条显示
+            const stages = this.taskRewardState.list.map((item) => item.stage)
+            // let width = 442;
+            const firstLen = 16;
+            const lastLen = 16;
+            const middleLen = 416;
+            const totalWidth = firstLen + middleLen + lastLen;
+            const middleStageCount = 4; // 1~3, 3~8, 8~15, 15~20
+            const middleStep = middleLen / middleStageCount; // 100
+            const taskNum = this.taskRewardState.taskNum;
+            let width = 0;
+            if (taskNum <= stages[0]) {
+                // 0~1，未到第一个节点
+                width = (taskNum / stages[0]) * firstLen;
+            } else if (taskNum <= stages[1]) {
+                // 1~3，第一段
+                const percent = (taskNum - stages[0]) / (stages[1] - stages[0]);
+                width = firstLen + percent * middleStep;
+            } else if (taskNum <= stages[2]) {
+                // 3~8，第二段
+                const percent = (taskNum - stages[1]) / (stages[2] - stages[1]);
+                width = firstLen + middleStep + percent * middleStep;
+            } else if (taskNum <= stages[3]) {
+                // 8~15，第三段
+                const percent = (taskNum - stages[2]) / (stages[3] - stages[2]);
+                width = firstLen + middleStep * 2 + percent * middleStep;
+            } else if (taskNum <= stages[4]) {
+                // 15~20，第四段
+                const percent = (taskNum - stages[3]) / (stages[4] - stages[3]);
+                width = firstLen + middleStep * 3 + percent * middleStep;
+            } else {
+                // 超过20，最后一段
+                width = totalWidth;
+            }
+            width = Math.max(0, Math.min(width, totalWidth));
+            this.progressBarNode.getComponent(UITransform).width = width;
+        });
+    }
+
+    // 领取阶段性奖励
+    private clickStageReward(e: EventTouch) {
+        let node = e.currentTarget;
+        let stage = node['item'];
+        if (stage.claimed == 2) {
+            return;
+        }
+        renwuMgr.ins.claimStageReward(stage.stage, res => {
+            this.getRewardStages();
+            const count = parseFloat(res.desc);
+            if (res.type == 1) { // 红包
+                PlayerMgr.ins.addCash(count);
+                GetItemMgr.ins.showGetItem(ItemType.RedPack, count);
+            } else {
+                // 金币
+                PlayerMgr.ins.addGold(count);
+                GetItemMgr.ins.showGetItem(ItemType.Gold, count);
+            }
+        });
+    }
 
     init() {
-        this.taskRewardState = {
-            list: [
-                {
-                    "stage": 1,
-                    "claimed": 1
-                },
-                {
-                    "stage": 5,
-                    "claimed": 1
-                },
-                {
-                    "stage": 10,
-                    "claimed": 0
-                },
-                {
-                    "stage": 15,
-                    "claimed": 0
-                },
-                {
-                    "stage": 20,
-                    "claimed": 0
+        this.getRewardStages();
+        renwuMgr.ins.getTaskList(() => {
+            this._initRenwu();
+        });
+    }
+
+    private _onShowPage(isSuccess?:boolean) {
+        if (renwuMgr.ins.jumpTask) {
+            // @ts-ignore
+            let readTimeBool = (new Date() - renwuMgr.ins.recordTime) / 1000 < renwuMgr.ins.jumpTask.browse_time;
+            let flag = false;
+            if (renwuMgr.ins.jumpTask.task_type == '12') { // 激励广告
+                if (!isSuccess) {
+                    CommonTipsMgr.ins.showTips('未完成广告任务');
                 }
-            ],
-            completeTaskNum: 8,
-            totalTaskNum: 20
+                else {
+                    flag = true;
+                }
+
+            } else if (renwuMgr.ins.jumpTask.task_type == '8') {
+                if (readTimeBool) {
+                    CommonTipsMgr.ins.showTips(`访问${renwuMgr.ins.jumpTask.browse_time}秒以上,才能领取奖励哦`);
+                    renwuMgr.ins.recordTime = null;
+                }
+                else {
+                    flag = true;
+                }
+            }
+            if(flag){
+                renwuMgr.ins.completeTask(renwuMgr.ins.jumpTask, (res) => {
+                    if (res.task === 2) {
+                        if (res.award_type === '1') {
+                            PlayerMgr.ins.addCash(+res.award);
+                            GetItemMgr.ins.showGetItem(ItemType.RedPack, +res.award);
+                        } else {
+                            PlayerMgr.ins.addGold(+res.award);
+                            GetItemMgr.ins.showGetItem(ItemType.Gold, +res.award);
+                        }
+                        this._updateList();
+                    }
+                });
+            }
+
+            renwuMgr.ins.jumpTask = null;
         }
+    }
 
-        for(let i = 0; i < this.taskRewardState.list.length; i++) {
-            let itemNode = instantiate(this.stageNode);
-            itemNode.active = true;
-            this.stageNode.parent.addChild(itemNode);
 
-            if (i === 0 || i === 2 || i === 4) {
-                if(this.taskRewardState.list[i].claimed === 1) { // 已完成
-                    itemNode.getComponentInChildren(CustomSprite).index = 2;
-                } else {
-                    itemNode.getComponentInChildren(CustomSprite).index = 0;
-                }
-            }
-            if (i === 1 || i === 3) {
-                if(this.taskRewardState.list[i].claimed === 1) { // 已完成
-                    itemNode.getComponentInChildren(CustomSprite).index = 3;
-                } else {
-                    itemNode.getComponentInChildren(CustomSprite).index = 1;
-                }
-            }
+    private _initRenwu() {
+        this.noDtaNode.active = renwuMgr.ins.taskList.length === 0;
+        this.list.numItems = renwuMgr.ins.taskList.length === 0 ? 0 : renwuMgr.ins.taskList.length;
+    }
 
-            itemNode.getChildByName('stage').getComponentInChildren(Label).string = `完成${this.taskRewardState.list[i].stage}次`;
-            if(this.taskRewardState.list[i].claimed === 1) { // 已完成
-                itemNode.getChildByName('stage').getChildByName('completeIcon').active = true;
-                itemNode.getChildByName('stage').getComponentInChildren(Label).string = '已完成';
-                itemNode.getChildByName('stage').getComponentInChildren(Label).node.setPosition(15, -52, 0);
-                itemNode.getChildByName('stage').getComponentInChildren(Label).color = new Color(187, 147, 110, 255);
-            }
+    private _updateList() {
+        renwuMgr.ins.getTaskList(() => {
+            this.list.numItems = 0;
+            this._initRenwu();
+        });
+        this.getRewardStages();
+    }
+
+    onRenderRenwuItem(item: Node, index: number) {
+        item.active = true;
+        let taskItem = item.getComponent(taskItems);
+        if (taskItem) {
+            taskItem.setData(renwuMgr.ins.taskList[index]);
         }
-        // 进度条显示
-        let width = 442;
-        let progressWidth = (this.taskRewardState.completeTaskNum / this.taskRewardState.totalTaskNum) * width;
-        this.progressBarNode.getComponent(UITransform).width = progressWidth;
-
-        this.taskList = [
-            {
-                "id": "239",
-                "title": "玩一玩开心抓猫猫",
-                "subtitle": "逛15s或通2关领奖励",
-                "button_text": "去挑战",
-                "list_order": "-20000",
-                "image": "https://cdn.yundps.com/new/2025/08/14/10/8c0aae80affa891276250f96566a5b0a.webp",
-                "task_type": "23",
-                "is_single": "0",
-                "jump_url": "alipays://platformapi/startapp?appId=20000067&url=https%3A%2F%2Fmarket.m.taobao.com%2Fapp%2Fstarlink%2Fwakeup-transit%2Fpages%2Fdownload%3Fstar_id%3D3113%26env%3Dminiapp%26slk_force_set_request%3Dtrue%26targetUrl%3Dhttps%253A%252F%252Fm.duanqu.com%253F_ariver_appid%253D3000000136119813%2526_mp_code%253Dtb%2526_container_type%253Dgm%2526hdkf_share_info%253DtaskSign%25253Dtask2021004116636198_16_178%252526adTime%25253D30%2526hdkf_share_info%253DtaskSign%25253Dtask_2021005173621564_4_239%252526adTime%25253D15",
-                "jump_appid": "",
-                "jump_pages": "",
-                "extra_data": "",
-                "integral": "0",
-                "money": "0.01",
-                "reward_type": "1",
-                "is_dev": "0",
-                "is_minute_repeat": "0",
-                "browse_time": "15",
-                "owner_id": "1",
-                "status": "1",
-                "life_task_id": "0",
-                "is_virtual": "0",
-                "life_order": "239",
-                "last_click_time": "1755532798",
-                "today_click_amount": "0",
-                "today_limit_click_amount": "500000",
-                "total_click_amount": "6",
-                "total_limit_click_amount": "0",
-                "scene_id": "",
-                "ad_id": "",
-                "group_id": "0",
-                "xcx_name": "",
-                "xcx_logo": "",
-                "is_block": "0",
-                "finish_num": "1",
-                "is_recommend": "0",
-                "flow_id": "",
-                "corner": "",
-                "template": "",
-                "temp_type": "",
-                "transfer_config": "infoAd,insertAd,link",
-                "transfer_title": "哈哈哈",
-                "tag": "special",
-                "category_id": "32",
-                "isComplete": 0,
-                "finish_complete_num": 0,
-                "friends_status": 0
-            },
-            {
-                "id": "240",
-                "title": "玩一玩开心抓猫猫",
-                "subtitle": "逛30s或通2关领奖励",
-                "button_text": "去挑战",
-                "list_order": "-20000",
-                "image": "https://cdn.yundps.com/new/2025/08/14/10/8c0aae80affa891276250f96566a5b0a.webp",
-                "task_type": "23",
-                "is_single": "0",
-                "jump_url": "alipays://platformapi/startapp?appId=20000067&url=https%3A%2F%2Fmarket.m.taobao.com%2Fapp%2Fstarlink%2Fwakeup-transit%2Fpages%2Fdownload%3Fstar_id%3D3113%26env%3Dminiapp%26slk_force_set_request%3Dtrue%26targetUrl%3Dhttps%253A%252F%252Fm.duanqu.com%253F_ariver_appid%253D3000000136119813%2526_mp_code%253Dtb%2526_container_type%253Dgm%2526hdkf_share_info%253DtaskSign%25253Dtask2021004116636198_16_178%252526adTime%25253D30%2526hdkf_share_info%253DtaskSign%25253Dtask_2021005173621564_4_240%252526adTime%25253D30",
-                "jump_appid": "",
-                "jump_pages": "",
-                "extra_data": "",
-                "integral": "0",
-                "money": "0.01",
-                "reward_type": "1",
-                "is_dev": "0",
-                "is_minute_repeat": "0",
-                "browse_time": "30",
-                "owner_id": "1",
-                "status": "1",
-                "life_task_id": "0",
-                "is_virtual": "0",
-                "life_order": "240",
-                "last_click_time": "1755532798",
-                "today_click_amount": "0",
-                "today_limit_click_amount": "500000",
-                "total_click_amount": "3",
-                "total_limit_click_amount": "0",
-                "scene_id": "",
-                "ad_id": "",
-                "group_id": "0",
-                "xcx_name": "",
-                "xcx_logo": "",
-                "is_block": "0",
-                "finish_num": "1",
-                "is_recommend": "0",
-                "flow_id": "",
-                "corner": "",
-                "template": "",
-                "temp_type": "",
-                "transfer_config": "infoAd,insertAd,link",
-                "transfer_title": "",
-                "tag": "special",
-                "category_id": "32",
-                "isComplete": 0,
-                "finish_complete_num": 0,
-                "friends_status": 0
-            },
-            {
-                "id": "234",
-                "title": "小程序外部",
-                "subtitle": "小程序外部",
-                "button_text": "去完成",
-                "list_order": "-10000",
-                "image": "https://cdn.yundps.com/new/2025/07/16/14/a81bb8cd2af61e010088208f582523f7.webp",
-                "task_type": "2",
-                "is_single": "0",
-                "jump_url": "",
-                "jump_appid": "2021005173649533",
-                "jump_pages": "pages/goldPrice/index",
-                "extra_data": "",
-                "integral": "0",
-                "money": "0.01",
-                "reward_type": "1",
-                "is_dev": "0",
-                "is_minute_repeat": "0",
-                "browse_time": "60",
-                "owner_id": "1",
-                "status": "1",
-                "life_task_id": "0",
-                "is_virtual": "0",
-                "life_order": "234",
-                "last_click_time": "1757001598",
-                "today_click_amount": "0",
-                "today_limit_click_amount": "500",
-                "total_click_amount": "3",
-                "total_limit_click_amount": "0",
-                "scene_id": "",
-                "ad_id": "",
-                "group_id": "0",
-                "xcx_name": "",
-                "xcx_logo": "",
-                "is_block": "0",
-                "finish_num": "1",
-                "is_recommend": "0",
-                "flow_id": "",
-                "corner": "",
-                "template": "",
-                "temp_type": "",
-                "transfer_config": "infoAd,insertAd,link",
-                "transfer_title": "",
-                "tag": "special",
-                "category_id": "32",
-                "isComplete": 0,
-                "finish_complete_num": 0,
-                "friends_status": 0
-            },
-            {
-                "id": "222",
-                "title": "指定外部",
-                "subtitle": "指定外部",
-                "button_text": "去看看",
-                "list_order": "-10000",
-                "image": "https://cdn.yundps.com/new/2025/07/31/14/ce49bff8f0767b39583dcd0266f739d1.jpg",
-                "task_type": "8",
-                "is_single": "0",
-                "jump_url": "",
-                "jump_appid": "",
-                "jump_pages": "tbopen://m.taobao.com/tbopen/index.html?h5Url=https%3A%2F%2Fm.duanqu.com%3F_ariver_appid%3D3000000136636894%26_mp_code%3Dtb%26_container_type%3Dgm%26hdkf_from%3Dhdkf_gamecenter",
-                "extra_data": "",
-                "integral": "100",
-                "money": 0.01,
-                "reward_type": 1,
-                "is_dev": "0",
-                "is_minute_repeat": "0",
-                "browse_time": "60",
-                "owner_id": "1",
-                "status": "1",
-                "life_task_id": "0",
-                "is_virtual": "0",
-                "life_order": "222",
-                "last_click_time": "1757001598",
-                "today_click_amount": "0",
-                "today_limit_click_amount": "10000",
-                "total_click_amount": "4",
-                "total_limit_click_amount": "0",
-                "scene_id": "",
-                "ad_id": "",
-                "group_id": "0",
-                "xcx_name": "",
-                "xcx_logo": "",
-                "is_block": "0",
-                "finish_num": "1",
-                "is_recommend": "0",
-                "flow_id": "",
-                "corner": "",
-                "template": "",
-                "temp_type": "",
-                "transfer_config": "infoAd,insertAd,link",
-                "transfer_title": "测试哈哈哈哈哈",
-                "tag": "special",
-                "category_id": "32",
-                "isComplete": 0,
-                "finish_complete_num": 0,
-                "friends_status": 0
-            },
-            {
-                "id": "186",
-                "title": "邀请好友",
-                "subtitle": "邀请好友",
-                "button_text": "邀请好友",
-                "list_order": "-1000",
-                "image": "https://cdn.yundps.com/new/2025/08/07/15/ea83d30a19318672298ca092b95eb8fa.jpg",
-                "task_type": "7",
-                "is_single": "1",
-                "jump_url": "",
-                "jump_appid": "",
-                "jump_pages": "",
-                "extra_data": "",
-                "integral": "0",
-                "money": "0.01",
-                "reward_type": "1",
-                "start_date": "1747065600",
-                "end_date": "1778601600",
-                "time_list": "[[\"000051\", \"235951\"]]",
-                "is_dev": "0",
-                "is_minute_repeat": "0",
-                "browse_time": "10",
-                "owner_id": "1",
-                "status": "1",
-                "life_task_id": "0",
-                "is_virtual": "0",
-                "life_order": "186",
-                "last_click_time": "1754582399",
-                "today_click_amount": "0",
-                "today_limit_click_amount": "1000",
-                "total_click_amount": "28",
-                "total_limit_click_amount": "5000",
-                "scene_id": "",
-                "ad_id": "",
-                "group_id": "0",
-                "xcx_name": "",
-                "xcx_logo": "",
-                "is_block": "0",
-                "finish_num": "10",
-                "is_recommend": "0",
-                "flow_id": "",
-                "corner": "王者",
-                "template": "https://cdn.yundps.com/new/2025/06/03/10/e37a1a3a0e0c7f91beddaca16909f44e.png",
-                "temp_type": "2",
-                "transfer_config": "",
-                "transfer_title": "",
-                "tag": "index",
-                "category_id": "33",
-                "isComplete": 0,
-                "finish_complete_num": 0,
-                "completeStatus": 0
-            },
-            {
-                "id": "218",
-                "title": "动动有金打卡任务",
-                "subtitle": "8/12/18/21点",
-                "button_text": "去领取",
-                "list_order": "-30",
-                "image": "https://cdn.yundps.com/new/2025/07/30/14/118d9985e21264274e07833c97f8a067.png",
-                "task_type": "17",
-                "is_single": "0",
-                "jump_url": "",
-                "jump_appid": "",
-                "jump_pages": "",
-                "extra_data": "",
-                "integral": "0",
-                "money": "0.01",
-                "reward_type": "1",
-                "is_dev": "0",
-                "is_minute_repeat": "0",
-                "browse_time": "3",
-                "owner_id": "1",
-                "status": "1",
-                "life_task_id": "0",
-                "is_virtual": "0",
-                "life_order": "218",
-                "last_click_time": "1754582399",
-                "today_click_amount": "0",
-                "today_limit_click_amount": "1000",
-                "total_click_amount": "89",
-                "total_limit_click_amount": "5000",
-                "scene_id": "",
-                "ad_id": "",
-                "group_id": "0",
-                "xcx_name": "",
-                "xcx_logo": "",
-                "is_block": "0",
-                "finish_num": "4",
-                "is_recommend": "0",
-                "flow_id": "",
-                "corner": "",
-                "template": "",
-                "temp_type": "",
-                "transfer_config": "",
-                "transfer_title": "",
-                "tag": "index",
-                "category_id": "33",
-                "isComplete": 0,
-                "finish_complete_num": 0,
-                "completeStatus": 0,
-                "friends_status": 0
-            },
-            {
-                "id": "176",
-                "title": "跳转小程序",
-                "subtitle": "跳转小程序任务",
-                "button_text": "去完成",
-                "list_order": "6",
-                "image": "https://cdn.yundps.com/new/2025/07/16/14/a81bb8cd2af61e010088208f582523f7.webp",
-                "task_type": "2",
-                "is_single": "0",
-                "jump_url": "",
-                "jump_appid": "2021005127618338",
-                "jump_pages": "pages/index/index?taskType=fish",
-                "extra_data": "",
-                "integral": "0",
-                "money": "0.01",
-                "reward_type": "1",
-                "is_dev": "0",
-                "is_minute_repeat": "0",
-                "browse_time": "5",
-                "owner_id": "1",
-                "status": "1",
-                "life_task_id": "0",
-                "is_virtual": "0",
-                "life_order": "176",
-                "last_click_time": "1754495999",
-                "today_click_amount": "0",
-                "today_limit_click_amount": "500",
-                "total_click_amount": "26",
-                "total_limit_click_amount": "0",
-                "scene_id": "",
-                "ad_id": "",
-                "group_id": "0",
-                "xcx_name": "",
-                "xcx_logo": "",
-                "is_block": "0",
-                "finish_num": "1",
-                "is_recommend": "0",
-                "flow_id": "",
-                "corner": "",
-                "template": "",
-                "temp_type": "",
-                "transfer_config": "",
-                "transfer_title": "",
-                "tag": "special",
-                "category_id": "32",
-                "isComplete": 0,
-                "finish_complete_num": 0,
-                "friends_status": 0
-            }
-        ];
-        this.list.numItems = this.taskList.length;
     }
-    start() {
+
+    protected onEnable(): void {
+        qc.eventManager.on(EventDef.Update_TaskList, this._updateList, this);
+        qc.eventManager.on(EventDef.OnShow, this._onshow, this);
+        qc.eventManager.on(EventDef.TaskCompleted,this._taskCompleted,this);
+        this.init();
+    }
+
+    protected onDisable(): void {
+        qc.eventManager.off(EventDef.Update_TaskList, this._updateList, this);
+        qc.eventManager.off(EventDef.OnShow, this._onshow, this);
+        qc.eventManager.off(EventDef.TaskCompleted,this._taskCompleted,this);
 
     }
 
-    update(deltaTime: number) {
-
-    }
     show(option: PanelShowOption): void {
         option.onShowed();
-        this.init();
     }
 
     hide(option: PanelHideOption): void {
@@ -452,12 +235,17 @@ export class TaskPanel extends PanelComponent {
             panel: PanelConfigs.taskPanel
         })
     }
-    onRenderRenwuItem(item: Node, index: number) {
-        item.active = true;
-        let taskItem = item.getComponent(taskItems);
-        if (taskItem) {
-            taskItem.setData(this.taskList[index]);
+
+    _onshow(res) {
+        if(renwuMgr.ins.jumpTask.task_type == '8'){
+        this._onShowPage();
         }
+        // this.init();
+
+    }
+
+    private _taskCompleted(isSuccess?:boolean){
+        this._onShowPage(isSuccess);
     }
 }
 

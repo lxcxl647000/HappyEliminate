@@ -2016,7 +2016,7 @@
       "b": 0,
       "a": 255
     },
-    "_string": "输入格式：数量|类型\ntype:1:金币2:体力3:炸弹4:打乱5:锤子6:步数",
+    "_string": "输入格式：数量|类型\ntype:1:金币3:体力4:炸弹7:打乱2:锤子6:步数",
     "_horizontalAlign": 0,
     "_verticalAlign": 1,
     "_actualFontSize": 18,

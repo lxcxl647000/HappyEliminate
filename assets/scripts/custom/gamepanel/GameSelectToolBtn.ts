@@ -7,6 +7,9 @@ import { ItemType } from '../../configs/ItemConfig';
 import PlayerMgr from '../../manager/PlayerMgr';
 import { GameExchangeTool } from './GameExchangeTool';
 import CommonTipsMgr from '../../manager/CommonTipsMgr';
+import ItemMgr, { IItem } from '../../manager/ItemMgr';
+import { musicMgr } from '../../manager/musicMgr';
+import { GuideType } from '../../manager/GuideMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameSelectToolBtn')
@@ -68,6 +71,7 @@ export class GameSelectToolBtn extends Component {
     }
 
     onClickTool() {
+        musicMgr.ins.playSound('click');
         if (!this._gamePanel.getIsFirstStableHappened()) {
             return;
         }
@@ -87,6 +91,12 @@ export class GameSelectToolBtn extends Component {
             return;
         }
         qc.eventManager.emit(EventDef.Game_Select_Tool, this._toolType);
+        if (this._itemType === ItemType.Hammer) {
+            qc.eventManager.emit(EventDef.HideGuide, GuideType.Force_Level_1_Select_Hammer);
+        }
+        else if (this._itemType === ItemType.Boom) {
+            qc.eventManager.emit(EventDef.HideGuide, GuideType.Force_Level_1_Select_Boom);
+        }
     }
 
     private _useToolSuccess(type: ToolType) {
@@ -94,9 +104,30 @@ export class GameSelectToolBtn extends Component {
             return;
         }
         this._leftUseNum--;
-        PlayerMgr.ins.addItem(this._itemType, -1, true);
-        this._updateBtnStuts(this._itemType);
+        let itemType = ItemType.Hammer;
+        switch (type) {
+            case ToolType.TYPE_HAMMER:
+                itemType = ItemType.Hammer;
+                break;
+            case ToolType.TYPE_BOOM:
+                itemType = ItemType.Boom;
+                break;
+            case ToolType.TYPE_STEPS:
+                itemType = ItemType.Steps;
+                break;
+            case ToolType.RANDOM_GRID:
+                itemType = ItemType.Sort;
+                break;
+            default:
+                break;
+        }
+
+        let item: IItem = ItemMgr.ins.getItem(itemType);
+        if (item) {
+            ItemMgr.ins.useItem(item.type, this._gamePanel.levelData.levelIndex, () => {
+                PlayerMgr.ins.addItem(this._itemType, -1);
+                this._updateBtnStuts(this._itemType);
+            });
+        }
     }
 }
-
-
