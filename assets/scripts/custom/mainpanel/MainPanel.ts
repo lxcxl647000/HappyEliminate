@@ -38,6 +38,8 @@ export class MainPanel extends PanelComponent {
     guideAni: Animation = null;
     @property(CustomSprite)
     vibrateSprite: CustomSprite = null;
+    @property(Label)
+    leftLevelLabel: Label = null;
 
     private _currentLevel: LevelConfig = null;
     private _vibrateFlag = false;
@@ -58,6 +60,7 @@ export class MainPanel extends PanelComponent {
         this._updateLevel(false);
         this._initMap();
         ItemMgr.ins.getItemList(null);
+        this._updateLeftLevelLabel();
     }
     hide(option: PanelHideOption): void {
 
@@ -72,6 +75,7 @@ export class MainPanel extends PanelComponent {
         qc.eventManager.on(EventDef.UpdateSoundStatus, this._updateSoundStatus, this);
         qc.eventManager.on(EventDef.UpdateMusicStatus, this._updateMusicStatus, this);
         qc.eventManager.on(EventDef.UpdateVibrateStatus, this._updateVibrateStatus, this);
+        qc.eventManager.on(EventDef.Update_Left_Level_Redpack, this._updateLeftLevelLabel, this);
         this.levelLabel.string = `第${PlayerMgr.ins.userInfo.summary.latest_passed_level + 1}关`;
     }
 
@@ -84,6 +88,7 @@ export class MainPanel extends PanelComponent {
         qc.eventManager.off(EventDef.UpdateSoundStatus, this._updateSoundStatus, this);
         qc.eventManager.off(EventDef.UpdateVibrateStatus, this._updateVibrateStatus, this);
         qc.eventManager.off(EventDef.UpdateMusicStatus, this._updateMusicStatus, this);
+        qc.eventManager.off(EventDef.Update_Left_Level_Redpack, this._updateLeftLevelLabel, this);
     }
 
     private _initMap() {
@@ -357,11 +362,6 @@ export class MainPanel extends PanelComponent {
         this.vibrateSprite.index = SettingMgr.ins.vibrateEnabled ? 0 : 1;
     }
 
-    
-
-   
-    
-
     // 主题弹窗
     bgztBtn() {
         musicMgr.ins.playSound('click');
@@ -372,6 +372,9 @@ export class MainPanel extends PanelComponent {
             data: { type: 0 }
         });
     }
+
+    private _updateLeftLevelLabel() {
+        let leftLevel = PlayerMgr.ins.userInfo.prompt.remain;
+        this.leftLevelLabel.string = `只差${leftLevel}关得红包`;
+    }
 }
-
-

@@ -235,9 +235,9 @@ export default class PlayerMgr {
         if (res.data.summary.map_on === 0) {
             PlayerMgr.ins.userInfo.summary.map_on = 1;
         }
+        qc.eventManager.emit(EventDef.Update_Level);
         console.log('this.userInfo', this.userInfo);
         cb && cb();
-
     }
 
     // 首页体力恢复方法

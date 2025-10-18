@@ -39,4 +39,6 @@ export default class EventDef {
     public static SelectBoomGuide = 'SelectBoomGuide';
     public static PassTargetGuide = 'PassTargetGuide';
     public static UpdateMusicStatus = 'UpdateMusicStatus';
+    // 更新还差多少关得红包
+    public static Update_Left_Level_Redpack = 'Update_Left_Level_Redpack';
 }
