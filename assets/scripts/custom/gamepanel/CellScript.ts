@@ -61,6 +61,9 @@ export class CellScript extends Component {
 
     // 是否是一个 道具
     private toolType: ToolType = ToolType.INVALID;
+    public getToolType() {
+        return this.toolType;
+    }
 
     // 是否初始化
     private inited: boolean = false;

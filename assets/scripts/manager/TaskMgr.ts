@@ -89,7 +89,6 @@ export class renwuMgr {
 
     public jumpTask: Task = null;
     public recordTime: Date = null
-    public isAdComplete: boolean = false;
 
     public static get ins() {
         if (this._ins == null) {
@@ -113,7 +112,7 @@ export class renwuMgr {
         }
     }
 
-    public async completeTask(task: Task, cb: Function) {
+    public async completeTask(task, cb: Function) {
         let res = await httpMgr.ins.xhrRequest<TaskCompleteData>('/task/complete', 'GET', { taskId: task.id, channelId: baseConfig.adzoneId });
         if (res && res.data) {
             cb && cb(res.data);

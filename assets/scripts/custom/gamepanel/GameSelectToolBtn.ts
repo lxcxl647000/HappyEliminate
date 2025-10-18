@@ -40,6 +40,7 @@ export class GameSelectToolBtn extends Component {
     }
 
     public init(type: ToolType, gamePanel: GamePanel, exchange: GameExchangeTool) {
+        this._leftUseNum = 1;
         this._exchange = exchange;
         this._gamePanel = gamePanel;
         this._toolType = type;

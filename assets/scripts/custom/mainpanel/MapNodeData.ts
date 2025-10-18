@@ -5,6 +5,7 @@ import PlayerMgr from '../../manager/PlayerMgr';
 import { qc } from '../../framework/qc';
 import EventDef from '../../constants/EventDef';
 import LevelMgr from '../../manager/LevelMgr';
+import PoolMgr from '../../manager/PoolMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('MapNodeData')
@@ -55,6 +56,15 @@ export class MapNodeData extends Component {
     private _setLockStatus() {
         let isActive = this.lock.active;
         let isLock = PlayerMgr.ins.userInfo.summary.map_on === this._mapId;
+        if (!isLock) {
+            let head = this.levels.getChildByName('head');
+            if (head) {
+                let target = head.getChildByName('target');
+                if (target) {
+                    PoolMgr.ins.putNodeToPool(target);
+                }
+            }
+        }
         if (isActive === false && isLock) {
             let layout = this.node.parent.getComponent(Layout);
             if (layout) {

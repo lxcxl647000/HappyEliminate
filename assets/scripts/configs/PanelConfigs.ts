@@ -1,3 +1,4 @@
+import { bgztpanel } from "../custom/bgztpanel/bgztpanel";
 import { PanelConfig } from "../framework/lib/router/PanelConfig";
 import { BundleConfigs } from "./BundleConfigs";
 
@@ -144,4 +145,12 @@ export const PanelConfigs = {
         layerZIndex: PanelLayerEnum.PopLayer,
         index: 1,
     }
+    ,
+    bgztPanel: <PanelConfig>{
+        prefabPath: `${BundleConfigs.bgztBundle}/prefabs/bgztPanel`,
+        layerZIndex: PanelLayerEnum.PopLayer,
+        index: 1,
+    }
+    
+
 };

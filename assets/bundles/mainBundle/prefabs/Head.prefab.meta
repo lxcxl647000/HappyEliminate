@@ -2,12 +2,12 @@
   "ver": "1.1.50",
   "importer": "prefab",
   "imported": true,
-  "uuid": "84ee942c-d024-4ada-a075-fee119674a63",
+  "uuid": "57eea8b0-6d3b-4b2f-9c73-eed0b3aad84d",
   "files": [
     ".json"
   ],
   "subMetas": {},
   "userData": {
-    "syncNodeName": "bgztBundle"
+    "syncNodeName": "Head"
   }
 }

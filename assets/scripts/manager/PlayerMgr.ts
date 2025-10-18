@@ -32,6 +32,7 @@ interface Summary {
     total_stars: number;
     total_score: number;
     map_on: number;
+    current_theme_id: string
 }
 interface userInfoFace {
     current_level: Currentlevel[];
@@ -140,7 +141,10 @@ export default class PlayerMgr {
                 this.addEnergy(num);
                 break;
             case ItemType.Hammer:
-                num = this.userInfo.props.hammer_num;
+                this.userInfo.props.hammer_num += num;
+                if (this.userInfo.props.hammer_num < 0) {
+                    this.userInfo.props.hammer_num = 0;
+                }
                 break;
             case ItemType.Boom:
                 this.userInfo.props.bomb_num += num;

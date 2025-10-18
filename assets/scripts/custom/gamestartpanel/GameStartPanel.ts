@@ -34,6 +34,7 @@ export class GameStartPanel extends PanelComponent {
     private _level: LevelConfig = null;
     private _tools: ItemType[] = [ItemType.Boom, ItemType.Steps];
     private _selectTools: { [id: number]: number } = {};
+    private _cdTime: number = 0;
 
     show(option: PanelShowOption): void {
         option.onShowed();
@@ -44,6 +45,13 @@ export class GameStartPanel extends PanelComponent {
     }
     hide(option: PanelHideOption): void {
         option.onHided();
+    }
+
+    protected update(dt: number): void {
+        if (this._cdTime > 0) {
+            this._cdTime -= dt;
+            if (this._cdTime <= 0) this._cdTime = 0;
+        }
     }
 
     protected onEnable(): void {
@@ -100,6 +108,8 @@ export class GameStartPanel extends PanelComponent {
     }
 
     async onStartClick() {
+        if (this._cdTime > 0) return;
+        this._cdTime = 1;
         musicMgr.ins.playSound('click');
         await LevelMgr.ins.sendLevelToServer(this._level.levelIndex)
         await PlayerMgr.ins.getHomeData()
@@ -115,15 +125,6 @@ export class GameStartPanel extends PanelComponent {
             this._hidePanel();
         }
 
-        //test
-        // qc.panelRouter.showPanel({
-        //     panel: PanelConfigs.gamePanel,
-        //     onShowed: () => {
-
-        //     },
-        //     data: { level: this._level, selectTools: this._selectTools }
-        // });
-        // this._hidePanel();
     }
 
     private _updateSelectTool(itemType: ItemType, num: number) {

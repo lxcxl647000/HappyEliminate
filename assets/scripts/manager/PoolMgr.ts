@@ -12,6 +12,7 @@ export default class PoolMgr {
         { bundle: BundleConfigs.gameBundle, path: 'prefabs/BoomLight', defaultNum: 1 },
         { bundle: BundleConfigs.gameBundle, path: 'prefabs/CandyLight', defaultNum: 1 },
         { bundle: BundleConfigs.commonBundle, path: 'prefabs/guideTmp', defaultNum: 1 },
+        { bundle: BundleConfigs.mainBundle, path: 'prefabs/Head', defaultNum: 1 },
         // { bundle: BundleConfigs.commonBundle, path: 'prefabs/FlyRedPack', defaultNum: 1 },
     ];
 

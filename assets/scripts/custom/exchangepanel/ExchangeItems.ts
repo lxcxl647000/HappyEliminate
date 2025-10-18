@@ -1,11 +1,11 @@
-import { _decorator, Component, Label } from 'cc';
+import { _decorator, Component, Label, Node } from 'cc';
 const { ccclass, property } = _decorator;
 import { strengthApi, ExchangeList } from "../../api/exchange";
-import { qc } from "db://assets/scripts/framework/qc";
-import { PanelConfigs } from "db://assets/scripts/configs/PanelConfigs";
+import { qc } from "../../framework/qc";
+import { PanelConfigs } from "../../configs/PanelConfigs";
 import PlayerMgr from "../../manager/PlayerMgr";
 import GetItemMgr from '../../manager/GetItemMgr';
-import { ItemType } from "db://assets/scripts/configs/ItemConfig";
+import { ItemType } from "../../configs/ItemConfig";
 import EventDef from '../../constants/EventDef';
 
 @ccclass('contentItems')
@@ -14,9 +14,8 @@ export class contentItems extends Component {
     title: Label = null;
     @property(Label)
     content: Label = null;
-    @property(Label)
-    btnLabel: Label = null;
-    @property(Label)
+    @property(Node)
+    btnNode: Node = null;
 
     private _task: ExchangeList = null;
 
@@ -24,10 +23,12 @@ export class contentItems extends Component {
         this._task = list;
         this.title.string = `${list.title}(${list.done}/${list.need})`;
         this.content.string = `+${list.reward_strength}体力`;
+        console.log('this.btnNode:', this.btnNode);
         if (list.status === 0) {
-            this.btnLabel.string = '去完成'
+            this.btnNode.getChildByName('btnLabel').getComponent(Label).string = '去完成';
         } else if (list.status === 1) {
-            this.btnLabel.string = '领取'
+            this.btnNode.getChildByName('redDot').active = true;
+            this.btnNode.getChildByName('btnLabel').getComponent(Label).string = '领取';
         }
     }
 

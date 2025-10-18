@@ -54,11 +54,7 @@ export class ExchangePanel extends PanelComponent {
     }
     clearTIME(time: number) {
         this.title.string = `${this.formatTimestampToMMSS(time)}后+1`;
-        if (PlayerMgr.ins.userInfo.props.strength >= 100) {
-            this.title.node.parent.active = false;
-        } else {
-            this.title.node.parent.active = true;
-        }
+        this.title.node.parent.active = PlayerMgr.ins.userInfo.props.strength < 100;
     }
     private formatTimestampToMMSS(timestamp: number): string {
         // 转换为秒

@@ -7,7 +7,7 @@ import CommonTipsMgr from '../../manager/CommonTipsMgr';
 import ConfigMgr from '../../manager/ConfigMgr';
 import { ItemConfig } from '../../configs/ItemConfig';
 import { configConfigs } from '../../configs/configConfigs';
-import { IItem } from '../../manager/ItemMgr';
+import ItemMgr, { IItem } from '../../manager/ItemMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('ExchangeTool')
@@ -33,7 +33,11 @@ export class ExchangeTool extends Component {
             CommonTipsMgr.ins.showTips('金币不足');
             return;
         }
-        GetItemMgr.ins.showGetItem(this._data.id, 1, false, this._data.price);
+        ItemMgr.ins.exchangeItem(this._data.type, 1, () => {
+            PlayerMgr.ins.addGold(-this._data.price);
+            PlayerMgr.ins.addItem(this._data.id, 1);
+            GetItemMgr.ins.showGetItem(this._data.id, 1);
+        });
     }
 }
 

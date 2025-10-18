@@ -3,6 +3,5 @@ export const configConfigs = {
     itemConfig: 'items',
     getGoldConfig: 'getGold',
     luckyTurntableConfig: 'luckyTurntable',
-    exchangeToolConfig: 'exchangeTool',
     cashConfig: 'cash'
 }

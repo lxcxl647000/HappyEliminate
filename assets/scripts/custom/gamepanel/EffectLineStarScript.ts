@@ -1,4 +1,5 @@
 import { _decorator, CCBoolean, Component, Node, tween, Vec3 } from 'cc';
+import { Cell } from '../../game/Types';
 const { ccclass, property } = _decorator;
 
 /**
@@ -17,10 +18,10 @@ export class EffectLineStarScript extends Component {
     private to: Vec3 = new Vec3(0);
 
     start() {
-        if (this.test) {
-            this.setPath(new Vec3(-320, 500, 0), new Vec3(0, 0));
-            this.startMove();
-        }
+        // if (this.test) {
+        //     this.setPath(new Vec3(-320, 500, 0), new Vec3(0, 0));
+        //     this.startMove();
+        // }
     }
 
     update(deltaTime: number) {
@@ -36,13 +37,13 @@ export class EffectLineStarScript extends Component {
         this.to = to;
     }
 
-    startMove(cb?: Function) {
+    startMove(cell: Cell, cb?: Function) {
         this.node.setPosition(this.from);
         tween(this.node)
             .to(this.duration, { position: this.to })
             .call(() => {
                 this.node.removeFromParent();
-                cb && cb();
+                cb && cb(cell);
             })
             .start();
     }

@@ -11,9 +11,6 @@ import { MapNodeData } from './MapNodeData';
 import { baseConfig } from '../../configs/baseConfig';
 import ItemMgr from '../../manager/ItemMgr';
 import { musicMgr } from '../../manager/musicMgr';
-import PoolMgr from '../../manager/PoolMgr';
-import { BundleConfigs } from '../../configs/BundleConfigs';
-import CocosUtils from '../../utils/CocosUtils';
 import CustomSprite from '../componetUtils/CustomSprite';
 import { SettingMgr } from '../../manager/SettingMgr';
 
@@ -358,6 +355,22 @@ export class MainPanel extends PanelComponent {
 
     private _updateVibrateStatus() {
         this.vibrateSprite.index = SettingMgr.ins.vibrateEnabled ? 0 : 1;
+    }
+
+    
+
+   
+    
+
+    // 主题弹窗
+    bgztBtn() {
+        musicMgr.ins.playSound('click');
+        qc.panelRouter.showPanel({
+            panel: PanelConfigs.bgztPanel,
+            onShowed: () => {
+            },
+            data: { type: 0 }
+        });
     }
 }
 

@@ -147,7 +147,7 @@ export default class GuideMgr {
                 tipsOffset = new Vec2(-200, 70);
                 break;
             case GuideType.Force_Level_1_Left_Steps:
-                tips = '当前关卡还可以的步数';
+                tips = '当前关卡剩余可用步数';
                 targetPosOffset = new Vec2(70, -200);
                 fingerAniOffset = new Vec2(0, 50);
                 tipsOffset = new Vec2(-150, 70);

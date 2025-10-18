@@ -160,10 +160,7 @@ export class GamePanel extends PanelComponent {
         if (!this.levelConfig) {
             this.levelConfig = LevelMgr.ins.getLevel(PlayerMgr.ins.userInfo.summary.map_on, PlayerMgr.ins.userInfo.summary.latest_passed_level + 1);
         }
-
-        if (!isReplay) {
-            this._initTools();
-        }
+        this._initTools();
 
         // 初始化内容
         this.levelData = new LevelConfig(this.levelConfig);
@@ -257,13 +254,6 @@ export class GamePanel extends PanelComponent {
                         }
 
                         this.gameStatus.matchStableComplete = true;
-
-                        // if (GuideMgr.ins.checkGuide(GuideType.Force_Level_2_Eliminate)) {
-                        //     qc.eventManager.emit(EventDef.HideGuide, GuideType.Force_Level_2_Eliminate);
-                        // }
-                        // if (GuideMgr.ins.checkGuide(GuideType.Force_Level_3_Eliminate)) {
-                        //     qc.eventManager.emit(EventDef.HideGuide, GuideType.Force_Level_3_Eliminate);
-                        // }
                     };
 
                     if (!this.isFirstStableHappened) {
@@ -372,7 +362,7 @@ export class GamePanel extends PanelComponent {
                 let effectLineStarScript = lineStarNode.getComponent(EffectLineStarScript);
                 effectLineStarScript.setDuration(.4);
                 effectLineStarScript.setPath(fromPos, toPos);
-                effectLineStarScript.startMove(() => {
+                effectLineStarScript.startMove(randomCell, (cell: Cell) => {
                     let type = MathUtils.randomSort(this._needRandomTools)[0];
                     let iTool: ITool = null;
                     switch (type) {
@@ -386,17 +376,17 @@ export class GamePanel extends PanelComponent {
                             iTool = new RowMatchTool();
                             break;
                     }
-                    if (!randomCell.node) {
-                        ConstStatus.getInstance().fillState.fillWithTool(randomCell, iTool);
+                    if (!cell.node) {
+                        ConstStatus.getInstance().fillState.fillWithTool(cell, iTool);
                     }
                     else {
-                        let cellScript = randomCell.node.getComponent(CellScript);
+                        let cellScript = cell.node.getComponent(CellScript);
                         if (cellScript) {
                             cellScript.setToolType(type);
-                            ConstStatus.getInstance().fillState.setWithTool(randomCell, iTool);
+                            ConstStatus.getInstance().fillState.setWithTool(cell, iTool);
                         }
                     }
-                    randomCells.push(randomCell);
+                    randomCells.push(cell);
                     console.log('randomcell ', randomCells.length, '  repeatCount ', repeatCount);
 
                     if (randomCells.length === repeatCount) {
@@ -550,9 +540,11 @@ export class GamePanel extends PanelComponent {
             else {// 解锁下一张地图//
                 mapId += 1;
                 if (LevelMgr.ins.getMap(mapId)) {
+                    PlayerMgr.ins.userInfo.summary.map_on++;
                     let levelConfig = LevelMgr.ins.getLevel(mapId, nextLevel);
                     // 成功解锁//
                     if (levelConfig && levelConfig.unlock_stars && PlayerMgr.ins.userInfo.summary.total_stars >= levelConfig.unlock_stars) {
+                        PlayerMgr.ins.userInfo.summary.latest_passed_level++;
                         qc.eventManager.emit(EventDef.Unlock_Map);
                     }
                 }
@@ -653,17 +645,17 @@ export class GamePanel extends PanelComponent {
                 let effectLineStarScript = lineStarNode.getComponent(EffectLineStarScript);
                 effectLineStarScript.setDuration(.4);
                 effectLineStarScript.setPath(fromPos, toPos);
-                effectLineStarScript.startMove(() => {
-                    if (randomCell) {
+                effectLineStarScript.startMove(randomCell, (cell: Cell) => {
+                    if (cell) {
                         let iTool: ITool = new BoomMatchTool();
-                        if (!randomCell.node) {
-                            ConstStatus.getInstance().fillState.fillWithTool(randomCell, iTool);
+                        if (!cell.node) {
+                            ConstStatus.getInstance().fillState.fillWithTool(cell, iTool);
                         }
                         else {
-                            let cellScript: CellScript = randomCell.node.getComponent(CellScript);
+                            let cellScript: CellScript = cell.node.getComponent(CellScript);
                             if (cellScript) {
                                 cellScript.setToolType(+tool);
-                                ConstStatus.getInstance().fillState.setWithTool(randomCell, iTool);
+                                ConstStatus.getInstance().fillState.setWithTool(cell, iTool);
                             }
                         }
                         if (--count === 0) {
@@ -726,7 +718,7 @@ export class GamePanel extends PanelComponent {
         // test
 
         // 第1关消除强制引导
-        if (GuideMgr.ins.checkGuide(GuideType.Force_Level_1_Eliminate)) {
+        if (GuideMgr.ins.checkGuide(GuideType.Force_Level_1_Eliminate) && this.levelConfig.levelIndex === 1) {
             GuideMgr.ins.forceGuide_Eliminate(this.levelData.guide_cells, this.levelGridScript.grid.cells, this.node, GuideType.Force_Level_1_Eliminate, () => {
                 GuideMgr.ins.level_1_ForceGuideSelectTool(this.tools.getChildByName('HammerBtn'), this.node, ItemType.Hammer, () => {
                     GuideMgr.ins.forceGuideUseTool(this.levelGridScript.grid.randomCell().node, this.node, GuideType.Force_Level_1_Use_Hammer, null);
@@ -734,11 +726,11 @@ export class GamePanel extends PanelComponent {
             });
         }
         // 第2关强制引导
-        else if (GuideMgr.ins.checkGuide(GuideType.Force_Level_2_Eliminate)) {
+        else if (GuideMgr.ins.checkGuide(GuideType.Force_Level_2_Eliminate) && this.levelConfig.levelIndex === 2) {
             GuideMgr.ins.forceGuide_Eliminate(this.levelData.guide_cells, this.levelGridScript.grid.cells, this.node, GuideType.Force_Level_2_Eliminate, null);
         }
         // 第3关强制引导
-        else if (GuideMgr.ins.checkGuide(GuideType.Force_Level_3_Eliminate)) {
+        else if (GuideMgr.ins.checkGuide(GuideType.Force_Level_3_Eliminate) && this.levelConfig.levelIndex === 3) {
             GuideMgr.ins.forceGuide_Eliminate(this.levelData.guide_cells, this.levelGridScript.grid.cells, this.node, GuideType.Force_Level_3_Eliminate, null);
         }
     }

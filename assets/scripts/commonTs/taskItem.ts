@@ -74,7 +74,6 @@ export class taskItems extends Component {
                                 successCb: (e) => {
                                 },
                                 failCb: (e) => {
-                                    // renwuMgr.ins.isAdComplete = e.isCompleted;
                                     qc.eventManager.emit(EventDef.TaskCompleted,e.isCompleted);
                                 },
                             }

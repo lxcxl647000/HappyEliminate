@@ -33,6 +33,9 @@ export default class EventDef {
     public static HideGuide = 'HideGuide';
     public static UpdateSoundStatus = 'UpdateSoundStatus';
     public static UpdateVibrateStatus = 'UpdateVibrateStatus';
+    // 调用轮播图
+    public static Call_Banner = 'Call_Banner';
+    public static Update_Theme_Clips = 'Update_Banner';
     public static SelectBoomGuide = 'SelectBoomGuide';
     public static PassTargetGuide = 'PassTargetGuide';
     public static UpdateMusicStatus = 'UpdateMusicStatus';

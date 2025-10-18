@@ -2,13 +2,6 @@ import { ItemType } from "../configs/ItemConfig";
 import { PanelConfigs } from "../configs/PanelConfigs";
 import { qc } from "../framework/qc";
 
-// export interface ItemData {
-//     id: number;
-//     name: string;
-//     icon: string;
-//     big_icon: string;
-//     des: string;
-// }
 export default class GetItemMgr {
     private static _ins: GetItemMgr = null;
     public static get ins() {

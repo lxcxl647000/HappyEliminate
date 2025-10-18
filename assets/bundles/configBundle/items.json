@@ -36,10 +36,10 @@
     },
     {
         "id": 6,
-        "name": "步数",
+        "name": "步数+3",
         "icon": "tools/icon_step",
         "big_icon": "tools/big_icon_step",
-        "des": "是有可以增加步数"
+        "des": "步数加3"
     },
     {
         "id": 7,

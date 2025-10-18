@@ -22,7 +22,7 @@ export class GameExchangeTool extends Component {
         this._itemType = itemType;
         this._setPos(toolBtn);
         this.node.active = true;
-        this._data = ItemMgr.ins.getItem(this._itemType);//ConfigMgr.ins.getConfig<ExchangeToolConfig>(configConfigs.exchangeToolConfig, this._itemType, 'itemType');
+        this._data = ItemMgr.ins.getItem(this._itemType);
         if (this._data) {
             this.des.string = `${this._data.price}金币兑换${this._data.name}`;
         }
@@ -45,6 +45,9 @@ export class GameExchangeTool extends Component {
             case ItemType.Steps:
                 this.bg.setScale(-1, 1);
                 pos.x -= this._offsetX;
+                if (this._itemType === ItemType.Steps) {
+                    pos.x -= 25;
+                }
                 break;
         }
         pos.y += offsetY;
