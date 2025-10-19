@@ -58,6 +58,8 @@ export class Constants {
 
     public static LineLightDelayTime: number = (18 / 30) * 1000;
     public static BoomLightDelayTime: number = (20 / 30) * 1000;
+    // 失败恢复步数消耗的金币数
+    public static Steps_Cost_Gold = 200;
 }
 
 

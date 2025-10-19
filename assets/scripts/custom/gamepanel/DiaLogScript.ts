@@ -13,11 +13,12 @@ import { configConfigs } from '../../configs/configConfigs';
 import CocosUtils from '../../utils/CocosUtils';
 import { BundleConfigs } from '../../configs/BundleConfigs';
 import PlayerMgr from '../../manager/PlayerMgr';
-import { PassReward } from '../../manager/LevelMgr';
+import LevelMgr, { PassReward } from '../../manager/LevelMgr';
 import { musicMgr } from '../../manager/musicMgr';
 import { rewardedVideoAd } from '../../framework/lib/platform/platform_interface';
 import { baseConfig } from '../../configs/baseConfig';
 import CommonTipsMgr from '../../manager/CommonTipsMgr';
+import { Constants } from '../../game/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('DiaLogScript')
@@ -194,13 +195,15 @@ export class DiaLogScript extends DiaLogBaseScript {
     }
 
     addStepsByGold() {
-        if (PlayerMgr.ins.userInfo.props.integral < 200) {
+        if (PlayerMgr.ins.userInfo.props.integral < Constants.Steps_Cost_Gold) {
             CommonTipsMgr.ins.showTips('金币不足');
             return;
         }
-        PlayerMgr.ins.addGold(-200);
-        this.node.active = false;
-        qc.eventManager.emit(EventDef.Resurrection);
+        LevelMgr.ins.useGoldGetSteps((data) => {
+            PlayerMgr.ins.addGold(-data.cost);
+            this.node.active = false;
+            qc.eventManager.emit(EventDef.Resurrection);
+        });
     }
 
     private _setTarget(level: LevelConfig) {

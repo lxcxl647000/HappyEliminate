@@ -63,7 +63,7 @@ export default class LevelMgr {
     }
 
     public async sendLevelToServer(level: number) {
-       await httpMgr.ins.xhrRequest('/game/attemptBegin', 'GET', { level_no: level });
+        await httpMgr.ins.xhrRequest('/game/attemptBegin', 'GET', { level_no: level });
     }
 
     public async sendLevelPassToServer(level_no: number, stars: number, score: number, map_on: number, cb: Function) {
@@ -85,5 +85,13 @@ export default class LevelMgr {
             },
             data: levelConfig
         });
+    }
+
+    // 使用金币获得步数
+    public async useGoldGetSteps(cb: Function) {
+        let res = await httpMgr.ins.xhrRequest<PassData>('/game/revive');
+        if (res) {
+            cb && cb(res.data);
+        }
     }
 }
