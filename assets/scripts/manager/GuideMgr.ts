@@ -183,8 +183,8 @@ export default class GuideMgr {
             case GuideType.Force_Level_1_Eliminate:
                 tips = '3个以上相连完成消除得分';
                 forceGuideAreaPosOffset = new Vec2(-110, 0);
-                fingerAniOffset = new Vec2(-50, 0);
-                targetPosOffset = new Vec2(0, -20);
+                fingerAniOffset = new Vec2(70, 0);
+                targetPosOffset = new Vec2(-60, -20);
                 widthOffset = 30;
                 isRow = true;
                 break;

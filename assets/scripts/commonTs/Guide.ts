@@ -1,4 +1,4 @@
-import { _decorator, CCInteger, Component, Label, Node, Tween, tween, UITransform, Vec2, Vec3 } from 'cc';
+import { _decorator, CCInteger, Color, Component, Label, Node, Sprite, Tween, tween, UIOpacity, UITransform, Vec2, Vec3 } from 'cc';
 import PoolMgr from '../manager/PoolMgr';
 import CocosUtils from '../utils/CocosUtils';
 import { qc } from '../framework/qc';
@@ -32,6 +32,8 @@ export class Guide extends Component {
     @property(Node)
     guide: Node = null;
     @property(Node)
+    finger: Node = null;
+    @property(Node)
     tipsNode: Node = null;
     @property(Label)
     tipsLabel: Label = null;
@@ -39,6 +41,14 @@ export class Guide extends Component {
     tipsNode_continue: Node = null;
     @property(Label)
     tipsLabel_continue: Label = null;
+    @property(Node)
+    tailNode: Node = null;
+    @property(Node)
+    tailVerticalNode: Node = null;
+    @property(Node)
+    clickCircleNode: Node = null;
+    @property(Node)
+    circleNode: Node = null;
 
     private _curGuide: IGuide = null;
 
@@ -76,7 +86,7 @@ export class Guide extends Component {
         this.guide.setPosition(targetPos);
         if (this._curGuide.fingerAniOffset) {
             if (this._curGuide.fingerAniOffset.x !== 0) {
-                this._guideAni_x(targetPos, this._curGuide.fingerAniOffset.x);
+                this._slideAni(this._curGuide.fingerAniOffset.x, 0);
             }
             else if (this._curGuide.fingerAniOffset.y !== 0) {
                 this._guideAni_y(targetPos, this._curGuide.fingerAniOffset.y);
@@ -145,6 +155,71 @@ export class Guide extends Component {
                 this._guideAni_x(pos, offsetX);
             })
             .start();
+    }
+
+    private _slideAni(offsetX: number, offsetY: number) {
+        this.circleNode.setScale(3, 3);
+        this.circleNode.getComponent(Sprite).color.set(255, 255, 255, 0);
+        this.tailNode.getComponent(Sprite).color.set(255, 255, 255, 0);
+        this.tailVerticalNode.getComponent(Sprite).color.set(255, 255, 255, 0);
+        this.tailNode.setScale(2, 2);
+        this.tailVerticalNode.setScale(2, 2);
+
+        let isVertical = offsetY > 0;
+        this.tailNode.active = !isVertical;
+        this.tailVerticalNode.active = isVertical;
+        let tail = isVertical ? this.tailVerticalNode : this.tailNode;
+        this.circleNode.active = true;
+
+        //光圈
+        tween(this.circleNode)
+            .to(10 / 30, { scale: new Vec3(1, 1, 1) }, { easing: 'sineInOut' })
+            .to(20 / 30, { scale: new Vec3(1, 1, 1) }, { easing: 'sineInOut' })
+            .to(5 / 30, { scale: Vec3.ZERO }, { easing: 'sineInOut' })
+            .start();
+        tween(this.circleNode.getComponent(Sprite))
+            .to(10 / 30, { color: new Color(255, 255, 255, 255) }, { easing: 'sineInOut' })
+            .to(20 / 30, { color: new Color(255, 255, 255, 255) }, { easing: 'sineInOut' })
+            .to(5 / 30, { color: new Color(255, 255, 255, 0) }, { easing: 'sineInOut' })
+            .start();
+
+        // 缩放
+        tween(this.finger)
+            .to(10 / 30, { scale: new Vec3(.86, .86, 1) }, { easing: 'sineInOut' })
+            .to(20 / 30, { scale: new Vec3(.86, .86, 1) }, { easing: 'sineInOut' })
+            .to(10 / 30, { scale: new Vec3(1, 1, 1) }, { easing: 'sineInOut' })
+            .start();
+
+        // 旋转
+        tween(this.finger)
+            .to(10 / 30, { eulerAngles: new Vec3(0, 0, 17) }, { easing: 'sineInOut' })
+            .to(20 / 30, { eulerAngles: new Vec3(0, 0, -17) }, { easing: 'sineInOut' })
+            .to(10 / 30, { eulerAngles: new Vec3(0, 0, 0) }, { easing: 'sineInOut' })
+            .start();
+
+        // 移动
+        let toPos = new Vec3(isVertical ? 0 : offsetX, isVertical ? offsetY : 0, 0);
+        let oriPos = Vec3.ZERO;
+        this.scheduleOnce(() => {
+            tween(this.finger)
+                .to(20 / 30, { position: toPos }, { easing: 'sineInOut' })
+                .to(20 / 30, { position: toPos }, { easing: 'sineInOut' })
+                .to(10 / 30, { position: oriPos }, { easing: 'sineInOut' })
+                .call(() => {
+                    this._slideAni(offsetX, offsetY);
+                })
+                .start();
+
+            // 拖尾
+            tween(tail.getComponent(Sprite))
+                .to(5 / 30, { color: new Color(255, 255, 255, 255) }, { easing: 'sineInOut' })
+                .to(15 / 30, { color: new Color(255, 255, 255, 255) }, { easing: 'sineInOut' })
+                .to(1 / 30, { color: new Color(255, 255, 255, 0) }, { easing: 'sineInOut' })
+                .start();
+            tween(tail)
+                .to(20 / 30, { scale: new Vec3(1, 1, 1) }, { easing: 'sineInOut' })
+                .start();
+        }, 10 / 30);
     }
 
     private _guideAni_y(pos: Vec3, offsetY: number) {

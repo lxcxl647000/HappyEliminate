@@ -35,7 +35,9 @@ export class MainPanel extends PanelComponent {
     @property(CustomSprite)
     musicSprite: CustomSprite = null;
     @property(Animation)
-    guideAni: Animation = null;
+    startBtnAni: Animation = null;
+    @property(Animation)
+    fingerAni: Animation = null;
     @property(CustomSprite)
     vibrateSprite: CustomSprite = null;
     @property(Label)
@@ -272,7 +274,6 @@ export class MainPanel extends PanelComponent {
         if (PlayerMgr.ins.userInfo.prompt.show == 1 && PlayerMgr.ins.userInfo.prompt.type == 2 && PlayerMgr.ins.userInfo.prompt.can_open == 1) {
             this.redPackBtn();
         }
-        this._showGuide();
     }
 
     private _flyRedPackAnimation() {
@@ -314,13 +315,8 @@ export class MainPanel extends PanelComponent {
     }
 
     private _showGuide() {
-        if (!PlayerMgr.ins.userInfo.current_level || PlayerMgr.ins.userInfo.current_level.length === 0) {
-            this.guideAni.node.active = true;
-            this.guideAni.play('guide_y');
-        }
-        else {
-            this.guideAni.node.active = false;
-        }
+        this.startBtnAni.play('startBtn');
+        this.fingerAni.play('guide_click');
     }
 
     private _updateSoundStatus() {
