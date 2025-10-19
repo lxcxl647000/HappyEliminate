@@ -97,7 +97,6 @@ export class GameStartPanel extends PanelComponent {
     }
 
     onCloseClick() {
-        musicMgr.ins.playSound('click');
         this._hidePanel();
     }
 
@@ -110,7 +109,6 @@ export class GameStartPanel extends PanelComponent {
     async onStartClick() {
         if (this._cdTime > 0) return;
         this._cdTime = 1;
-        musicMgr.ins.playSound('click');
         await LevelMgr.ins.sendLevelToServer(this._level.levelIndex)
         await PlayerMgr.ins.getHomeData()
         PlayerMgr.ins.getEnergy()
@@ -139,7 +137,6 @@ export class GameStartPanel extends PanelComponent {
     }
 
     onAdGetTool() {
-        musicMgr.ins.playSound('click');
         let ad: rewardedVideoAd = {
             adUnitId: baseConfig.adUnitIds[0],
             successCb: () => {

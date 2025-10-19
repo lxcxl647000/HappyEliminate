@@ -1,4 +1,4 @@
-import { _decorator, Button, Component, log, Node } from 'cc';
+import { _decorator, Button } from 'cc';
 import { musicMgr } from '../manager/musicMgr';
 const { ccclass, property } = _decorator;
 
@@ -8,12 +8,17 @@ export class CommonButton extends Button {
     start() {
         let events = this.clickEvents;
         for (let e of events) {
-            let clickFunc = e.component[e.handler];
-            if (clickFunc) {
-                clickFunc = () => {
-                    musicMgr.ins.playSound('click');
-                    clickFunc();
-                };
+            if (e.target) {
+                let component = e.target.getComponent(e._componentName);
+                if (component) {
+                    let clickFunc = e.target.getComponent(e._componentName)[e.handler].bind(component);
+                    if (clickFunc) {
+                        e.target.getComponent(e._componentName)[e.handler] = () => {
+                            musicMgr.ins.playSound('click');
+                            clickFunc();
+                        };
+                    }
+                }
             }
         }
     }

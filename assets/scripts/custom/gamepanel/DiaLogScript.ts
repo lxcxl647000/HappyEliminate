@@ -156,7 +156,6 @@ export class DiaLogScript extends DiaLogBaseScript {
     }
 
     onContinueClick() {
-        musicMgr.ins.playSound('click');
         if (this.dialogOpt && this.dialogOpt.onConform) {
             this.dialogOpt.onConform();
         }
@@ -166,7 +165,6 @@ export class DiaLogScript extends DiaLogBaseScript {
     }
 
     onCloseClick() {
-        musicMgr.ins.playSound('click');
         qc.panelRouter.hide({
             panel: PanelConfigs.gamePanel,
             onHided: () => {

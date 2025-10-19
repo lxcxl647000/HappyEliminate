@@ -72,7 +72,6 @@ export class GameSelectToolBtn extends Component {
     }
 
     onClickTool() {
-        musicMgr.ins.playSound('click');
         if (!this._gamePanel.getIsFirstStableHappened()) {
             return;
         }

@@ -790,7 +790,6 @@ export class GamePanel extends PanelComponent {
     }
 
     onSettingClick() {
-        musicMgr.ins.playSound('click');
         if (!this.isFirstStableHappened) {
             return;
         }

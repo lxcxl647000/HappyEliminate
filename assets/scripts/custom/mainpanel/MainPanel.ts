@@ -148,7 +148,6 @@ export class MainPanel extends PanelComponent {
 
     onStartBtn() {
         qc.platform.vibrateShort();
-        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.gameStartPanel,
             onShowed: () => {
@@ -158,7 +157,6 @@ export class MainPanel extends PanelComponent {
         });
     }
     userInfoBTn() {
-        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.userInfoPanel,
             onShowed: () => {
@@ -168,8 +166,6 @@ export class MainPanel extends PanelComponent {
     }
     // 签到
     signBtn() {
-        musicMgr.ins.playSound('click');
-        // return;
         qc.panelRouter.showPanel({
             panel: PanelConfigs.signPanel,
             onShowed: () => {
@@ -178,7 +174,6 @@ export class MainPanel extends PanelComponent {
         });
     }
     chengjiuBtn() {
-        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.chengjiuPanel,
             onShowed: () => {
@@ -188,7 +183,6 @@ export class MainPanel extends PanelComponent {
     }
     // 我的背包
     backpackBtn() {
-        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.backpackPanel,
             onShowed: () => {
@@ -198,7 +192,6 @@ export class MainPanel extends PanelComponent {
     }
     // 体力兑换
     exchangeBtn() {
-        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.exchangePanel,
             onShowed: () => {
@@ -208,12 +201,10 @@ export class MainPanel extends PanelComponent {
     }
 
     onSettingBtn() {
-        musicMgr.ins.playSound('click');
         this.setting.active = !this.setting.active;
     }
 
     onRedPackBtn() {
-        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.redEnvelopePanel,
             onShowed: () => {
@@ -223,7 +214,6 @@ export class MainPanel extends PanelComponent {
     }
     // 任务中心
     taskBtn() {
-        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.taskPanel,
             onShowed: () => {
@@ -232,7 +222,6 @@ export class MainPanel extends PanelComponent {
     }
     // 红包弹窗
     redPackBtn() {
-        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.redEnvelopeModelPanel,
             onShowed: () => {
@@ -247,7 +236,6 @@ export class MainPanel extends PanelComponent {
     }
 
     onGoldBtn() {
-        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.addGoldPanel,
             onShowed: () => {
@@ -256,7 +244,6 @@ export class MainPanel extends PanelComponent {
     }
 
     onLuckyTurntableBtn() {
-        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.luckyTurntablePanel,
             onShowed: () => {
@@ -273,7 +260,6 @@ export class MainPanel extends PanelComponent {
     }
 
     onCashBtn() {
-        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.cashPanel,
             onShowed: () => {
@@ -302,7 +288,6 @@ export class MainPanel extends PanelComponent {
     }
 
     onMusic() {
-        musicMgr.ins.playSound('click');
         if (this.musicSprite.index === 0) {
             musicMgr.ins.stopMusic();
             SettingMgr.ins.musicEnabled = false;
@@ -317,7 +302,6 @@ export class MainPanel extends PanelComponent {
     }
 
     onSound() {
-        musicMgr.ins.playSound('click');
         if (this.soundSprite.index === 0) {
             SettingMgr.ins.soundEnabled = false;
             SettingMgr.ins.initSound();
@@ -348,7 +332,6 @@ export class MainPanel extends PanelComponent {
     }
 
     onVibrate() {
-        musicMgr.ins.playSound('click');
         if (this.vibrateSprite.index === 0) {
             SettingMgr.ins.vibrateEnabled = false;
         }
@@ -364,7 +347,6 @@ export class MainPanel extends PanelComponent {
 
     // 主题弹窗
     bgztBtn() {
-        musicMgr.ins.playSound('click');
         qc.panelRouter.showPanel({
             panel: PanelConfigs.bgztPanel,
             onShowed: () => {
