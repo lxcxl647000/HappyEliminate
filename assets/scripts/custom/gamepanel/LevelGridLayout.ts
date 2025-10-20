@@ -28,6 +28,7 @@ import { GamePanel } from './GamePanel';
 import { qc } from '../../framework/qc';
 import EventDef from '../../constants/EventDef';
 import { GuideType } from '../../manager/GuideMgr';
+import CommonTipsMgr from '../../manager/CommonTipsMgr';
 
 
 export interface GridListener {
@@ -244,6 +245,10 @@ export class LevelGridLayout extends Component {
                 }
 
                 if (this._gamepanel.useToolType === ToolType.TYPE_HAMMER) {
+                    if (node.getComponent(CellScript).getToolType() !== ToolType.INVALID) {
+                        CommonTipsMgr.ins.showTips('无法消除道具');
+                        return;
+                    }
                     this._gamepanel.hideToolMask();
                     this.useHammerTool(node);
                     qc.eventManager.emit(EventDef.Game_Select_Tool_Success, ToolType.TYPE_HAMMER);

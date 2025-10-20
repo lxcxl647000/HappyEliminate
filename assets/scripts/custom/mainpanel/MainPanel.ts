@@ -1,4 +1,4 @@
-import { _decorator, Animation, Component, Label, Node, tween } from 'cc';
+import { _decorator, Animation, Component, Label, Node, Sprite, tween } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
@@ -13,6 +13,8 @@ import ItemMgr from '../../manager/ItemMgr';
 import { musicMgr } from '../../manager/musicMgr';
 import CustomSprite from '../componetUtils/CustomSprite';
 import { SettingMgr } from '../../manager/SettingMgr';
+import CocosUtils from '../../utils/CocosUtils';
+import { BundleConfigs } from '../../configs/BundleConfigs';
 
 const { ccclass, property } = _decorator;
 
@@ -43,6 +45,7 @@ export class MainPanel extends PanelComponent {
     @property(Label)
     leftLevelLabel: Label = null;
 
+    private _maskSprite: Sprite = null;
     private _currentLevel: LevelConfig = null;
     private _vibrateFlag = false;
 
@@ -60,9 +63,13 @@ export class MainPanel extends PanelComponent {
         qc.platform.fromOtherAppToShowAd();
         this.gm.active = baseConfig.gm;
         this._updateLevel(false);
+        this._updateTheme(PlayerMgr.ins.userInfo.summary.current_theme_id);
         this._initMap();
         ItemMgr.ins.getItemList(null);
         this._updateLeftLevelLabel();
+        this._updateMusicStatus();
+        this._updateSoundStatus();
+        this._updateVibrateStatus();
     }
     hide(option: PanelHideOption): void {
 
@@ -78,6 +85,7 @@ export class MainPanel extends PanelComponent {
         qc.eventManager.on(EventDef.UpdateMusicStatus, this._updateMusicStatus, this);
         qc.eventManager.on(EventDef.UpdateVibrateStatus, this._updateVibrateStatus, this);
         qc.eventManager.on(EventDef.Update_Left_Level_Redpack, this._updateLeftLevelLabel, this);
+        qc.eventManager.on(EventDef.Update_Theme, this._updateTheme, this);
         this.levelLabel.string = `第${PlayerMgr.ins.userInfo.summary.latest_passed_level + 1}关`;
     }
 
@@ -91,6 +99,7 @@ export class MainPanel extends PanelComponent {
         qc.eventManager.off(EventDef.UpdateVibrateStatus, this._updateVibrateStatus, this);
         qc.eventManager.off(EventDef.UpdateMusicStatus, this._updateMusicStatus, this);
         qc.eventManager.off(EventDef.Update_Left_Level_Redpack, this._updateLeftLevelLabel, this);
+        qc.eventManager.off(EventDef.Update_Theme, this._updateTheme, this);
     }
 
     private _initMap() {
@@ -352,7 +361,23 @@ export class MainPanel extends PanelComponent {
     }
 
     private _updateLeftLevelLabel() {
-        let leftLevel = PlayerMgr.ins.userInfo.prompt.remain;
-        this.leftLevelLabel.string = `只差${leftLevel}关得红包`;
+        let leftLevel = PlayerMgr.ins.userInfo.prompt.open_level - PlayerMgr.ins.userInfo.summary.latest_passed_level;
+        this.leftLevelLabel.node.parent.active = leftLevel > 0;
+        if (leftLevel > 0) {
+            this.leftLevelLabel.string = `只差${leftLevel}关得红包`;
+        }
+    }
+
+    private _updateTheme(theme_id: string) {
+        if (!this._maskSprite) {
+            this._maskSprite = this.node.getChildByName('mask').getComponent(Sprite);
+        }
+        CocosUtils.loadTextureFromBundle(BundleConfigs.mainBundle, `textures/mask_${theme_id}`, this._maskSprite);
+    }
+
+    setSetting() {
+        if (this.setting.active) {
+            this.setting.active = false;
+        }
     }
 }

@@ -16,8 +16,6 @@ import { rewardedVideoAd } from '../../framework/lib/platform/platform_interface
 import { baseConfig } from '../../configs/baseConfig';
 import GetItemMgr from '../../manager/GetItemMgr';
 import LevelMgr from '../../manager/LevelMgr';
-import { strengthApi } from "db://assets/scripts/api/exchange";
-import { musicMgr } from '../../manager/musicMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameStartPanel')
@@ -92,7 +90,7 @@ export class GameStartPanel extends PanelComponent {
         for (let tool of this._tools) {
             let num = PlayerMgr.ins.getItemNum(tool);
             let select = this.toolParent.children[index++].getComponent(SelectTool);
-            select.init(tool, num);
+            select.init(tool, num, this._level);
         }
     }
 
@@ -108,11 +106,13 @@ export class GameStartPanel extends PanelComponent {
 
     async onStartClick() {
         if (this._cdTime > 0) return;
+
         this._cdTime = 1;
-        await LevelMgr.ins.sendLevelToServer(this._level.levelIndex)
-        await PlayerMgr.ins.getHomeData()
-        PlayerMgr.ins.getEnergy()
         if (PlayerMgr.ins.userInfo.props.strength >= 10) {
+            await LevelMgr.ins.sendLevelToServer(this._level.levelIndex)
+            await PlayerMgr.ins.getHomeData()
+            PlayerMgr.ins.getEnergy()
+
             qc.panelRouter.showPanel({
                 panel: PanelConfigs.gamePanel,
                 onShowed: () => {
@@ -120,7 +120,10 @@ export class GameStartPanel extends PanelComponent {
                 },
                 data: { level: this._level, selectTools: this._selectTools }
             });
+            this._cdTime = 0;
             this._hidePanel();
+        } else {
+            CommonTipsMgr.ins.showTips('体力不足');
         }
 
     }

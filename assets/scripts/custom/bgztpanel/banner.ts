@@ -4,6 +4,7 @@ import EventDef from '../../constants/EventDef';
 import themesApi from '../../api/themes';
 import CommonTipsMgr from '../../manager/CommonTipsMgr';
 import PlayerMgr from '../../manager/PlayerMgr';
+import CustomSprite from '../componetUtils/CustomSprite';
 const { ccclass, property } = _decorator;
 
 @ccclass('banner')
@@ -14,6 +15,8 @@ export class banner extends Component {
     btnImgTheme: Node = null;
     @property(Label)
     titleLabel: Label = null;
+    @property(Node)
+    btn: Node = null;
     @property({
         type: CCInteger,
         range: [1, 100],
@@ -97,7 +100,25 @@ export class banner extends Component {
         }
     }
     protected onDisable(): void {
+
         qc.eventManager.off(EventDef.Call_Banner, this.init, this);
+        // 组件禁用时重置数据
+        this.dataInt();
+    }
+    dataInt() {
+        // 重置所有相关数据
+        this.m_item = [];
+        this.m_startTime = null;
+        this.m_speed = null;
+        this.centering = false;
+        this.targetX = 0;
+        this.centerNode = null;
+
+        // 清空节点上的事件监听器
+        this.node.off(NodeEventType.TOUCH_START);
+        this.node.off(NodeEventType.TOUCH_CANCEL);
+        this.node.off(NodeEventType.TOUCH_MOVE);
+        this.node.off(NodeEventType.TOUCH_END);
     }
     moveX(pos) {
         this.m_item.forEach((item) => {
@@ -237,14 +258,22 @@ export class banner extends Component {
         console.log("Item centered:", centeredItem['bg_id']);
         if (centeredItem['title_name']) {
             this.titleLabel.string = centeredItem['title_name']
-            if (centeredItem['owned'] == 1) {
+            if (centeredItem['bg_id'] == PlayerMgr.ins.userInfo.summary.current_theme_id) {
                 this.btnImgTheme.active = false
+                this.btn.getComponent(CustomSprite).index = 1
+                this.btnLabel.string = '当前使用'
+
+            }
+            else if (centeredItem['owned'] == 1) {
+                this.btnImgTheme.active = false
+                this.btn.getComponent(CustomSprite).index = 0
                 this.btnLabel.string = '立即使用'
-               
+
             } else {
                 this.btnImgTheme.active = true
+                this.btn.getComponent(CustomSprite).index = 0
                 this.btnLabel.string = '100碎片兑换'
-              
+
             }
         }
 
@@ -261,11 +290,16 @@ export class banner extends Component {
         });
     }
     submitClick() {
-        if (this.centerNode['owned'] == 1) {
+        if (this.centerNode['bg_id'] == PlayerMgr.ins.userInfo.summary.current_theme_id) {
+            console.log('无操作');
+
+        } else if (this.centerNode['owned'] == 1) {
             themesApi.ins.themeUse({ theme_id: this.centerNode['bg_id'] }).then((res) => {
                 if (res.code == 200) {
                     CommonTipsMgr.ins.showTips(res.msg);
-                    PlayerMgr.ins.userInfo.summary.current_theme_id = this.centerNode['bg_id']
+                    PlayerMgr.ins.updateTheme(this.centerNode['bg_id']);
+                    this.btn.getComponent(CustomSprite).index = 1
+                    this.btnLabel.string = '当前使用'
                 }
             })
         } else {
@@ -273,8 +307,10 @@ export class banner extends Component {
                 if (res.code == 200) {
                     CommonTipsMgr.ins.showTips(res.msg);
                     qc.eventManager.emit(EventDef.Update_Theme_Clips)
+
                 }
             })
+            this.btn.getComponent(CustomSprite).index = 0
         }
     }
 }

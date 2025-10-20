@@ -7,7 +7,7 @@ import EventDef from '../../constants/EventDef';
 import { LevelConfig } from '../../configs/LevelConfig';
 import { GoalTypeCounter, GoalValue } from '../../game/goal/GoalTyps';
 import CustomSprite from '../componetUtils/CustomSprite';
-import { ItemConfig, ItemType } from '../../configs/ItemConfig';
+import { ItemConfig } from '../../configs/ItemConfig';
 import ConfigMgr from '../../manager/ConfigMgr';
 import { configConfigs } from '../../configs/configConfigs';
 import CocosUtils from '../../utils/CocosUtils';
@@ -176,7 +176,6 @@ export class DiaLogScript extends DiaLogBaseScript {
                 });
             },
         });
-        musicMgr.ins.stopMusic();
         musicMgr.ins.playMusic('bg_music');
         if (this.success) {
             this._getRewards();

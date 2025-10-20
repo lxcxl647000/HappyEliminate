@@ -45,6 +45,11 @@ export class Constants {
     // 用于存本地的key值//
     // public static PLAYER_DATA_KEY: string = "PLAYER_DATA_KEY";
     public static LUCKY_TURNTABLE_DATA_KEY: string = "LUCKY_TURNTABLE_DATA_KEY";
+    public static VIBRATE_ENABLED_KEY: string = "VIBRATE_ENABLED_KEY";
+    public static MUSIC_ENABLED_KEY: string = "MUSIC_ENABLED_KEY";
+    public static SOUND_ENABLED_KEY: string = "SOUND_ENABLED_KEY";
+    public static SoundVal_KEY: string = "SoundVal_KEY";
+    public static MusicVal_KEY: string = "MusicVal_KEY";
 
 
     // 复活增加步数//

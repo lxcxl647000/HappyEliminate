@@ -44,7 +44,7 @@ export class signPanel extends PanelComponent {
     rewardCount: Label = null;
     @property(Label)
     taskBtnLabel: Label = null;
-
+    
     private gift_id = '';
     private hasClaimedToday = '';
     private taskData = null;
@@ -65,23 +65,14 @@ export class signPanel extends PanelComponent {
         }
     }
     init() {
+        this.rewardParentNode.destroyAllChildren();
         SignApi.ins.getGiftList((res) => {
             this.dateLabel.string = res.date.replace(/(\d+)\.(\d+)-(\d+)\.(\d+)/, '$1月$2日-$3月$4日');
-            if (res.hasClaimedToday == '0') { // 未领取
-                this.getBtnStatus(1);
-                this.hasClaimedToday = '1';
-            }
-            if (res.hasClaimedToday == '1' && res.again == 0) { // 再领一次
-                this.getBtnStatus(2);
-                this.hasClaimedToday = '2';
-            }
-            if (res.hasClaimedToday == '1' && res.again == 1) { // 已领取
-                this.getBtnStatus(3);
-                this.hasClaimedToday = '3';
-            }
 
             let rewardData = res.result;
-            this.rewardParentNode.destroyAllChildren();
+            // 优先检查是否有未领取的奖励
+            let hasEnabledReward = false;
+
             for (let i = 0; i < rewardData.length; i++) {
                 // 父节点
                 let itemNode = instantiate(this.rewardNode);
@@ -159,6 +150,26 @@ export class signPanel extends PanelComponent {
                 }
                 if (newRewardData[i].label === '已领取') {
                     itemNode.getChildByName('expiredBg').getChildByName('claimIcon').active = true;
+                }
+            }
+
+            for (let i = 0; i < rewardData.length; i++) {
+                if (rewardData[i].status === 'enabled') { // 未领取
+                    hasEnabledReward = true;
+                    this.getBtnStatus(1);
+                    this.hasClaimedToday = '1';
+                    return;
+                }
+            }
+
+            // 如果没有未领取的奖励，则根据 again 状态判断
+            if (!hasEnabledReward) {
+                if (res.again == 0) { // 再领一次
+                    this.getBtnStatus(2);
+                    this.hasClaimedToday = '2';
+                } else if (res.again == 1) { // 已领取
+                    this.getBtnStatus(3);
+                    this.hasClaimedToday = '3';
                 }
             }
         });
@@ -248,12 +259,11 @@ export class signPanel extends PanelComponent {
                         successCb: (e) => {
                         },
                         failCb: (e) => {
-                            // if (!e.isCompleted) {
-                            //     CommonTipsMgr.ins.showTips('浏览未完成');
-                            // } else {
-                            //     this.completeTask();
-                            // }
-                            this.completeTask();
+                            if (!e.isCompleted) {
+                                CommonTipsMgr.ins.showTips('浏览未完成');
+                            } else {
+                                this.completeTask();
+                            }
                         },
                     }
                     qc.platform.showRewardedAd(ad);

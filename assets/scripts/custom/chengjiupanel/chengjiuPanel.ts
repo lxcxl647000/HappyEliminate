@@ -76,7 +76,7 @@ export class chengjiuPanel extends PanelComponent {
         }
     }
     submitBtn(e: any) {
-        console.log(e.currentTarget);
+        console.log(e);
 
         if (e.currentTarget['data'] == 1) {
             AchievementApi.ins.claimAchievement({ achievementId: e.currentTarget['achievementId'] }).then((res) => {

@@ -94,4 +94,12 @@ export default class LevelMgr {
             cb && cb(res.data);
         }
     }
+
+    // 重玩
+    public async replay(level_no: number, cb: Function) {
+        let res = await httpMgr.ins.xhrRequest<PassData>('/game/levelReplay', 'GET', { level_no });
+        if (res) {
+            cb && cb(res.data);
+        }
+    }
 }

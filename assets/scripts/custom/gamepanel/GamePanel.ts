@@ -1,4 +1,4 @@
-import { _decorator, instantiate, Label, log, Node, Prefab, Tween, tween, UITransform, Vec2, Vec3 } from 'cc';
+import { _decorator, instantiate, Label, log, Node, Prefab, Sprite, Tween, tween, UITransform, Vec2, Vec3, Widget } from 'cc';
 import { LevelGridLayout } from './LevelGridLayout';
 import { CellScript } from './CellScript';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
@@ -35,6 +35,7 @@ import { SettingMgr } from '../../manager/SettingMgr';
 import GuideMgr, { GuideType } from '../../manager/GuideMgr';
 import CommonTipsMgr from '../../manager/CommonTipsMgr';
 import { GameShowTarget } from './GameShowTarget';
+import { BundleConfigs } from '../../configs/BundleConfigs';
 const { ccclass, property } = _decorator;
 class GameStaus {
     progressFinish: boolean = false;
@@ -99,6 +100,8 @@ export class GamePanel extends PanelComponent {
 
     @property(Node)
     settingNode: Node = null;
+    @property(Node)
+    settingMask: Node = null;
     @property(CustomSprite)
     soundSprite: CustomSprite = null;
     @property(CustomSprite)
@@ -107,6 +110,8 @@ export class GamePanel extends PanelComponent {
     vibrateSprite: CustomSprite = null;
     @property(GameShowTarget)
     gameShowTarget: GameShowTarget = null;
+    @property(Sprite)
+    bgSprite: Sprite = null;
 
     private levelConfig: LevelConfig = null;
     public levelData: LevelConfig = null;
@@ -118,6 +123,7 @@ export class GamePanel extends PanelComponent {
 
     // 游戏操作
     private levelGridScript: LevelGridLayout;
+    public getLevelGridScript() { return this.levelGridScript; }
 
     // 游戏目标
     private levelGoal: IGoalScript;
@@ -145,11 +151,11 @@ export class GamePanel extends PanelComponent {
 
 
     show(option: PanelShowOption): void {
-        musicMgr.ins.stopMusic();
         option.onShowed();
         let { level, selectTools } = option.data;
         this.levelConfig = level as LevelConfig;
         this._seletToolFromGameStart = selectTools as { [id: number]: number };
+        this._updateTheme(PlayerMgr.ins.userInfo.summary.current_theme_id);
     }
 
     hide(option: PanelHideOption): void {
@@ -280,6 +286,7 @@ export class GamePanel extends PanelComponent {
         qc.eventManager.on(EventDef.UpdateVibrateStatus, this._updateVibrateStatus, this);
         qc.eventManager.on(EventDef.SelectBoomGuide, this._selectBoomGuide, this);
         qc.eventManager.on(EventDef.PassTargetGuide, this._passTargetGuide, this);
+        qc.eventManager.on(EventDef.Update_Theme, this._updateTheme, this);
         this._init();
         this._updateSoundStatus();
         this._updateMusicStatus();
@@ -295,6 +302,7 @@ export class GamePanel extends PanelComponent {
         qc.eventManager.off(EventDef.UpdateVibrateStatus, this._updateVibrateStatus, this);
         qc.eventManager.off(EventDef.SelectBoomGuide, this._selectBoomGuide, this);
         qc.eventManager.off(EventDef.PassTargetGuide, this._passTargetGuide, this);
+        qc.eventManager.off(EventDef.Update_Theme, this._updateTheme, this);
     }
 
     private noNeedToCheckGameStatus: boolean = false;
@@ -442,6 +450,19 @@ export class GamePanel extends PanelComponent {
 
         // 更新游戏进度
         this.updateGameStorage();
+
+        // 新手引导第一关特殊处理 在结算时才发送使用道具给服务器，避免玩家在游戏中就把道具使用了，但未完成引导，再次触发引导时没有道具可用
+        if (this.levelData.levelIndex === 1 && PlayerMgr.ins.userInfo.current_level.length === 0) {
+            let item: IItem = ItemMgr.ins.getItem(ItemType.Hammer);
+            if (item) {
+                ItemMgr.ins.useItem(item.type, this.levelData.levelIndex, null);
+            }
+            item = ItemMgr.ins.getItem(ItemType.Boom);
+            if (item) {
+                ItemMgr.ins.useItem(item.type, this.levelData.levelIndex, null);
+            }
+        }
+
         LevelMgr.ins.sendLevelPassToServer(this.levelData.levelIndex,
             this.progressNode.getComponent(ProgressScript).getStarCountr(),
             this.scoreValue.score,
@@ -497,7 +518,6 @@ export class GamePanel extends PanelComponent {
                 });
             },
         });
-        musicMgr.ins.stopMusic();
         musicMgr.ins.playMusic('bg_music');
     }
 
@@ -700,6 +720,7 @@ export class GamePanel extends PanelComponent {
         }
         if (this.settingNode.active) {
             this.settingNode.active = false;
+            this.settingMask.active = false;
         }
     }
 
@@ -747,12 +768,15 @@ export class GamePanel extends PanelComponent {
     }
     onMusicClick() {
         if (this.musicSprite.index === 0) {
+            musicMgr.ins.stopMusic();
             SettingMgr.ins.musicEnabled = false;
+            SettingMgr.ins.initMusic();
         }
         else {
             SettingMgr.ins.musicEnabled = true;
+            SettingMgr.ins.initMusic();
+            musicMgr.ins.playMusic('bg_music');
         }
-        SettingMgr.ins.initMusic();
         qc.eventManager.emit(EventDef.UpdateMusicStatus);
     }
 
@@ -768,12 +792,23 @@ export class GamePanel extends PanelComponent {
 
     onExitClick() {
         this.settingNode.active = false;
+        this.settingMask.active = false;
         qc.panelRouter.showPanel(
             {
                 panel: PanelConfigs.gameExitPanel,
                 data: {
                     onExit: () => { this._backToMainPanel(); },
                     onReplay: () => {
+                        LevelMgr.ins.replay(this.levelData.levelIndex, null);
+                        // 新手引导第一关特殊处理 在结算时才发送使用道具给服务器，避免玩家在游戏中就把道具使用了，但未完成引导，再次触发引导时没有道具可用,这里如果重玩需要给玩家加回去
+                        if (this.levelData.levelIndex === 1 && PlayerMgr.ins.userInfo.current_level.length === 0) {
+                            if (PlayerMgr.ins.getItemNum(ItemType.Hammer) === 0) {
+                                PlayerMgr.ins.addItem(ItemType.Hammer, 1);
+                            }
+                            if (PlayerMgr.ins.getItemNum(ItemType.Boom) === 0) {
+                                PlayerMgr.ins.addItem(ItemType.Boom, 1);
+                            }
+                        }
                         this._init(true);
                         this._resetStatus(true);
                     },
@@ -794,6 +829,7 @@ export class GamePanel extends PanelComponent {
             return;
         }
         this.settingNode.active = !this.settingNode.active;
+        this.settingMask.active = this.settingNode.active;
     }
 
     private _updateVibrateStatus() {
@@ -863,5 +899,20 @@ export class GamePanel extends PanelComponent {
             this.gameShowTarget.hideTarget();
             this._checkGuide();
         }, 800);
+    }
+
+    private _updateTheme(theme_id: string) {
+        CocosUtils.loadTextureFromBundle(BundleConfigs.gameBundle, `textures/map_${theme_id}`, this.bgSprite, () => {
+            this.bgSprite.getComponent(Widget).updateAlignment();
+        });
+    }
+
+    closeSetting() {
+        if (this.settingNode.active) {
+            this.settingNode.active = false;
+        }
+        if (this.settingMask.active) {
+            this.settingMask.active = false;
+        }
     }
 }

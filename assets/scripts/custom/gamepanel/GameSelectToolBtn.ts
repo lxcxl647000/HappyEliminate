@@ -8,8 +8,8 @@ import PlayerMgr from '../../manager/PlayerMgr';
 import { GameExchangeTool } from './GameExchangeTool';
 import CommonTipsMgr from '../../manager/CommonTipsMgr';
 import ItemMgr, { IItem } from '../../manager/ItemMgr';
-import { musicMgr } from '../../manager/musicMgr';
 import { GuideType } from '../../manager/GuideMgr';
+import { IdelState } from '../../game/gridstate/IdelState';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameSelectToolBtn')
@@ -75,6 +75,10 @@ export class GameSelectToolBtn extends Component {
         if (!this._gamePanel.getIsFirstStableHappened()) {
             return;
         }
+        // 如果不是idel不允许操作
+        if (!(this._gamePanel.getLevelGridScript().getGridStateMachine().getCurrentState() instanceof IdelState)) {
+            return;
+        }
         if (this._exchange.node.active) {
             this._exchange.hide();
         }
@@ -122,12 +126,20 @@ export class GameSelectToolBtn extends Component {
                 break;
         }
 
-        let item: IItem = ItemMgr.ins.getItem(itemType);
-        if (item) {
-            ItemMgr.ins.useItem(item.type, this._gamePanel.levelData.levelIndex, () => {
-                PlayerMgr.ins.addItem(this._itemType, -1);
-                this._updateBtnStuts(this._itemType);
-            });
+        // 新手引导第一关特殊处理 在结算时才发送使用道具给服务器，避免玩家在游戏中就把道具使用了，但未完成引导，再次触发引导时没有道具可用,这里只做客户端数据的刷新
+        if (this._gamePanel.levelData.levelIndex === 1 && PlayerMgr.ins.userInfo.current_level.length === 0) {
+            if (itemType === ItemType.Hammer || itemType === ItemType.Boom) {
+                PlayerMgr.ins.addItem(itemType, -1);
+            }
+        }
+        else {
+            let item: IItem = ItemMgr.ins.getItem(itemType);
+            if (item) {
+                ItemMgr.ins.useItem(item.type, this._gamePanel.levelData.levelIndex, () => {
+                    PlayerMgr.ins.addItem(this._itemType, -1);
+                    this._updateBtnStuts(this._itemType);
+                });
+            }
         }
     }
 }

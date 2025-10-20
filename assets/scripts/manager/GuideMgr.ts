@@ -78,27 +78,6 @@ export default class GuideMgr {
         return this.lastGuideType < guideType;
     }
 
-    // 第一关强制引导选择锤子
-    public level_1_ForceGuideSelectHammer(hammerNode: Node, guideParent: Node, doNext: Function): void {
-        if (hammerNode) {
-            let width = hammerNode.getComponent(UITransform).width;
-            let height = hammerNode.getComponent(UITransform).height;
-            let guidInfo: IGuide = {
-                parent: guideParent,
-                targetNode: hammerNode,
-                targetPosOffset: new Vec2(30, -50),
-                forceGuideArea: { posOffset: null, width, height },
-                tips: "可以点击任意一个糖果进行消除哦",
-                type: GuideType.Force_Level_1_Select_Hammer,
-                canClickMask: false,
-                fingerAniOffset: new Vec2(0, 50),
-                tipsOffset: new Vec2(0, 200),
-                doNext: doNext?.bind(this),
-            }
-            this._createGuide(guidInfo);
-        }
-    }
-
     // 第一关强制引导选择道具
     public level_1_ForceGuideSelectTool(toolNode: Node, guideParent: Node, itemType: ItemType, doNext: Function): void {
         let tips = '';
@@ -119,13 +98,14 @@ export default class GuideMgr {
             let guidInfo: IGuide = {
                 parent: guideParent,
                 targetNode: toolNode,
-                targetPosOffset: new Vec2(30, -50),
+                targetPosOffset: new Vec2(60, -50),
                 forceGuideArea: { posOffset: null, width, height },
                 tips: tips,
                 type: guideType,
                 canClickMask: false,
-                fingerAniOffset: new Vec2(0, 50),
+                fingerAniOffset: new Vec2(0, 1),
                 tipsOffset: new Vec2(0, 200),
+                isSlide: false,
                 doNext: doNext?.bind(this),
             }
             this._createGuide(guidInfo);
@@ -165,6 +145,7 @@ export default class GuideMgr {
             canClickMask: true,
             fingerAniOffset: fingerAniOffset,
             tipsOffset: tipsOffset,
+            isSlide: false,
             doNext: doNext?.bind(this),
         }
         this._createGuide(guidInfo);
@@ -242,6 +223,7 @@ export default class GuideMgr {
                     canClickMask: false,
                     fingerAniOffset: fingerAniOffset,
                     tipsOffset: null,
+                    isSlide: true,
                     doNext: doNext?.bind(this),
                 }
                 this._createGuide(guidInfo);
@@ -267,13 +249,14 @@ export default class GuideMgr {
         let guidInfo: IGuide = {
             parent: guideParent,
             targetNode: cellNode,
-            targetPosOffset: new Vec2(30, -70),
+            targetPosOffset: new Vec2(60, -70),
             forceGuideArea: { posOffset: null, width, height },
             tips: tips,
             type: guideType,
             canClickMask: false,
-            fingerAniOffset: new Vec2(0, 50),
+            fingerAniOffset: new Vec2(0, 1),
             tipsOffset: tipsOffset,
+            isSlide: false,
             doNext: doNext?.bind(this),
         }
         this._createGuide(guidInfo);

@@ -1,4 +1,4 @@
-import { _decorator, CCInteger, Color, Component, Label, Node, Sprite, Tween, tween, UIOpacity, UITransform, Vec2, Vec3 } from 'cc';
+import { _decorator, Color, Component, Label, Node, Sprite, Tween, tween, UITransform, Vec2, Vec3 } from 'cc';
 import PoolMgr from '../manager/PoolMgr';
 import CocosUtils from '../utils/CocosUtils';
 import { qc } from '../framework/qc';
@@ -22,6 +22,7 @@ export interface IGuide {
     canClickMask: boolean;
     fingerAniOffset: Vec2;
     tipsOffset: Vec2;
+    isSlide: boolean;
     doNext: Function;
 }
 
@@ -48,6 +49,8 @@ export class Guide extends Component {
     @property(Node)
     clickCircleNode: Node = null;
     @property(Node)
+    clickCircleNode2: Node = null;
+    @property(Node)
     circleNode: Node = null;
 
     private _curGuide: IGuide = null;
@@ -56,6 +59,11 @@ export class Guide extends Component {
         this.tipsNode_continue.active = false;
         this.tipsNode.active = false;
         this.forceGuide.active = false;
+        this.circleNode.active = false;
+        this.clickCircleNode.active = false;
+        this.clickCircleNode2.active = false;
+        this.tailNode.active = false;
+        this.tailVerticalNode.active = false;
         qc.eventManager.on(EventDef.HideGuide, this._hideGuide, this);
     }
 
@@ -85,11 +93,11 @@ export class Guide extends Component {
         }
         this.guide.setPosition(targetPos);
         if (this._curGuide.fingerAniOffset) {
-            if (this._curGuide.fingerAniOffset.x !== 0) {
-                this._slideAni(this._curGuide.fingerAniOffset.x, 0);
+            if (this._curGuide.isSlide) {
+                this._slideAni(this._curGuide.fingerAniOffset.x, this._curGuide.fingerAniOffset.y);
             }
-            else if (this._curGuide.fingerAniOffset.y !== 0) {
-                this._guideAni_y(targetPos, this._curGuide.fingerAniOffset.y);
+            else {
+                this._clickAni();
             }
         }
 
@@ -137,7 +145,8 @@ export class Guide extends Component {
 
     private _closeGuide() {
         this.forceGuide.active = false;
-        Tween.stopAllByTarget(this.guide);
+        this.finger.setPosition(0, 0, 0);
+        this._stopAllTween();
         PoolMgr.ins.putNodeToPool(this.node);
         let cb: Function = null;
         if (this._curGuide && this._curGuide.doNext) {
@@ -147,25 +156,32 @@ export class Guide extends Component {
         cb && cb();
     }
 
-    private _guideAni_x(pos: Vec3, offsetX: number) {
-        tween(this.guide)
-            .to(.7, { x: this.guide.position.x + offsetX }, { easing: 'sineInOut' })
-            .call(() => {
-                this.guide.setPosition(pos);
-                this._guideAni_x(pos, offsetX);
-            })
-            .start();
+    private _stopAllTween() {
+        Tween.stopAllByTarget(this.guide);
+        Tween.stopAllByTarget(this.finger);
+        Tween.stopAllByTarget(this.circleNode);
+        Tween.stopAllByTarget(this.circleNode.getComponent(Sprite));
+        Tween.stopAllByTarget(this.tailNode);
+        Tween.stopAllByTarget(this.tailNode.getComponent(Sprite));
+        Tween.stopAllByTarget(this.tailVerticalNode);
+        Tween.stopAllByTarget(this.tailVerticalNode.getComponent(Sprite));
+        Tween.stopAllByTarget(this.clickCircleNode);
+        Tween.stopAllByTarget(this.clickCircleNode.getComponent(Sprite));
+        Tween.stopAllByTarget(this.clickCircleNode2);
+        Tween.stopAllByTarget(this.clickCircleNode2.getComponent(Sprite));
     }
 
     private _slideAni(offsetX: number, offsetY: number) {
+        this._stopAllTween();
         this.circleNode.setScale(3, 3);
         this.circleNode.getComponent(Sprite).color.set(255, 255, 255, 0);
         this.tailNode.getComponent(Sprite).color.set(255, 255, 255, 0);
         this.tailVerticalNode.getComponent(Sprite).color.set(255, 255, 255, 0);
         this.tailNode.setScale(2, 2);
         this.tailVerticalNode.setScale(2, 2);
+        this.finger.setPosition(0, 0, 0);
 
-        let isVertical = offsetY > 0;
+        let isVertical = offsetY !== 0;
         this.tailNode.active = !isVertical;
         this.tailVerticalNode.active = isVertical;
         let tail = isVertical ? this.tailVerticalNode : this.tailNode;
@@ -222,14 +238,70 @@ export class Guide extends Component {
         }, 10 / 30);
     }
 
-    private _guideAni_y(pos: Vec3, offsetY: number) {
-        tween(this.guide)
-            .to(.7, { y: this.guide.position.y + offsetY }, { easing: 'sineInOut' })
+    private _clickAni() {
+        this._stopAllTween();
+        this.clickCircleNode.setScale(1, 1);
+        this.clickCircleNode2.setScale(1, 1);
+        this.finger.setPosition(0, 0, 0);
+        this.clickCircleNode.getComponent(Sprite).color.set(255, 255, 255, 0);
+        this.clickCircleNode2.getComponent(Sprite).color.set(255, 255, 255, 0);
+
+        this.clickCircleNode.active = true;
+        this.clickCircleNode2.active = true;
+
+        // 手指位置
+        tween(this.finger)
+            .to(10 / 30, { position: new Vec3(-40, 45, 0) }, { easing: 'sineInOut' })
+            .to(25 / 30, { position: new Vec3(-40, 45, 0) }, { easing: 'sineInOut' })
+            .to(10 / 30, { position: Vec3.ZERO }, { easing: 'sineInOut' })
+            .to(10 / 30, { position: Vec3.ZERO }, { easing: 'sineInOut' })
             .call(() => {
-                this.guide.setPosition(pos);
-                this._guideAni_y(pos, offsetY);
+                this._clickAni();
             })
             .start();
+
+        this.scheduleOnce(() => {
+            // 手指缩放
+            tween(this.finger)
+                .to(10 / 30, { scale: new Vec3(.9, .9, 1) }, { easing: 'sineInOut' })
+                .to(10 / 30, { scale: new Vec3(1, 1, 1) }, { easing: 'sineInOut' })
+                .start();
+            // 手指旋转
+            tween(this.finger)
+                .to(10 / 30, { eulerAngles: new Vec3(0, 0, 15) }, { easing: 'sineInOut' })
+                .to(10 / 30, { eulerAngles: Vec3.ZERO }, { easing: 'sineInOut' })
+                .start();
+        }, 10 / 30);
+
+        this.scheduleOnce(() => {
+            // 点击光圈1 透明度
+            tween(this.clickCircleNode.getComponent(Sprite))
+                .to(1 / 30, { color: new Color(255, 255, 255, 255) }, { easing: 'sineInOut' })
+                .to(15 / 30, { color: new Color(255, 255, 255, 0) }, { easing: 'sineInOut' })
+                .start();
+        }, 19 / 30);
+
+        this.scheduleOnce(() => {
+            // 点击光圈1 缩放
+            tween(this.clickCircleNode)
+                .to(10 / 30, { scale: new Vec3(3.6, 3.6, 1) }, { easing: 'sineInOut' })
+                .start();
+        }, 20 / 30);
+
+        this.scheduleOnce(() => {
+            // 点击光圈2 透明度
+            tween(this.clickCircleNode.getComponent(Sprite))
+                .to(1 / 30, { color: new Color(255, 255, 255, 255) }, { easing: 'sineInOut' })
+                .to(15 / 30, { color: new Color(255, 255, 255, 0) }, { easing: 'sineInOut' })
+                .start();
+        }, 24 / 30);
+
+        this.scheduleOnce(() => {
+            // 点击光圈2 缩放
+            tween(this.clickCircleNode)
+                .to(10 / 30, { scale: new Vec3(3, 3, 1) }, { easing: 'sineInOut' })
+                .start();
+        }, 25 / 30);
     }
 
     onClickMask() {

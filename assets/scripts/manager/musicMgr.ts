@@ -50,6 +50,7 @@ export class musicMgr extends Component {
         if (!SettingMgr.ins.musicEnabled) {
             return;
         }
+        musicMgr.ins.stopMusic();
         CocosUtils.loadFromBundle<AudioClip>(BundleConfigs.audioBundle, audio, AudioClip).then((clip: AudioClip) => {
             this.bgmComp.clip = clip;
             this.bgmComp.play();

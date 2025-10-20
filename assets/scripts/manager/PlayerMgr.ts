@@ -3,12 +3,14 @@ import { ItemType } from "../configs/ItemConfig";
 import { qc } from "../framework/qc";
 import { baseConfig } from '../configs/baseConfig';
 import HomeApi from "../api/index";
+import LevelMgr from "./LevelMgr";
 interface Prompt {
     can_open: any;
     show: number;
     type: number;
     next_threshold: number;
     remain: number;
+    open_level: number;
 }
 
 interface Props {
@@ -232,10 +234,11 @@ export default class PlayerMgr {
         this.userInfo.props.step_number = +res.data.props.step_number;
         this.userInfo.props.theme_num = +res.data.props.theme_num;
         qc.eventManager.emit(EventDef.Update_Gold);
-        if (res.data.summary.map_on === 0) {
-            PlayerMgr.ins.userInfo.summary.map_on = 1;
+        PlayerMgr.ins.userInfo.summary.map_on = this._checkMapId(res.data.summary.map_on, res.data.summary.latest_passed_level + 1);
+        if (res.data.summary.current_theme_id === undefined || res.data.summary.current_theme_id === '0') {
+            PlayerMgr.ins.userInfo.summary.current_theme_id = '1';
         }
-        qc.eventManager.emit(EventDef.Update_Level);
+        qc.eventManager.emit(EventDef.Update_Left_Level_Redpack);
         console.log('this.userInfo', this.userInfo);
         cb && cb();
     }
@@ -283,6 +286,23 @@ export default class PlayerMgr {
     public clearTime() {
         if (this.time) {
             this.time = null
+        }
+    }
+
+    // 更新主题
+    public updateTheme(theme_id: string) {
+        this.userInfo.summary.current_theme_id = theme_id;
+        qc.eventManager.emit(EventDef.Update_Theme, theme_id);
+    }
+
+    private _checkMapId(mapid: number, levelIndex: number) {
+        let level = LevelMgr.ins.getLevel(mapid, levelIndex);
+        if (!level) {
+            mapid++;
+            return this._checkMapId(mapid, levelIndex);
+        }
+        else {
+            return mapid;
         }
     }
 }

@@ -83,7 +83,7 @@ export class bgztpanel extends PanelComponent {
         qc.eventManager.off(EventDef.Update_Theme_Clips, this.getList, this);
     }
     closeModel() {
-
+        this.theme.removeAllChildren()
         qc.panelRouter.hide({
             panel: PanelConfigs.bgztPanel,
             onHided: () => {

@@ -44,11 +44,7 @@ export class ExchangePanel extends PanelComponent {
                 this.btnLabel.string = '立即获得';
             }
         })
-        if (PlayerMgr.ins.userInfo.props.strength >= 100) {
-            this.title.node.parent.active = false;
-        } else {
-            this.title.node.parent.active = true;
-        }
+        this.title.node.parent.active = PlayerMgr.ins.userInfo.props.strength < 100;
 
 
     }
@@ -113,18 +109,21 @@ export class ExchangePanel extends PanelComponent {
     }
 
     // 观看视频领取体力
-    handleWatchVideo() {
+    async handleWatchVideo() {
+        if (this.btnLabel.string === '已达上限') {
+            return;
+        }
         let ad: rewardedVideoAd = {
             adUnitId: baseConfig.adUnitIds[0],
             successCb: (res) => {
-                
+
             },
-            failCb: (res) => {
+            failCb: async (res) => {
                 if (res.isCompleted) {
-                    strengthApi.ins.strengthClaim((data) => {
-                        const count = Number(data.strength) - Number(PlayerMgr.ins.userInfo.props.strength)
-                        PlayerMgr.ins.addEnergy(count);
-                        GetItemMgr.ins.showGetItem(ItemType.Energy, count);
+                    await strengthApi.ins.strengthClaim((data) => {
+                        // const count = Number(data.strength) - Number(PlayerMgr.ins.userInfo.props.strength)
+                        PlayerMgr.ins.addEnergy(20);
+                        GetItemMgr.ins.showGetItem(ItemType.Energy, 20);
                         qc.eventManager.emit(EventDef.Update_RewardCount);
                         if (data.done === 3) {
                             this.btnLabel.string = '已达上限';
@@ -132,6 +131,7 @@ export class ExchangePanel extends PanelComponent {
                             this.btnLabel.string = '立即获得';
                         }
                     });
+                    await PlayerMgr.ins.getHomeData();
                 } else {
                     CommonTipsMgr.ins.showTips('未完成广告浏览');
                 }

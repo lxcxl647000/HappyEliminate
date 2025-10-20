@@ -23,8 +23,8 @@ export class contentItems extends Component {
         this._task = list;
         this.title.string = `${list.title}(${list.done}/${list.need})`;
         this.content.string = `+${list.reward_strength}体力`;
-        console.log('this.btnNode:', this.btnNode);
         if (list.status === 0) {
+            this.btnNode.getChildByName('redDot').active = false;
             this.btnNode.getChildByName('btnLabel').getComponent(Label).string = '去完成';
         } else if (list.status === 1) {
             this.btnNode.getChildByName('redDot').active = true;

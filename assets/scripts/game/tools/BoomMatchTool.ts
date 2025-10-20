@@ -21,9 +21,12 @@ export class BoomMatchTool implements ITool {
             qc.eventManager.emit(EventDef.HideGuide, GuideType.Force_Level_3_Use_Boom);
         }
         if (data.swapCell && data.swapCell.tool && data.swapCell.tool.getType() === ToolType.BOOM_MATCH) {
+            let x1 = data.cell.gridID.x - 2;
+            let x2 = data.cell.gridID.x + 2;
+            let y1 = data.cell.gridID.y - 2;
+            let y2 = data.cell.gridID.y + 2;
             data.grid.rangeCells((c: Cell, i: number, j: number) => {
-                const dis = Vec2.distance(data.cell.gridID, c.gridID);
-                if (dis < 4) {
+                if (c.gridID.x >= x1 && c.gridID.x <= x2 && c.gridID.y >= y1 && c.gridID.y <= y2) {
                     c.match = true;
                 }
             });

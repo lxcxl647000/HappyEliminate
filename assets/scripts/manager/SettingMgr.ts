@@ -1,4 +1,6 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator } from 'cc';
+import { qc } from '../framework/qc';
+import { Constants } from '../game/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('shezhiMgr')
@@ -11,11 +13,61 @@ export class SettingMgr {
         return this._ins;
     }
 
-    public vibrateEnabled: boolean = true;
-    public musicEnabled: boolean = true;
-    public soundEnabled: boolean = true;
-    public soundVal: number = 1;
-    public musicVal: number = 1;
+    private _vibrateEnabled: boolean = true;
+    private _musicEnabled: boolean = true;
+    private _soundEnabled: boolean = true;
+    private _soundVal: number = 1;
+    private _musicVal: number = .8;
+
+    public get vibrateEnabled() {
+        let enabled = qc.storage.getItem(Constants.VIBRATE_ENABLED_KEY, true);
+        this._vibrateEnabled = enabled;
+        return this._vibrateEnabled;
+    }
+    public set vibrateEnabled(val: boolean) {
+        qc.storage.setItem(Constants.VIBRATE_ENABLED_KEY, val);
+        this._vibrateEnabled = val;
+
+    }
+    public get musicEnabled() {
+        let enabled = qc.storage.getItem(Constants.MUSIC_ENABLED_KEY, true);
+        this._musicEnabled = enabled;
+        return this._musicEnabled;
+    }
+    public set musicEnabled(val: boolean) {
+        qc.storage.setItem(Constants.MUSIC_ENABLED_KEY, val);
+        this._musicEnabled = val;
+    }
+
+    public get soundEnabled() {
+        let enabled = qc.storage.getItem(Constants.SOUND_ENABLED_KEY, true);
+        this._soundEnabled = enabled;
+        return this._soundEnabled;
+    }
+    public set soundEnabled(val: boolean) {
+        qc.storage.setItem(Constants.SOUND_ENABLED_KEY, val);
+        this._soundEnabled = val;
+    }
+
+    public get soundVal() {
+        let val = qc.storage.getItem(Constants.SoundVal_KEY, 1);
+        this._soundVal = val;
+        return this._soundVal;
+    }
+    public set soundVal(val: number) {
+        qc.storage.setItem(Constants.SoundVal_KEY, val);
+        this._soundVal = val;
+    }
+
+    public get musicVal() {
+        let val = qc.storage.getItem(Constants.MusicVal_KEY, .8);
+        this._musicVal = val;
+        return this._musicVal;
+    }
+    public set musicVal(val: number) {
+        qc.storage.setItem(Constants.MusicVal_KEY, val);
+        this._musicVal = val;
+    }
 
     public initMusic() {
         if (this.musicEnabled) {

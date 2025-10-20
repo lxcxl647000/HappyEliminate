@@ -51,7 +51,7 @@ export default class CocosUtils {
      * @param path 
      * @param sprite 
      */
-    public static loadTextureFromBundle(bundleName: string, path: string, sprite: Sprite) {
+    public static loadTextureFromBundle(bundleName: string, path: string, sprite: Sprite, cb?: Function) {
         CocosUtils.loadFromBundle<ImageAsset>(bundleName, path, Asset).then((imageAsset: ImageAsset) => {
             if (imageAsset) {
                 const spriteFrame = new SpriteFrame();
@@ -62,6 +62,7 @@ export default class CocosUtils {
                 if (sprite) {
                     sprite.spriteFrame = spriteFrame;
                 }
+                cb && cb();
             }
         })
     }

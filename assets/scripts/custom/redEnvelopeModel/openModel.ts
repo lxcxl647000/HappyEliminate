@@ -133,6 +133,7 @@ export class redEnvelopePanel extends PanelComponent {
             })
             if (res) {
                 if (res.code == 200) {
+                   
                     PlayerMgr.ins.addCash(Number(res.data.amount))
                     this.modelFlag.getComponent(CustomSprite).index = 1
                     this.modelMoeny.getComponent(Label).fontSize = 105
@@ -141,6 +142,7 @@ export class redEnvelopePanel extends PanelComponent {
                     this.modelContentNa.active = false
                     this.modelContentOpen.active = true
                     this.xingrenTile.active = false
+                     PlayerMgr.ins.getHomeData();
                 }
                 console.log(res);
 
