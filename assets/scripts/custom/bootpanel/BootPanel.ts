@@ -72,6 +72,7 @@ export default class BootPanel extends Component {
         await AssetLoader.loadBundle(BundleConfigs.getItemBundle);
         await AssetLoader.loadBundle(BundleConfigs.cashBundle);
         await AssetLoader.loadBundle(BundleConfigs.bgztBundle);
+         await AssetLoader.loadBundle(BundleConfigs.loadingBundle);
         this._onLoadProgressChanged(0.6, "加载游戏资源...");
         await ConfigMgr.ins.loadConfigs();
         this._onLoadProgressChanged(0.7, "加载游戏资源...");

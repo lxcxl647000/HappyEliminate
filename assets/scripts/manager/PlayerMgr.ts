@@ -3,7 +3,6 @@ import { ItemType } from "../configs/ItemConfig";
 import { qc } from "../framework/qc";
 import { baseConfig } from '../configs/baseConfig';
 import HomeApi from "../api/index";
-import LevelMgr from "./LevelMgr";
 interface Prompt {
     can_open: any;
     show: number;
@@ -234,7 +233,9 @@ export default class PlayerMgr {
         this.userInfo.props.step_number = +res.data.props.step_number;
         this.userInfo.props.theme_num = +res.data.props.theme_num;
         qc.eventManager.emit(EventDef.Update_Gold);
-        PlayerMgr.ins.userInfo.summary.map_on = this._checkMapId(res.data.summary.map_on, res.data.summary.latest_passed_level + 1);
+        if (res.data.summary.map_on === 0) {
+            PlayerMgr.ins.userInfo.summary.map_on = 1;
+        }
         if (res.data.summary.current_theme_id === undefined || res.data.summary.current_theme_id === '0') {
             PlayerMgr.ins.userInfo.summary.current_theme_id = '1';
         }
@@ -249,17 +250,18 @@ export default class PlayerMgr {
         console.log('定时器', this.time);
 
         if (this.userInfo.strength_recover.recovering == 1) {
-            if (this.timeOne) {
-                console.log(1111);
+            // if (this.timeOne) {
+            //     console.log(1111);
 
-                this.timeNum = this.userInfo.strength_recover.remain_seconds * 1000
-                this.runTime = this.timeNum
-                // this.timeNum = 14000
-            } else {
-                this.timeNum = 5.9 * 60 * 1000
-                this.runTime = this.timeNum
-                // this.timeNum = 18000
-            }
+
+            //     // this.timeNum = 14000
+            // } else {
+            //     this.timeNum = 5.9 * 60 * 1000
+            //     this.runTime = this.timeNum
+            //     // this.timeNum = 18000
+            // }
+            this.timeNum = this.userInfo.strength_recover.remain_seconds * 1000
+            this.runTime = this.timeNum
             if (this.userInfo.props.strength >= 100) {
                 if (this.time) {
                     clearInterval(this.time)
@@ -269,10 +271,12 @@ export default class PlayerMgr {
 
             } else {
                 if (!this.time) {
-                    this.time = setInterval(() => {
+                    this.time = setInterval(async () => {
                         this.runTime = this.runTime - 1000
                         if (this.runTime <= 0) {
-                            this.addEnergy(1)
+                            // this.addEnergy(1)
+                            await this.getHomeData()
+                            this.addEnergy(0)
                             qc.eventManager.emit(EventDef.Update_RewardCount)
                             this.runTime = this.timeNum
                         }
@@ -285,7 +289,8 @@ export default class PlayerMgr {
     }
     public clearTime() {
         if (this.time) {
-            this.time = null
+            clearInterval(this.time);
+            this.time = null;
         }
     }
 
@@ -293,16 +298,5 @@ export default class PlayerMgr {
     public updateTheme(theme_id: string) {
         this.userInfo.summary.current_theme_id = theme_id;
         qc.eventManager.emit(EventDef.Update_Theme, theme_id);
-    }
-
-    private _checkMapId(mapid: number, levelIndex: number) {
-        let level = LevelMgr.ins.getLevel(mapid, levelIndex);
-        if (!level) {
-            mapid++;
-            return this._checkMapId(mapid, levelIndex);
-        }
-        else {
-            return mapid;
-        }
     }
 }

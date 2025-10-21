@@ -42,8 +42,8 @@ export class EffectLineStarScript extends Component {
         tween(this.node)
             .to(this.duration, { position: this.to })
             .call(() => {
-                this.node.removeFromParent();
                 cb && cb(cell);
+                this.node.removeFromParent();
             })
             .start();
     }

@@ -1,4 +1,5 @@
 import { bgztpanel } from "../custom/bgztpanel/bgztpanel";
+import { loadingPanel } from "../custom/loadiingpanel/loadingPanel";
 import { PanelConfig } from "../framework/lib/router/PanelConfig";
 import { BundleConfigs } from "./BundleConfigs";
 
@@ -150,7 +151,13 @@ export const PanelConfigs = {
         prefabPath: `${BundleConfigs.bgztBundle}/prefabs/bgztPanel`,
         layerZIndex: PanelLayerEnum.PopLayer,
         index: 1,
+    },
+    loadingPanel: <PanelConfig>{
+        prefabPath: `${BundleConfigs.loadingBundle}/prefabs/loadingPanel`,
+        layerZIndex: PanelLayerEnum.PopLayer,
+        index: 1,
     }
-    
+
+
 
 };

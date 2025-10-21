@@ -33,14 +33,7 @@ export class AddGoldItem extends Component {
                 break;
 
             case 2:
-                let currentLevel = LevelMgr.ins.getLevel(PlayerMgr.ins.userInfo.summary.map_on, PlayerMgr.ins.userInfo.summary.latest_passed_level + 1);
-                qc.panelRouter.showPanel({
-                    panel: PanelConfigs.gameStartPanel,
-                    onShowed: () => {
-
-                    },
-                    data: currentLevel
-                });
+                LevelMgr.ins.goToLevel(PlayerMgr.ins.userInfo.summary.map_on, PlayerMgr.ins.userInfo.summary.latest_passed_level + 1, null);
                 break;
         }
         qc.panelRouter.hide({ panel: PanelConfigs.addGoldPanel });

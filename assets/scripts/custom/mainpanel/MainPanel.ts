@@ -1,4 +1,4 @@
-import { _decorator, Animation, Component, Label, Node, Sprite, tween } from 'cc';
+import { _decorator, Animation, Component, Label, Node, Sprite, tween, Vec3, Widget } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
@@ -15,6 +15,7 @@ import CustomSprite from '../componetUtils/CustomSprite';
 import { SettingMgr } from '../../manager/SettingMgr';
 import CocosUtils from '../../utils/CocosUtils';
 import { BundleConfigs } from '../../configs/BundleConfigs';
+import { LevelNodeData } from './LevelNodeData';
 
 const { ccclass, property } = _decorator;
 
@@ -48,6 +49,30 @@ export class MainPanel extends PanelComponent {
     private _maskSprite: Sprite = null;
     private _currentLevel: LevelConfig = null;
     private _vibrateFlag = false;
+    private _musicCD: number = 0;
+    private _soundCD: number = 0;
+    private _vibrateCD: number = 0;
+
+    protected update(dt: number): void {
+        if (this._musicCD > 0) {
+            this._musicCD -= dt;
+            if (this._musicCD < 0) {
+                this._musicCD = 0;
+            }
+        }
+        if (this._soundCD > 0) {
+            this._soundCD -= dt;
+            if (this._soundCD < 0) {
+                this._soundCD = 0;
+            }
+        }
+        if (this._vibrateCD > 0) {
+            this._vibrateCD -= dt;
+            if (this._vibrateCD < 0) {
+                this._vibrateCD = 0;
+            }
+        }
+    }
 
     show(option: PanelShowOption): void {
         if (!this._vibrateFlag) {
@@ -63,8 +88,9 @@ export class MainPanel extends PanelComponent {
         qc.platform.fromOtherAppToShowAd();
         this.gm.active = baseConfig.gm;
         this._updateLevel(false);
-        this._updateTheme(PlayerMgr.ins.userInfo.summary.current_theme_id);
-        this._initMap();
+        this._updateTheme(PlayerMgr.ins.userInfo.summary.current_theme_id, () => {
+            this._initMap();
+        });
         ItemMgr.ins.getItemList(null);
         this._updateLeftLevelLabel();
         this._updateMusicStatus();
@@ -86,6 +112,8 @@ export class MainPanel extends PanelComponent {
         qc.eventManager.on(EventDef.UpdateVibrateStatus, this._updateVibrateStatus, this);
         qc.eventManager.on(EventDef.Update_Left_Level_Redpack, this._updateLeftLevelLabel, this);
         qc.eventManager.on(EventDef.Update_Theme, this._updateTheme, this);
+        qc.eventManager.on(EventDef.OnShow, this._onshow, this);
+        qc.eventManager.on(EventDef.OnHide, this._onhide, this);
         this.levelLabel.string = `第${PlayerMgr.ins.userInfo.summary.latest_passed_level + 1}关`;
     }
 
@@ -100,6 +128,8 @@ export class MainPanel extends PanelComponent {
         qc.eventManager.off(EventDef.UpdateMusicStatus, this._updateMusicStatus, this);
         qc.eventManager.off(EventDef.Update_Left_Level_Redpack, this._updateLeftLevelLabel, this);
         qc.eventManager.off(EventDef.Update_Theme, this._updateTheme, this);
+        qc.eventManager.off(EventDef.OnShow, this._onshow, this);
+        qc.eventManager.off(EventDef.OnHide, this._onhide, this);
     }
 
     private _initMap() {
@@ -112,14 +142,35 @@ export class MainPanel extends PanelComponent {
     }
 
     private _jumpToLevel(mapId: number, level: number) {
-        if (level <= 5) {
-            return;
-        }
-        let total = 0;
-        for (let i = 0; i < mapId; i++) {
-            total += LevelMgr.ins.getMap(i + 1).size;
-        }
-        this.mapList.scrollView.scrollToPercentVertical((level) / total);
+        this.mapList.scrollTo(mapId - 1, 0.1);
+        this.scheduleOnce(() => {
+            let children = this.mapList.content.children;
+            let lvPosNode: Node = null;
+            let bottomNode: Node = null;
+            for (let child of children) {
+                let mapData = child.getComponent(MapNodeData);
+                if (mapData) {
+                    let levelsPosNode = mapData.levels;
+                    for (let levelNode of levelsPosNode.children) {
+                        let levelData = levelNode.getComponentInChildren(LevelNodeData);
+                        if (levelData && levelData.levelData.levelIndex === level) {
+                            lvPosNode = levelNode;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (lvPosNode) {
+                bottomNode = lvPosNode.parent.getChildByName('bottom');
+                if (bottomNode) {
+                    let offsetY = bottomNode.position.y - lvPosNode.position.y;
+                    let pos = this.mapList.scrollView.content.position;
+                    tween(this.mapList.scrollView.content)
+                        .to(0.2, { position: new Vec3(pos.x, pos.y + offsetY, pos.z) }, { easing: 'sineInOut' })
+                        .start();
+                }
+            }
+        }, .1);
     }
 
     public onRenderMap(item: Node, index: number) {
@@ -140,7 +191,7 @@ export class MainPanel extends PanelComponent {
         this._currentLevel = LevelMgr.ins.getLevel(mapId, nextLevel);
         this.levelLabel.string = `第${nextLevel}关`;
 
-        this._jumpToLevel(mapId, nextLevel);
+        needUpdateNext && this._jumpToLevel(mapId, nextLevel);
     }
 
     private _unlockMap() {
@@ -151,7 +202,7 @@ export class MainPanel extends PanelComponent {
         setTimeout(() => {
             this.mapList.scrollTo(mapId - 1);
 
-        }, 500);
+        }, 200);
         // this.mapList.scrollTo(PlayerMgr.ins.player.mapId - 1);
 
         this._updateLevel(true);
@@ -159,13 +210,7 @@ export class MainPanel extends PanelComponent {
 
     onStartBtn() {
         qc.platform.vibrateShort();
-        qc.panelRouter.showPanel({
-            panel: PanelConfigs.gameStartPanel,
-            onShowed: () => {
-
-            },
-            data: this._currentLevel
-        });
+        LevelMgr.ins.goToLevel(this._currentLevel.mapId, this._currentLevel.levelIndex, null);
     }
     userInfoBTn() {
         qc.panelRouter.showPanel({
@@ -298,6 +343,10 @@ export class MainPanel extends PanelComponent {
     }
 
     onMusic() {
+        if (this._musicCD) {
+            return;
+        }
+        this._musicCD = .5;
         if (this.musicSprite.index === 0) {
             musicMgr.ins.stopMusic();
             SettingMgr.ins.musicEnabled = false;
@@ -312,6 +361,10 @@ export class MainPanel extends PanelComponent {
     }
 
     onSound() {
+        if (this._soundCD) {
+            return;
+        }
+        this._soundCD = .5;
         if (this.soundSprite.index === 0) {
             SettingMgr.ins.soundEnabled = false;
             SettingMgr.ins.initSound();
@@ -337,6 +390,10 @@ export class MainPanel extends PanelComponent {
     }
 
     onVibrate() {
+        if (this._vibrateCD) {
+            return;
+        }
+        this._vibrateCD = .5;
         if (this.vibrateSprite.index === 0) {
             SettingMgr.ins.vibrateEnabled = false;
         }
@@ -368,16 +425,32 @@ export class MainPanel extends PanelComponent {
         }
     }
 
-    private _updateTheme(theme_id: string) {
+    private _updateTheme(theme_id: string, cb?: Function) {
         if (!this._maskSprite) {
             this._maskSprite = this.node.getChildByName('mask').getComponent(Sprite);
         }
-        CocosUtils.loadTextureFromBundle(BundleConfigs.mainBundle, `textures/mask_${theme_id}`, this._maskSprite);
+        CocosUtils.loadTextureFromBundle(BundleConfigs.mainBundle, `textures/mask_${theme_id}`, this._maskSprite, () => {
+            this._maskSprite.getComponent(Widget).updateAlignment();
+            cb && cb();
+        });
     }
 
     setSetting() {
         if (this.setting.active) {
             this.setting.active = false;
         }
+    }
+
+    private async _onshow() {
+        this._musicCD = 1;
+        this._soundCD = 1;
+        this._vibrateCD = 1;
+        await PlayerMgr.ins.getHomeData();
+        PlayerMgr.ins.getEnergy();
+        qc.eventManager.emit(EventDef.Update_RewardCount);
+    }
+
+    private _onhide() {
+        PlayerMgr.ins.clearTime();
     }
 }

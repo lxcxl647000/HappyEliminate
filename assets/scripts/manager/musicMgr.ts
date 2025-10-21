@@ -47,6 +47,8 @@ export class musicMgr extends Component {
      * @param audio 音乐名
      */
     public async playMusic(audio: string) {
+        console.log('playmusic-------------');
+
         if (!SettingMgr.ins.musicEnabled) {
             return;
         }

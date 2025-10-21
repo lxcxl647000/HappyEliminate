@@ -20,32 +20,35 @@ export class SettingMgr {
     private _musicVal: number = .8;
 
     public get vibrateEnabled() {
-        let enabled = qc.storage.getItem(Constants.VIBRATE_ENABLED_KEY, true);
-        this._vibrateEnabled = enabled;
+        let enabled = qc.storage.getItem(Constants.VIBRATE_ENABLED_KEY, 1);
+        this._vibrateEnabled = enabled === 1;
         return this._vibrateEnabled;
     }
     public set vibrateEnabled(val: boolean) {
-        qc.storage.setItem(Constants.VIBRATE_ENABLED_KEY, val);
+        let enabled = val ? 1 : 0;
+        qc.storage.setItem(Constants.VIBRATE_ENABLED_KEY, enabled);
         this._vibrateEnabled = val;
 
     }
     public get musicEnabled() {
-        let enabled = qc.storage.getItem(Constants.MUSIC_ENABLED_KEY, true);
-        this._musicEnabled = enabled;
+        let enabled = qc.storage.getItem(Constants.MUSIC_ENABLED_KEY, 1);
+        this._musicEnabled = enabled === 1;
         return this._musicEnabled;
     }
     public set musicEnabled(val: boolean) {
-        qc.storage.setItem(Constants.MUSIC_ENABLED_KEY, val);
+        let enabled = val ? 1 : 0;
+        qc.storage.setItem(Constants.MUSIC_ENABLED_KEY, enabled);
         this._musicEnabled = val;
     }
 
     public get soundEnabled() {
-        let enabled = qc.storage.getItem(Constants.SOUND_ENABLED_KEY, true);
-        this._soundEnabled = enabled;
+        let enabled = qc.storage.getItem(Constants.SOUND_ENABLED_KEY, 1);
+        this._soundEnabled = enabled === 1;
         return this._soundEnabled;
     }
     public set soundEnabled(val: boolean) {
-        qc.storage.setItem(Constants.SOUND_ENABLED_KEY, val);
+        let enabled = val ? 1 : 0;
+        qc.storage.setItem(Constants.SOUND_ENABLED_KEY, enabled);
         this._soundEnabled = val;
     }
 

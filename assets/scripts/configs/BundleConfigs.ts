@@ -24,5 +24,6 @@ export const BundleConfigs = {
     gmBundle: 'gmBundle',
     getItemBundle: 'getItemBundle',
     cashBundle: 'cashBundle',
-    bgztBundle: 'bgztBundle'
+    bgztBundle: 'bgztBundle',
+    loadingBundle: 'loadingBundle'
 };

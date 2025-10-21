@@ -3,7 +3,7 @@ import CocosUtils from '../utils/CocosUtils';
 import { renwuMgr, Task } from '../manager/TaskMgr';
 import { qc } from "../framework/qc";
 import { rewardedVideoAd } from "../framework/lib/platform/platform_interface";
-import CustomSprite from "db://assets/scripts/custom/componetUtils/CustomSprite";
+import CustomSprite from "../custom/componetUtils/CustomSprite";
 import EventDef from '../constants/EventDef';
 const { ccclass, property } = _decorator;
 

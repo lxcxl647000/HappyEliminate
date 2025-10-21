@@ -1,6 +1,4 @@
 import { httpMgr } from "../framework/lib/net/httpMgr";
-import {Task} from "db://assets/scripts/manager/TaskMgr";
-import PlayerMgr from "db://assets/scripts/manager/PlayerMgr";
 
 interface ExchangeData {
     date: string;

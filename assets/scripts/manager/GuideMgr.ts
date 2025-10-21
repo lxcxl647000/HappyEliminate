@@ -104,7 +104,7 @@ export default class GuideMgr {
                 type: guideType,
                 canClickMask: false,
                 fingerAniOffset: new Vec2(0, 1),
-                tipsOffset: new Vec2(0, 200),
+                tipsOffset: new Vec2(-50, 200),
                 isSlide: false,
                 doNext: doNext?.bind(this),
             }

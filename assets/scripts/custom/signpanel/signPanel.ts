@@ -14,8 +14,8 @@ import CommonTipsMgr from "../../manager/CommonTipsMgr";
 import PlayerMgr from "../../manager/PlayerMgr";
 import { rewardedVideoAd } from "../../framework/lib/platform/platform_interface";
 import { baseConfig } from "../../configs/baseConfig";
-import EventDef from "db://assets/scripts/constants/EventDef";
-import GetItemMgr from "db://assets/scripts/manager/GetItemMgr";
+import EventDef from "../../constants/EventDef";
+import GetItemMgr from "../../manager/GetItemMgr";
 
 const { ccclass, property } = _decorator;
 
@@ -51,14 +51,17 @@ export class signPanel extends PanelComponent {
 
     private getBtnStatus(type) {
         if (type === 1) { // 未领取
+            this.receiveNode.getComponent(CustomSprite).index = 0;
             this.receiveNode.getChildByName('playIcon').active = false;
             this.receiveBtnLabel.string = '立即收下';
             this.receiveBtnLabel.node.setPosition(0, 6, 0);
         } else if (type === 2) { // 再领一次
+            this.receiveNode.getComponent(CustomSprite).index = 0;
             this.receiveNode.getChildByName('playIcon').active = true;
             this.receiveBtnLabel.string = '再领一次';
             this.receiveBtnLabel.node.setPosition(22, 6, 0);
         } else { // 已领取
+            this.receiveNode.getComponent(CustomSprite).index = 1;
             this.receiveNode.getChildByName('playIcon').active = false;
             this.receiveBtnLabel.string = '已领取';
             this.receiveBtnLabel.node.setPosition(0, 6, 0);
@@ -102,9 +105,12 @@ export class signPanel extends PanelComponent {
 
                 const rewardArr = newRewardData[i].rewardList;
                 // 奖励类型 type 1: 金币，2: 锤子，3: 体力，4: 炸弹， 5：主题碎片，6：步数，7：打乱棋盘
+                let expiredBgNode = itemNode.getChildByName('expiredBg');
+
+
                 for (let k = 0; k < rewardArr.length; k++) {
                     const rewardType = rewardArr[k].type;
-                    let rewardImgItem = itemNode.getChildByName('expiredBg').getChildByName('rewardItemNode');
+                    let rewardImgItem = expiredBgNode.getChildByName('rewardItemNode');
                     let rewardImg = instantiate(this.rewardImg);
                     rewardImg.active = true;
                     rewardImgItem.addChild(rewardImg);
@@ -122,14 +128,14 @@ export class signPanel extends PanelComponent {
                         }
                     }
 
-                    itemNode.getChildByName('expiredBg').getChildByName('rewardItemNode').addChild(rewardImg)
+                    expiredBgNode.getChildByName('rewardItemNode').addChild(rewardImg)
                     if (newRewardData[i].label === '已过期' || newRewardData[i].label === '已领取') {
                         rewardImg.getComponent(Sprite).color = new Color(255, 255, 255, 100);
                     }
                 }
                 if (rewardArr.length > 1) {
-                    itemNode.getChildByName('expiredBg').getComponent(UITransform).width = 284;
-                    itemNode.getChildByName('expiredBg').parent.getComponent(UITransform).width = 284;
+                    expiredBgNode.getComponent(UITransform).width = 284;
+                    expiredBgNode.parent.getComponent(UITransform).width = 284;
                 }
 
 
@@ -137,19 +143,28 @@ export class signPanel extends PanelComponent {
                     itemNode.getComponentInChildren(Label).string = newRewardData[i].label;
                 }
 
-                let bgSprite = itemNode.getChildByName('expiredBg').getComponent(CustomSprite);
+                let bgSprite = expiredBgNode.getComponent(CustomSprite);
                 if (newRewardData[i].label === '已过期') {
                     bgSprite.index = 0;
-                    itemNode.getChildByName('expiredBg').getChildByName('timeoutIcon').active = true;
+                    expiredBgNode.getChildByName('timeoutIcon').active = true;
+                    if (rewardArr.length > 1) {
+                        expiredBgNode.getChildByName('timeoutIcon').setPosition(145, -20, 0);
+                    }
                 } else if (newRewardData[i].label === '今日领') {
                     this.receiveBtnLabel.string = '立即收下';
                     bgSprite.index = 1;
-                    itemNode.getChildByName('expiredBg').getChildByName('redDot').active = true;
+                    expiredBgNode.getChildByName('redDot').active = true;
+                    if (rewardArr.length > 1) {
+                        expiredBgNode.getChildByName('redDot').setPosition(270, 65, 0);
+                    }
                 } else {
                     bgSprite.index = 2;
                 }
                 if (newRewardData[i].label === '已领取') {
-                    itemNode.getChildByName('expiredBg').getChildByName('claimIcon').active = true;
+                    expiredBgNode.getChildByName('claimIcon').active = true;
+                    if (rewardArr.length > 1) {
+                        expiredBgNode.getChildByName('claimIcon').setPosition(145, -20, 0);
+                    }
                 }
             }
 

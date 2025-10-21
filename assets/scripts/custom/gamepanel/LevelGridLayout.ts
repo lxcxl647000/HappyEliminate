@@ -275,14 +275,28 @@ export class LevelGridLayout extends Component {
                 if (cell.tool) {
                     // 选中了道具，进行处理
                     // 跳转state
-                    this.gridStateMachine.transitionTo(
-                        ConstStatus.getInstance().toolsState,
-                        {
-                            cell: cell,
-                            tool: cell.tool,
-                            grid: this.grid
-                        } as ToolsStateEnterData
-                    );
+                    // this.gridStateMachine.transitionTo(
+                    //     ConstStatus.getInstance().toolsState,
+                    //     {
+                    //         cell: cell,
+                    //         tool: cell.tool,
+                    //         grid: this.grid
+                    //     } as ToolsStateEnterData
+                    // );
+                    let selectCell = cell.node.getComponent(CellScript);
+                    if (selectCell.selected) {
+                        this.gridStateMachine.transitionTo(
+                            ConstStatus.getInstance().toolsState,
+                            {
+                                cell: cell,
+                                tool: cell.tool,
+                                grid: this.grid
+                            } as ToolsStateEnterData
+                        );
+                    }
+                    else {
+                        this.prepareClickSwap(cell);
+                    }
                 } else {
                     this.prepareClickSwap(cell);
                 }
@@ -297,6 +311,10 @@ export class LevelGridLayout extends Component {
                 // 如果不是idel不允许操作
                 if (!(this.gridStateMachine.getCurrentState() instanceof IdelState)) {
                     this.resetClickSwap();
+                    return;
+                }
+                // 使用底部道具时不能滑动
+                if (this._gamepanel.useToolType === ToolType.TYPE_HAMMER || this._gamepanel.useToolType === ToolType.TYPE_BOOM) {
                     return;
                 }
                 this.resetClickSwap();

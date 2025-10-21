@@ -9,6 +9,7 @@ import PoolMgr from '../../manager/PoolMgr';
 import { BundleConfigs } from '../../configs/BundleConfigs';
 import CocosUtils from '../../utils/CocosUtils';
 import { Head } from './Head';
+import LevelMgr from '../../manager/LevelMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('LevelNodeData')
@@ -34,6 +35,7 @@ export class LevelNodeData extends Component {
 
 
     private _levelData: LevelConfig = null;
+    public get levelData() { return this._levelData; }
 
     protected onEnable(): void {
         qc.eventManager.on(EventDef.Update_Stars, this._updateStars, this);
@@ -78,13 +80,7 @@ export class LevelNodeData extends Component {
             if (this._levelData.levelIndex > PlayerMgr.ins.userInfo.summary.latest_passed_level + 1) {
                 return;
             }
-            qc.panelRouter.showPanel({
-                panel: PanelConfigs.gameStartPanel,
-                onShowed: () => {
-
-                },
-                data: this._levelData
-            });
+            LevelMgr.ins.goToLevel(this._levelData.mapId, this._levelData.levelIndex, null);
         }
     }
 

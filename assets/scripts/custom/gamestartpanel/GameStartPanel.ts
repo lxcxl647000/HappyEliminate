@@ -33,11 +33,13 @@ export class GameStartPanel extends PanelComponent {
     private _tools: ItemType[] = [ItemType.Boom, ItemType.Steps];
     private _selectTools: { [id: number]: number } = {};
     private _cdTime: number = 0;
+    private _replayCb: Function = null;
 
     show(option: PanelShowOption): void {
         option.onShowed();
         this._selectTools = {};
-        this._level = option.data as LevelConfig;
+        this._level = option.data.levelConfig as LevelConfig;
+        this._replayCb = option.data.replayCb;
 
         this._init();
     }
@@ -108,24 +110,30 @@ export class GameStartPanel extends PanelComponent {
         if (this._cdTime > 0) return;
 
         this._cdTime = 1;
-        if (PlayerMgr.ins.userInfo.props.strength >= 10) {
-            await LevelMgr.ins.sendLevelToServer(this._level.levelIndex)
-            await PlayerMgr.ins.getHomeData()
-            PlayerMgr.ins.getEnergy()
-
-            qc.panelRouter.showPanel({
-                panel: PanelConfigs.gamePanel,
-                onShowed: () => {
-
-                },
-                data: { level: this._level, selectTools: this._selectTools }
-            });
+        if (this._replayCb) {
+            this._replayCb(this._selectTools);
             this._cdTime = 0;
             this._hidePanel();
-        } else {
-            CommonTipsMgr.ins.showTips('体力不足');
         }
+        else {
+            if (PlayerMgr.ins.userInfo.props.strength >= Constants.Energy_Cost) {
+                await LevelMgr.ins.sendLevelToServer(this._level.levelIndex)
+                await PlayerMgr.ins.getHomeData()
+                PlayerMgr.ins.getEnergy()
 
+                qc.panelRouter.showPanel({
+                    panel: PanelConfigs.gamePanel,
+                    onShowed: () => {
+
+                    },
+                    data: { level: this._level, selectTools: this._selectTools }
+                });
+                this._cdTime = 0;
+                this._hidePanel();
+            } else {
+                CommonTipsMgr.ins.showTips('体力不足');
+            }
+        }
     }
 
     private _updateSelectTool(itemType: ItemType, num: number) {

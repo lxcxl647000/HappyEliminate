@@ -73,7 +73,7 @@ export default class LevelMgr {
         }
     }
 
-    public goToLevel(mapId: number, level: number, cb: Function) {
+    public goToLevel(mapId: number, level: number, cb: Function, replayCb?: Function) {
         if (level === 0) {
             level += 1;
         }
@@ -83,7 +83,7 @@ export default class LevelMgr {
             onShowed: () => {
                 cb && cb();
             },
-            data: levelConfig
+            data: { levelConfig, replayCb }
         });
     }
 

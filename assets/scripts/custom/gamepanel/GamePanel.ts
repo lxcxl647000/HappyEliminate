@@ -33,9 +33,10 @@ import { musicMgr } from '../../manager/musicMgr';
 import CustomSprite from '../componetUtils/CustomSprite';
 import { SettingMgr } from '../../manager/SettingMgr';
 import GuideMgr, { GuideType } from '../../manager/GuideMgr';
-import CommonTipsMgr from '../../manager/CommonTipsMgr';
 import { GameShowTarget } from './GameShowTarget';
 import { BundleConfigs } from '../../configs/BundleConfigs';
+import { IdelState } from '../../game/gridstate/IdelState';
+import CommonTipsMgr from '../../manager/CommonTipsMgr';
 const { ccclass, property } = _decorator;
 class GameStaus {
     progressFinish: boolean = false;
@@ -149,6 +150,9 @@ export class GamePanel extends PanelComponent {
 
     private _selectTools: ToolType[] = [ToolType.TYPE_HAMMER, ToolType.RANDOM_GRID, ToolType.TYPE_BOOM, ToolType.TYPE_STEPS];
 
+    private _musicCD: number = 0;
+    private _soundCD: number = 0;
+    private _vibrateCD: number = 0;
 
     show(option: PanelShowOption): void {
         option.onShowed();
@@ -287,6 +291,7 @@ export class GamePanel extends PanelComponent {
         qc.eventManager.on(EventDef.SelectBoomGuide, this._selectBoomGuide, this);
         qc.eventManager.on(EventDef.PassTargetGuide, this._passTargetGuide, this);
         qc.eventManager.on(EventDef.Update_Theme, this._updateTheme, this);
+        qc.eventManager.on(EventDef.OnShow, this._onshow, this);
         this._init();
         this._updateSoundStatus();
         this._updateMusicStatus();
@@ -303,10 +308,29 @@ export class GamePanel extends PanelComponent {
         qc.eventManager.off(EventDef.SelectBoomGuide, this._selectBoomGuide, this);
         qc.eventManager.off(EventDef.PassTargetGuide, this._passTargetGuide, this);
         qc.eventManager.off(EventDef.Update_Theme, this._updateTheme, this);
+        qc.eventManager.off(EventDef.OnShow, this._onshow, this);
     }
 
     private noNeedToCheckGameStatus: boolean = false;
-    update(deltaTime: number) {
+    update(dt: number) {
+        if (this._musicCD > 0) {
+            this._musicCD -= dt;
+            if (this._musicCD < 0) {
+                this._musicCD = 0;
+            }
+        }
+        if (this._soundCD > 0) {
+            this._soundCD -= dt;
+            if (this._soundCD < 0) {
+                this._soundCD = 0;
+            }
+        }
+        if (this._vibrateCD > 0) {
+            this._vibrateCD -= dt;
+            if (this._vibrateCD < 0) {
+                this._vibrateCD = 0;
+            }
+        }
         if (this.noNeedToCheckGameStatus) {
             return;
         }
@@ -345,13 +369,14 @@ export class GamePanel extends PanelComponent {
         // 处理步数
         // 将剩余的步数转化成分数, 动画递减
         this.gameStatus.stepLeftReduceComplete = false;
+        let lineArr: Node[] = [];
+        let randomCells: Cell[] = [];
+
         if (this.stepsValue > 0) {
-            const intervalTime = Constants.PROGRESS_CHANGE_DURATION;
+            const intervalTime = Constants.PROGRESS_CHANGE_DURATION * 1000;
             const repeatCount = this.stepsValue;
 
-            let randomCells = [];
-
-            this.schedule(() => {
+            for (let i = 0; i < repeatCount; i++) {
                 console.log('process left step', this.stepsValue)
                 if (this.stepsValue === 0) {
                     return;
@@ -364,56 +389,71 @@ export class GamePanel extends PanelComponent {
 
                 const lineStarNode = instantiate(this.lineStarPrefab);
                 this.node.addChild(lineStarNode);
+
                 let randomCell = this.levelGridScript.grid.randomCell();
+                randomCells.push(randomCell);
+
                 let fromPos = CocosUtils.setNodeToTargetPos(lineStarNode, this.stepsValueNode);
                 let toPos = CocosUtils.setNodeToTargetPos(lineStarNode, randomCell.node);
                 let effectLineStarScript = lineStarNode.getComponent(EffectLineStarScript);
                 effectLineStarScript.setDuration(.4);
                 effectLineStarScript.setPath(fromPos, toPos);
-                effectLineStarScript.startMove(randomCell, (cell: Cell) => {
-                    let type = MathUtils.randomSort(this._needRandomTools)[0];
-                    let iTool: ITool = null;
-                    switch (type) {
-                        case ToolType.BOOM_MATCH:
-                            iTool = new BoomMatchTool();
-                            break;
-                        case ToolType.COL_MATCH:
-                            iTool = new ColMatchTool();
-                            break;
-                        case ToolType.ROW_MATCH:
-                            iTool = new RowMatchTool();
-                            break;
-                    }
-                    if (!cell.node) {
-                        ConstStatus.getInstance().fillState.fillWithTool(cell, iTool);
-                    }
-                    else {
-                        let cellScript = cell.node.getComponent(CellScript);
-                        if (cellScript) {
-                            cellScript.setToolType(type);
-                            ConstStatus.getInstance().fillState.setWithTool(cell, iTool);
-                        }
-                    }
-                    randomCells.push(cell);
-                    console.log('randomcell ', randomCells.length, '  repeatCount ', repeatCount);
+                lineStarNode.setPosition(fromPos);
+                lineStarNode.active = false;
+                lineArr.push(lineStarNode);
+            }
 
-                    if (randomCells.length === repeatCount) {
-                        this.scheduleOnce(() => {
-                            for (let i = 0; i < randomCells.length; i++) {
-                                let cell = randomCells[i];
-                                this.levelGridScript.getGridStateMachine().transitionTo(
-                                    ConstStatus.getInstance().toolsState,
-                                    {
-                                        cell: cell,
-                                        tool: cell.tool,
-                                        grid: this.levelGridScript.grid
-                                    } as ToolsStateEnterData
-                                );
-                            }
-                        }, .5);
+            this.scheduleOnce(() => {
+                for (let i = 0; i < randomCells.length; i++) {
+                    let cell = randomCells[i];
+                    this.levelGridScript.getGridStateMachine().transitionTo(
+                        ConstStatus.getInstance().toolsState,
+                        {
+                            cell: cell,
+                            tool: cell.tool,
+                            grid: this.levelGridScript.grid
+                        } as ToolsStateEnterData
+                    );
+                }
+            }, Constants.PROGRESS_CHANGE_DURATION * randomCells.length + .5);
+
+            let index = 0;
+            for (let i = 0; i < randomCells.length; i++) {
+                let line = lineArr[i];
+                let effectLineStarScript = line.getComponent(EffectLineStarScript);
+                setTimeout(() => {
+                    if (index >= randomCells.length) {
+                        return;
                     }
-                });
-            }, intervalTime, repeatCount);
+                    effectLineStarScript.node.active = true;
+                    effectLineStarScript.startMove(randomCells[index], (cell: Cell) => {
+                        let type = MathUtils.randomSort(this._needRandomTools)[0];
+                        let iTool: ITool = null;
+                        switch (type) {
+                            case ToolType.BOOM_MATCH:
+                                iTool = new BoomMatchTool();
+                                break;
+                            case ToolType.COL_MATCH:
+                                iTool = new ColMatchTool();
+                                break;
+                            case ToolType.ROW_MATCH:
+                                iTool = new RowMatchTool();
+                                break;
+                        }
+                        if (!cell.node) {
+                            ConstStatus.getInstance().fillState.fillWithTool(cell, iTool);
+                        }
+                        else {
+                            let cellScript = cell.node.getComponent(CellScript);
+                            if (cellScript) {
+                                cellScript.setToolType(type);
+                                ConstStatus.getInstance().fillState.setWithTool(cell, iTool);
+                            }
+                        }
+                    });
+                    index++;
+                }, intervalTime * i);
+            }
         } else {
             this.gameStatus.stepLeftReduceComplete = true;
             cb && cb();
@@ -742,7 +782,9 @@ export class GamePanel extends PanelComponent {
         if (GuideMgr.ins.checkGuide(GuideType.Force_Level_1_Eliminate) && this.levelConfig.levelIndex === 1) {
             GuideMgr.ins.forceGuide_Eliminate(this.levelData.guide_cells, this.levelGridScript.grid.cells, this.node, GuideType.Force_Level_1_Eliminate, () => {
                 GuideMgr.ins.level_1_ForceGuideSelectTool(this.tools.getChildByName('HammerBtn'), this.node, ItemType.Hammer, () => {
-                    GuideMgr.ins.forceGuideUseTool(this.levelGridScript.grid.randomCell().node, this.node, GuideType.Force_Level_1_Use_Hammer, null);
+                    // 特殊选中一个格子，已免大面积消除
+                    let selectCell = this.levelGridScript.grid.cells[1][1];
+                    GuideMgr.ins.forceGuideUseTool(selectCell.node, this.node, GuideType.Force_Level_1_Use_Hammer, null);
                 });
             });
         }
@@ -757,6 +799,10 @@ export class GamePanel extends PanelComponent {
     }
 
     onSoundClick() {
+        if (this._soundCD) {
+            return;
+        }
+        this._soundCD = .5;
         if (this.soundSprite.index === 0) {
             SettingMgr.ins.soundEnabled = false;
         }
@@ -767,6 +813,10 @@ export class GamePanel extends PanelComponent {
         qc.eventManager.emit(EventDef.UpdateSoundStatus);
     }
     onMusicClick() {
+        if (this._musicCD) {
+            return;
+        }
+        this._musicCD = .5;
         if (this.musicSprite.index === 0) {
             musicMgr.ins.stopMusic();
             SettingMgr.ins.musicEnabled = false;
@@ -781,6 +831,10 @@ export class GamePanel extends PanelComponent {
     }
 
     onVibrationClick() {
+        if (this._vibrateCD) {
+            return;
+        }
+        this._vibrateCD = .5;
         if (this.vibrateSprite.index === 0) {
             SettingMgr.ins.vibrateEnabled = false;
         }
@@ -791,15 +845,33 @@ export class GamePanel extends PanelComponent {
     }
 
     onExitClick() {
+        if (this._isFinish) {
+            return;
+        }
+        if (!(this.levelGridScript.getGridStateMachine().getCurrentState() instanceof IdelState)) {
+            return;
+        }
         this.settingNode.active = false;
         this.settingMask.active = false;
         qc.panelRouter.showPanel(
             {
                 panel: PanelConfigs.gameExitPanel,
                 data: {
-                    onExit: () => { this._backToMainPanel(); },
+                    onExit: () => {
+                        if (this._isFinish) {
+                            return;
+                        }
+                        this._backToMainPanel();
+                    },
                     onReplay: () => {
-                        LevelMgr.ins.replay(this.levelData.levelIndex, null);
+                        if (this._isFinish) {
+                            return;
+                        }
+                        if (PlayerMgr.ins.userInfo.props.strength < Constants.Energy_Cost) {
+                            CommonTipsMgr.ins.showTips('体力不足');
+                            return;
+                        }
+
                         // 新手引导第一关特殊处理 在结算时才发送使用道具给服务器，避免玩家在游戏中就把道具使用了，但未完成引导，再次触发引导时没有道具可用,这里如果重玩需要给玩家加回去
                         if (this.levelData.levelIndex === 1 && PlayerMgr.ins.userInfo.current_level.length === 0) {
                             if (PlayerMgr.ins.getItemNum(ItemType.Hammer) === 0) {
@@ -809,8 +881,14 @@ export class GamePanel extends PanelComponent {
                                 PlayerMgr.ins.addItem(ItemType.Boom, 1);
                             }
                         }
-                        this._init(true);
-                        this._resetStatus(true);
+                        LevelMgr.ins.goToLevel(this.levelData.mapId, this.levelData.levelIndex, null, (selectTools: { [id: number]: number }) => {
+                            LevelMgr.ins.replay(this.levelData.levelIndex, () => {
+                                PlayerMgr.ins.addEnergy(-Constants.Energy_Cost);
+                                this._seletToolFromGameStart = selectTools;
+                                this._init(true);
+                                this._resetStatus(true);
+                            });
+                        });
                     },
                 }
             }
@@ -838,7 +916,9 @@ export class GamePanel extends PanelComponent {
 
     private _selectBoomGuide() {
         GuideMgr.ins.level_1_ForceGuideSelectTool(this.tools.getChildByName('BoomBtn'), this.node, ItemType.Boom, () => {
-            GuideMgr.ins.forceGuideUseTool(this.levelGridScript.grid.randomCell().node, this.node, GuideType.Force_Level_1_Use_Boom, null);
+            // 特殊选中一个格子，已免大面积消除
+            let selectCell = this.levelGridScript.grid.cells[7][1];
+            GuideMgr.ins.forceGuideUseTool(selectCell.node, this.node, GuideType.Force_Level_1_Use_Boom, null);
         });
     }
 
@@ -914,5 +994,11 @@ export class GamePanel extends PanelComponent {
         if (this.settingMask.active) {
             this.settingMask.active = false;
         }
+    }
+
+    private _onshow() {
+        this._musicCD = 1;
+        this._soundCD = 1;
+        this._vibrateCD = 1;
     }
 }

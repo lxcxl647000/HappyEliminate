@@ -103,7 +103,8 @@ export default class platform_taobao implements platform_interface {
             this._onShow(res);
         });
 
-        my['onShow']((res) => {
+        my['onHide']((res) => {
+            console.log('taobao onhide', res);
             this._onHide(res);
         });
 

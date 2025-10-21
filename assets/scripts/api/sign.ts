@@ -1,5 +1,4 @@
 import { httpMgr } from "../framework/lib/net/httpMgr";
-import {Task} from "db://assets/scripts/manager/TaskMgr";
 
 export default class SignApi {
     private static _instance: SignApi = null;

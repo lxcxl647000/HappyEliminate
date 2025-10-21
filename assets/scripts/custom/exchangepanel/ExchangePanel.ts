@@ -12,7 +12,7 @@ import { rewardedVideoAd } from "../../framework/lib/platform/platform_interface
 import { baseConfig } from "../../configs/baseConfig";
 import { ItemType } from "../../configs/ItemConfig";
 import GetItemMgr from "../../manager/GetItemMgr";
-import CommonTipsMgr from "db://assets/scripts/manager/CommonTipsMgr";
+import CommonTipsMgr from "../../manager/CommonTipsMgr";
 
 @ccclass('ExchangePanel')
 export class ExchangePanel extends PanelComponent {
