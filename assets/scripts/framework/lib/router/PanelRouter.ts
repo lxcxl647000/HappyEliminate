@@ -476,10 +476,15 @@ export default class PanelRouter {
         this.show(option);
     }
 
-    public async showPanelWithLoading(option: ShowPanelOption) {
-        await this.loadAsync(PanelConfigs.loadingPanel);
-        await this.loadAsync(option.panel);
-        this.show(option);
+    public showPanelWithLoading(option: ShowPanelOption) {
+        this.showPanel({
+            panel: PanelConfigs.loadingPanel,
+            data: {
+                cb: () => {
+                    this.showPanel(option);
+                }
+            }
+        });
     }
 }
 

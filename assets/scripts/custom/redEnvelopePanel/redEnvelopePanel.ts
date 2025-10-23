@@ -8,6 +8,7 @@ import { carousel } from './carousel';
 import CustomSprite from '../componetUtils/CustomSprite';
 import PlayerMgr from '../../manager/PlayerMgr';
 import LevelMgr from '../../manager/LevelMgr';
+import EventDef from '../../constants/EventDef';
 
 
 const { ccclass, property } = _decorator;
@@ -34,6 +35,7 @@ export class chengjiuPanel extends PanelComponent {
         log('------------------');
         option.onShowed();
         this.init();
+        qc.eventManager.emit(EventDef.Close_Loading);
     }
 
 

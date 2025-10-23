@@ -53,6 +53,7 @@ export class CashPanel extends PanelComponent {
         option.onShowed();
 
         this._init();
+        qc.eventManager.emit(EventDef.Close_Loading);
     }
     hide(option: PanelHideOption): void {
         option.onHided();

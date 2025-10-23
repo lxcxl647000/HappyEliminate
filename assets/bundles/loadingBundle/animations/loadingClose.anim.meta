@@ -2,12 +2,12 @@
   "ver": "2.0.3",
   "importer": "animation-clip",
   "imported": true,
-  "uuid": "812a954a-dc35-4dff-9b2e-c3055e4d737e",
+  "uuid": "963a511d-4c06-4053-be56-d0a5f02083a8",
   "files": [
     ".cconb"
   ],
   "subMetas": {},
   "userData": {
-    "name": "loadingHuawen"
+    "name": "loadingClose"
   }
 }

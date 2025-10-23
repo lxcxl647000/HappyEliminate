@@ -235,7 +235,7 @@ export class MainPanel extends PanelComponent {
         });
     }
     chengjiuBtn() {
-        qc.panelRouter.showPanel({
+        qc.panelRouter.showPanelWithLoading({
             panel: PanelConfigs.chengjiuPanel,
             onShowed: () => {
                 console.log('this is a chengjiuBtn');
@@ -266,11 +266,8 @@ export class MainPanel extends PanelComponent {
     }
 
     onRedPackBtn() {
-        qc.panelRouter.showPanel({
-            panel: PanelConfigs.redEnvelopePanel,
-            onShowed: () => {
-
-            },
+        qc.panelRouter.showPanelWithLoading({
+            panel: PanelConfigs.redEnvelopePanel
         });
     }
     // 任务中心
@@ -321,11 +318,9 @@ export class MainPanel extends PanelComponent {
     }
 
     onCashBtn() {
-        qc.panelRouter.showPanel({
-            panel: PanelConfigs.cashPanel,
-            onShowed: () => {
-            },
-        })
+        qc.panelRouter.showPanelWithLoading({
+            panel: PanelConfigs.cashPanel
+        });
     }
 
     private async _gamePanelToMainPanel() {

@@ -8,6 +8,7 @@ import AchievementApi from '../../api/Achievement';
 import CommonTipsMgr from '../../manager/CommonTipsMgr';
 import LevelMgr from '../../manager/LevelMgr';
 import PlayerMgr from '../../manager/PlayerMgr';
+import EventDef from '../../constants/EventDef';
 const { ccclass, property } = _decorator;
 @ccclass('chengjiuPanel')
 export class chengjiuPanel extends PanelComponent {
@@ -64,8 +65,7 @@ export class chengjiuPanel extends PanelComponent {
 
         this.list.numItems = this.taskList.length;
 
-
-
+        qc.eventManager.emit(EventDef.Close_Loading);
     }
 
     onRenderRenwuItem(item: Node, index: number) {
