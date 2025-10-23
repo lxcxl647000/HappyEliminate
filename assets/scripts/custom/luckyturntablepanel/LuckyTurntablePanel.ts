@@ -109,7 +109,7 @@ export class LuckyTurntablePanel extends PanelComponent {
 
     onClickAdStart() {
         let ad: rewardedVideoAd = {
-            adUnitId: baseConfig.adUnitIds[0],
+            adUnitId: qc.platform.getAllAdUnitIds()[0],
             successCb: () => {
                 this._onTurnTable();
             }

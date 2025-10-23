@@ -4,6 +4,7 @@ import CocosUtils from '../utils/CocosUtils';
 import { qc } from '../framework/qc';
 import EventDef from '../constants/EventDef';
 import GuideMgr, { GuideType } from '../manager/GuideMgr';
+import { GamePanel } from '../custom/gamepanel/GamePanel';
 const { ccclass, property } = _decorator;
 
 export interface IForceGuideArea {
@@ -23,6 +24,7 @@ export interface IGuide {
     fingerAniOffset: Vec2;
     tipsOffset: Vec2;
     isSlide: boolean;
+    slideTipsOffset: Vec2;
     doNext: Function;
 }
 
@@ -52,10 +54,16 @@ export class Guide extends Component {
     clickCircleNode2: Node = null;
     @property(Node)
     circleNode: Node = null;
+    @property(Node)
+    slideTipsNode: Node = null;
+    @property(Node)
+    useHammerTipsNode: Node = null;
 
     private _curGuide: IGuide = null;
 
     protected onEnable(): void {
+        this.useHammerTipsNode.active = false;
+        this.slideTipsNode.active = false;
         this.tipsNode_continue.active = false;
         this.tipsNode.active = false;
         this.forceGuide.active = false;
@@ -101,6 +109,14 @@ export class Guide extends Component {
             }
         }
 
+        if (this._curGuide.slideTipsOffset) {
+            let slidePos = targetPos.clone();
+            slidePos.x = targetPos.x + this._curGuide.slideTipsOffset.x;
+            slidePos.y = targetPos.y + this._curGuide.slideTipsOffset.y;
+            this.slideTipsNode.setPosition(slidePos);
+            this.slideTipsNode.active = true;
+        }
+
         if (!this._curGuide.tips || this._curGuide.tips === '') {
             this.tipsNode_continue.active = false;
             this.tipsNode.active = false;
@@ -127,6 +143,13 @@ export class Guide extends Component {
             }
             else {
                 this.tipsNode.setPosition(tipsPos);
+            }
+        }
+
+        if (this._curGuide.type === GuideType.Force_Level_1_Use_Hammer) {
+            let gamePanel = this.node.parent.getComponent(GamePanel);
+            if (gamePanel) {
+                gamePanel.setUseHammerGuideTips(this.useHammerTipsNode);
             }
         }
     }

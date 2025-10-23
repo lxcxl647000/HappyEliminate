@@ -7,6 +7,7 @@ import PlayerMgr from "../../manager/PlayerMgr";
 import GetItemMgr from '../../manager/GetItemMgr';
 import { ItemType } from "../../configs/ItemConfig";
 import EventDef from '../../constants/EventDef';
+import CustomSprite from "../../custom/componetUtils/CustomSprite";
 
 @ccclass('contentItems')
 export class contentItems extends Component {
@@ -28,7 +29,8 @@ export class contentItems extends Component {
             this.btnNode.getChildByName('btnLabel').getComponent(Label).string = '去完成';
         } else if (list.status === 1) {
             this.btnNode.getChildByName('redDot').active = true;
-            this.btnNode.getChildByName('btnLabel').getComponent(Label).string = '领取';
+            this.btnNode.getComponent(CustomSprite).index = 0;
+            this.btnNode.getChildByName('btnLabel').getComponent(Label).string = '立即领取';
         }
     }
 

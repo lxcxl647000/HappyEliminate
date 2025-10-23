@@ -17,4 +17,8 @@ export default class adapter_cocos implements adapter_interface {
     public onBilibili(): boolean {
         return sys.platform === sys.Platform.WECHAT_GAME;
     }
+
+    public onTt(): boolean {
+        return sys.platform === sys.Platform.BYTEDANCE_MINI_GAME;
+    }
 }

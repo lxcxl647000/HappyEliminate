@@ -10,4 +10,7 @@ export default interface adapter_interface {
 
     /**是否在bilibili运行环境 */
     onBilibili(): boolean;
+
+    /**是否在tt运行环境 */
+    onTt(): boolean;
 }

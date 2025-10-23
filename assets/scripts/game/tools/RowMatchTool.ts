@@ -1,4 +1,6 @@
+import EventDef from "../../constants/EventDef";
 import { CellScript } from "../../custom/gamepanel/CellScript";
+import { qc } from "../../framework/qc";
 import { Constants } from "../Constants";
 import { ToolsStateEnterData } from "../gridstate/ToolsState";
 import { Cell } from "../Types";
@@ -50,6 +52,16 @@ export class RowMatchTool implements ITool {
                     c.match = true;
                 }
             });
+        }
+        else if (data.swapCell && data.swapCell.tool && data.swapCell.tool.getType() === ToolType.TYPE_MATCH) {
+            let triggerData = {
+                cell: data.swapCell,
+                tool: data.swapCell.tool,
+                grid: data.grid,
+                swapCell: data.cell,
+            } as ToolsStateEnterData;
+            qc.eventManager.emit(EventDef.Trigger_Tool, triggerData);
+            return;
         }
         else {
             data.grid.rangeCells((c: Cell, i: number, j: number) => {

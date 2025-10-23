@@ -3,6 +3,7 @@ import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framewor
 import { qc } from '../../framework/qc';
 
 import { PanelConfigs } from '../../configs/PanelConfigs';
+import EventDef from '../../constants/EventDef';
 
 const { ccclass, property } = _decorator;
 
@@ -10,6 +11,15 @@ const { ccclass, property } = _decorator;
 export class loadingPanel extends PanelComponent {
     @property(Node)
     animation: Node = null;
+
+    protected onEnable(): void {
+        qc.eventManager.on(EventDef.Close_Loading, this.onClose, this);
+    }
+
+    protected onDisable(): void {
+        qc.eventManager.off(EventDef.Close_Loading, this.onClose, this);
+    }
+
     show(option: PanelShowOption): void {
         option.onShowed();
         // this.animation.getComponent(Animation).play()
@@ -22,12 +32,8 @@ export class loadingPanel extends PanelComponent {
     }
 
     onClose() {
-        qc.panelRouter.hide({ panel: PanelConfigs.gmPanel });
+        qc.panelRouter.hide({ panel: PanelConfigs.loadingPanel });
     }
-
-
-
-
 }
 
 

@@ -43,4 +43,12 @@ export default class EventDef {
     public static Update_Left_Level_Redpack = 'Update_Left_Level_Redpack';
     // 更新主题
     public static Update_Theme = 'Update_Theme';
+    // 指定触发一些道具
+    public static Trigger_Tools = 'Trigger_Tools';
+    // 重玩按钮事件
+    public static Replay_Btn_Event = 'Replay_Btn_Event';
+    // 指定触发某个道具
+    public static Trigger_Tool = 'Trigger_Tool';
+    // 关闭loading
+    public static Close_Loading = 'Close_Loading';
 }

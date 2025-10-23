@@ -154,8 +154,8 @@ export const PanelConfigs = {
     },
     loadingPanel: <PanelConfig>{
         prefabPath: `${BundleConfigs.loadingBundle}/prefabs/loadingPanel`,
-        layerZIndex: PanelLayerEnum.PopLayer,
-        index: 1,
+        layerZIndex: PanelLayerEnum.PopLayer1,
+        index: 3,
     }
 
 

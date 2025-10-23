@@ -53,4 +53,11 @@ export default class ItemMgr {
             cb && cb(res.data);
         }
     }
+
+    public async getItemByAd(type: string, cb: Function) {
+        let res = await httpMgr.ins.xhrRequest('/game/propVideo', 'GET', { type });
+        if (res) {
+            cb && cb(res.data);
+        }
+    }
 }

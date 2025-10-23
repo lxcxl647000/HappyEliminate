@@ -11,7 +11,7 @@ export default class GetItemMgr {
         return this._ins;
     }
 
-    public showGetItem(type: ItemType, num: number, isAdBtn?: boolean, costGold?: number, isNormal?: boolean) {
-        qc.panelRouter.showPanel({ panel: PanelConfigs.getItemPanel, data: { type, num, isAdBtn, costGold, isNormal } });
+    public showGetItem(type: ItemType, num: number, isAdBtn?: boolean, costGold?: number, isNormal?: boolean, flyRedPack?: boolean) {
+        qc.panelRouter.showPanel({ panel: PanelConfigs.getItemPanel, data: { type, num, isAdBtn, costGold, isNormal, flyRedPack } });
     }
 }

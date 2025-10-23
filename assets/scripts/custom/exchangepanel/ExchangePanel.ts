@@ -1,4 +1,4 @@
-import { _decorator, Node, Label } from 'cc';
+import { _decorator, Node, Label, Animation } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from "../../framework/lib/router/PanelComponent";
 import { qc } from "../../framework/qc";
 import { PanelConfigs } from "../../configs/PanelConfigs";
@@ -9,13 +9,15 @@ import { strengthApi } from '../../api/exchange';
 import EventDef from "../../constants/EventDef";
 import PlayerMgr from '../../manager/PlayerMgr';
 import { rewardedVideoAd } from "../../framework/lib/platform/platform_interface";
-import { baseConfig } from "../../configs/baseConfig";
 import { ItemType } from "../../configs/ItemConfig";
 import GetItemMgr from "../../manager/GetItemMgr";
 import CommonTipsMgr from "../../manager/CommonTipsMgr";
+import CustomSprite from "../../custom/componetUtils/CustomSprite";
 
 @ccclass('ExchangePanel')
 export class ExchangePanel extends PanelComponent {
+    @property(Node)
+    animation: Node = null;
     @property(ListCom)
     list: ListCom = null;
     @property(Label)
@@ -39,8 +41,10 @@ export class ExchangePanel extends PanelComponent {
             this._initList();
             const oData = res.strength_video;
             if (oData.done === oData.limit) {
+                this.btnLabel.node.parent.getComponent(CustomSprite).index = 1;
                 this.btnLabel.string = '已达上限';
             } else {
+                this.btnLabel.node.parent.getComponent(CustomSprite).index = 0;
                 this.btnLabel.string = '立即获得';
             }
         })
@@ -114,27 +118,25 @@ export class ExchangePanel extends PanelComponent {
             return;
         }
         let ad: rewardedVideoAd = {
-            adUnitId: baseConfig.adUnitIds[0],
+            adUnitId: qc.platform.getAllAdUnitIds()[0],
             successCb: (res) => {
-
+                strengthApi.ins.strengthClaim((data) => {
+                    // const count = Number(data.strength) - Number(PlayerMgr.ins.userInfo.props.strength)
+                    PlayerMgr.ins.addEnergy(20);
+                    GetItemMgr.ins.showGetItem(ItemType.Energy, 20);
+                    qc.eventManager.emit(EventDef.Update_RewardCount);
+                    if (data.done === 3) {
+                        this.btnLabel.node.parent.getComponent(CustomSprite).index = 1;
+                        this.btnLabel.string = '已达上限';
+                    } else {
+                        this.btnLabel.node.parent.getComponent(CustomSprite).index = 0;
+                        this.btnLabel.string = '立即获得';
+                    }
+                    PlayerMgr.ins.getHomeData();
+                });
             },
-            failCb: async (res) => {
-                if (res.isCompleted) {
-                    await strengthApi.ins.strengthClaim((data) => {
-                        // const count = Number(data.strength) - Number(PlayerMgr.ins.userInfo.props.strength)
-                        PlayerMgr.ins.addEnergy(20);
-                        GetItemMgr.ins.showGetItem(ItemType.Energy, 20);
-                        qc.eventManager.emit(EventDef.Update_RewardCount);
-                        if (data.done === 3) {
-                            this.btnLabel.string = '已达上限';
-                        } else {
-                            this.btnLabel.string = '立即获得';
-                        }
-                    });
-                    await PlayerMgr.ins.getHomeData();
-                } else {
-                    CommonTipsMgr.ins.showTips('未完成广告浏览');
-                }
+            failCb: (res) => {
+                CommonTipsMgr.ins.showTips('未完成广告浏览');
             },
         }
         qc.platform.showRewardedAd(ad);
@@ -143,6 +145,7 @@ export class ExchangePanel extends PanelComponent {
     show(option: PanelShowOption): void {
         option.onShowed();
         this.init();
+        this.animation.getComponent(Animation).play();
     }
 
     hide(option: PanelHideOption): void {

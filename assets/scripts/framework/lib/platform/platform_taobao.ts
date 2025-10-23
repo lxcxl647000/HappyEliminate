@@ -1,12 +1,16 @@
+import { AudioClip } from "cc";
 import { baseConfig } from "../../../configs/baseConfig";
 import EventDef from "../../../constants/EventDef";
 import CommonTipsMgr from "../../../manager/CommonTipsMgr";
+import { SettingMgr } from "../../../manager/SettingMgr";
+import CocosUtils from "../../../utils/CocosUtils";
 import { qc } from "../../qc";
 import { tbCloudMgr } from "../net/tbCloudMgr";
 import platform_interface, { rewardedVideoAd } from "./platform_interface";
+import { BundleConfigs } from "../../../configs/BundleConfigs";
 const my = globalThis['my'];
 
-export class RewardedVideoAd {
+class RewardedVideoAd {
     private _tag = '';
     private _isLoaded = false;
     /**
@@ -20,14 +24,19 @@ export class RewardedVideoAd {
         this._showCb = cb;
     }
 
-    private _closeCb: Function = null;
-    public set closeCb(cb: Function) {
-        this._closeCb = cb;
-    }
-
     private _errorCb: Function = null;
     public set errorCb(cb: Function) {
         this._errorCb = cb;
+    }
+
+    private _successCb: Function = null;
+    public set successCb(cb: Function) {
+        this._successCb = cb;
+    }
+
+    private _failCb: Function = null;
+    public set failCb(cb: Function) {
+        this._failCb = cb;
     }
 
     constructor(adUnitId: string) {
@@ -41,8 +50,14 @@ export class RewardedVideoAd {
         });
         this._rewardedVideoAd.onClose((res) => {
             console.log(this._tag, '广告关闭', res);
-            this._closeCb && this._closeCb(res);
-            this._closeCb = null;
+            if (res.isCompleted) {
+                this._successCb && this._successCb(res);
+            }
+            else {
+                this._failCb && this._failCb(res);
+            }
+            this._successCb = null;
+            this._failCb = null;
         });
         this._rewardedVideoAd.onError((res) => {
             console.log(this._tag, '广告组件出现问题', res);
@@ -71,7 +86,7 @@ export class RewardedVideoAd {
                         });
                 })
         } else {
-            console.log(`taobao ${this._adUnitId}广告没加载完成`);
+            console.log(`${this._tag} 广告没加载完成`);
         }
     }
 }
@@ -79,11 +94,14 @@ export class RewardedVideoAd {
 export default class platform_taobao implements platform_interface {
     public static tag = 'taobao platform';
     private _rewardedVideoAdMap: Map<string, RewardedVideoAd> = new Map();
+    private _innerAudioContext = null;
+    private _isOnShow = true;
     showRewardedAd(ad: rewardedVideoAd): void {
         let rewardedVideoAd = this._rewardedVideoAdMap.get(ad.adUnitId);
         if (rewardedVideoAd) {
-            rewardedVideoAd.showCb = ad.successCb;
-            rewardedVideoAd.closeCb = ad.failCb;
+            rewardedVideoAd.showCb = ad.showCb;
+            rewardedVideoAd.successCb = ad.successCb;
+            rewardedVideoAd.failCb = ad.failCb;
             rewardedVideoAd.errorCb = ad.errorCb;
             rewardedVideoAd.showAD();
         }
@@ -92,25 +110,44 @@ export default class platform_taobao implements platform_interface {
         }
     }
     init() {
+        console.log('init taobao');
         tbCloudMgr.ins.init();
-        for (let adUnitId of baseConfig.adUnitIds) {
+        let adUnitIds = qc.platform.getAllAdUnitIds();
+        for (let adUnitId of adUnitIds) {
             this.createRewardedAd(adUnitId);
         }
-        console.log('init taobao');
 
         my['onShow']((res) => {
+            this._isOnShow = true;
             console.log('taobao onshow', res);
             this._onShow(res);
         });
 
         my['onHide']((res) => {
+            this._isOnShow = false;
             console.log('taobao onhide', res);
             this._onHide(res);
         });
 
         my['setKeepScreenOn']({
             keepScreenOn: true,
-        })
+        });
+
+        this._innerAudioContext = my['createInnerAudioContext']();
+        this._innerAudioContext['_loop'] = true;
+        this._innerAudioContext['loop'] = true;
+        this._innerAudioContext.onPlay(() => {
+            console.log('开始播放 ', this._innerAudioContext.loop);
+            if (!this._isOnShow || !SettingMgr.ins.musicEnabled) {
+                this.stopMusic();
+            }
+        });
+        this._innerAudioContext.onError((res) => {
+            console.log('播放错误  ', res.errMsg)
+        });
+        this._innerAudioContext.onEnded(() => {
+            console.log('播放结束    ', this._innerAudioContext.loop);
+        });
     }
 
     createRewardedAd(adUnitId: string) {
@@ -138,7 +175,7 @@ export default class platform_taobao implements platform_interface {
             console.log(JSON.parse(res.data), '数据', JSON.parse(res.data).taskSign);
             setTimeout(() => {
                 let ad: rewardedVideoAd = {
-                    adUnitId: baseConfig.adUnitIds[num],
+                    adUnitId: qc.platform.getAllAdUnitIds()[num],
                     successCb: () => {
                         let res = my['getStorageSync']({ key: 'hdkf_share_info' });
                         let TaskValue = JSON.parse(res.data).taskSign
@@ -211,5 +248,28 @@ export default class platform_taobao implements platform_interface {
                 cb && cb();
             }
         });
+    }
+
+    playMusic(url: string) {
+        CocosUtils.loadFromBundle<AudioClip>(BundleConfigs.audioBundle, url, AudioClip).then((clip: AudioClip) => {
+            console.log('nativeurl----------------- ', clip.nativeUrl);
+            this._innerAudioContext.src = clip.nativeUrl;
+            this._innerAudioContext.play();
+        });
+    }
+
+    stopMusic() {
+        this._innerAudioContext.stop();
+    }
+
+    getAllAdUnitIds(): string[] {
+        return [
+            'mm_35753112_3352750338_116152650086',// 激励广告_30//
+            'mm_35753112_3352750338_116157550320'
+        ];
+    }
+
+    getAppId(): string {
+        return '3000000137357221';
     }
 }

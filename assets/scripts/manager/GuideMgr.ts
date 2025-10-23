@@ -84,11 +84,11 @@ export default class GuideMgr {
         let guideType = GuideType.Invalid;
         switch (itemType) {
             case ItemType.Hammer:
-                tips = '可以点击任意一个糖果进行消除哦';
+                tips = '可以点击任意一个糖果进行消除哦~';
                 guideType = GuideType.Force_Level_1_Select_Hammer;
                 break;
             case ItemType.Boom:
-                tips = '使用炸弹可以大范围消除哦';
+                tips = '使用炸弹可以大范围消除哦~';
                 guideType = GuideType.Force_Level_1_Select_Boom;
                 break;
         }
@@ -106,6 +106,7 @@ export default class GuideMgr {
                 fingerAniOffset: new Vec2(0, 1),
                 tipsOffset: new Vec2(-50, 200),
                 isSlide: false,
+                slideTipsOffset: null,
                 doNext: doNext?.bind(this),
             }
             this._createGuide(guidInfo);
@@ -146,6 +147,7 @@ export default class GuideMgr {
             fingerAniOffset: fingerAniOffset,
             tipsOffset: tipsOffset,
             isSlide: false,
+            slideTipsOffset: null,
             doNext: doNext?.bind(this),
         }
         this._createGuide(guidInfo);
@@ -160,6 +162,7 @@ export default class GuideMgr {
         let heightOffset: number = 0;
         let targetPosOffset: Vec2 = null;
         let isRow = false;
+        let slideTipsOffset: Vec2 = null;
         switch (type) {
             case GuideType.Force_Level_1_Eliminate:
                 tips = '3个以上相连完成消除得分';
@@ -168,6 +171,7 @@ export default class GuideMgr {
                 targetPosOffset = new Vec2(-60, -20);
                 widthOffset = 30;
                 isRow = true;
+                slideTipsOffset = new Vec2(0, -80);
                 break;
             case GuideType.Force_Level_2_Eliminate:
                 tips = '4个以上消除可以竖向消除';
@@ -224,6 +228,7 @@ export default class GuideMgr {
                     fingerAniOffset: fingerAniOffset,
                     tipsOffset: null,
                     isSlide: true,
+                    slideTipsOffset: slideTipsOffset,
                     doNext: doNext?.bind(this),
                 }
                 this._createGuide(guidInfo);
@@ -241,7 +246,7 @@ export default class GuideMgr {
                 break;
             case GuideType.Force_Level_3_Use_Boom:
                 tips = '双击或与糖果交换位置可以大范围消除';
-                tipsOffset = new Vec2(0, 150);
+                tipsOffset = new Vec2(-60, 150);
                 break;
         }
         let width = cellNode.getComponent(UITransform).width;
@@ -257,6 +262,7 @@ export default class GuideMgr {
             fingerAniOffset: new Vec2(0, 1),
             tipsOffset: tipsOffset,
             isSlide: false,
+            slideTipsOffset: null,
             doNext: doNext?.bind(this),
         }
         this._createGuide(guidInfo);

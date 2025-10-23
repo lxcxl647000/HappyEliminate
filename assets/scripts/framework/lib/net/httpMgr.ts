@@ -1,8 +1,8 @@
 import { Base64 } from "js-base64";
 import { hexMD5 } from "./utils/md5";
 import { baseConfig } from "../../../configs/baseConfig";
-import { CommonTips } from "../../../commonTs/CommonTips";
 import CommonTipsMgr from "../../../manager/CommonTipsMgr";
+import { qc } from "../../qc";
 
 interface ResponseData<T> {
     code: number;
@@ -40,8 +40,9 @@ export class httpMgr {
             let nonce = Math.ceil(Math.random() * 10000) + '';
             let token = baseConfig.token;
 
+            let appid = qc.platform.getAppId();
             let params = {
-                appid: baseConfig.appid,
+                appid: appid,
                 nonce: nonce,
                 timestamp: timestamp,
                 os: '',
@@ -51,7 +52,7 @@ export class httpMgr {
             };
             if (data) {
                 Object.assign(params, data);
-                params.appid = baseConfig.appid;
+                params.appid = appid;
             }
 
             let signStr = '';
@@ -83,8 +84,8 @@ export class httpMgr {
 
             xhr.onreadystatechange = () => {
                 if (xhr.readyState == 4 && xhr.status == 200) {
-                    console.log(xhr.responseText,'xhr.responseText');
-                    
+                    console.log(xhr.responseText, 'xhr.responseText');
+
                     let res = JSON.parse(xhr.responseText);
                     console.log('responseText : ' + api, res);
                     if (res.code === 200) {

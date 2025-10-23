@@ -50,6 +50,7 @@ export class Constants {
     public static SOUND_ENABLED_KEY: string = "SOUND_ENABLED_KEY";
     public static SoundVal_KEY: string = "SoundVal_KEY";
     public static MusicVal_KEY: string = "MusicVal_KEY";
+    public static Force_Guide_Level_1_KEY: string = "Force_Guide_Level_1_KEY";
 
 
     // 复活增加步数//

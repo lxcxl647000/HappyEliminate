@@ -81,6 +81,7 @@ export class GameSelectToolBtn extends Component {
         }
         if (this._exchange.node.active) {
             this._exchange.hide();
+            return;
         }
         if (this._leftUseNum <= 0) {
             CommonTipsMgr.ins.showTips('本局使用次数已用完');

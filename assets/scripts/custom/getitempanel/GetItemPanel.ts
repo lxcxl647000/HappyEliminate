@@ -40,11 +40,12 @@ export class GetItemPanel extends PanelComponent {
     private _isNormal: boolean = false;
     private _costGold: number = 0;
     private _itemData: ItemConfig = null;
+    private _flyRedPack: boolean = false;
 
     show(option: PanelShowOption): void {
         option.onShowed();
 
-        let { type, num, isAdBtn, costGold, isNormal } = option.data;
+        let { type, num, isAdBtn, costGold, isNormal, flyRedPack } = option.data;
         this._itemType = type;
         this._num = num;
         if (type !== ItemType.RedPack) {
@@ -52,6 +53,9 @@ export class GetItemPanel extends PanelComponent {
             this._isNormal = isNormal;
             this._costGold = costGold | 0;
             this._itemData = ConfigMgr.ins.getConfig<ItemConfig>(configConfigs.itemConfig, this._itemType);
+        }
+        else {
+            this._flyRedPack = flyRedPack;
         }
         this._init(type);
 
@@ -95,7 +99,7 @@ export class GetItemPanel extends PanelComponent {
 
     onAdBtn() {
         let ad: rewardedVideoAd = {
-            adUnitId: baseConfig.adUnitIds[0],
+            adUnitId: qc.platform.getAllAdUnitIds()[0],
             successCb: () => {
                 PlayerMgr.ins.addItem(this._itemType, 2 * this._num);
                 this._hidePanel();
@@ -132,9 +136,7 @@ export class GetItemPanel extends PanelComponent {
                 this._hidePanel();
             },
             data: {
-                type: 1, amount: this._num, closeFunc: () => {
-                    qc.eventManager.emit(EventDef.FlyRedPackAnimation);
-                }
+                type: 1, amount: this._num, flyRedPack: this._flyRedPack ? this._num : 0
             }
         });
     }

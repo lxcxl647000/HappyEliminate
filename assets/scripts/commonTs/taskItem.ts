@@ -72,9 +72,10 @@ export class taskItems extends Component {
                             let ad: rewardedVideoAd = {
                                 adUnitId: this._task.ad_id,
                                 successCb: (e) => {
+                                    qc.eventManager.emit(EventDef.TaskCompleted, e.isCompleted);
                                 },
                                 failCb: (e) => {
-                                    qc.eventManager.emit(EventDef.TaskCompleted,e.isCompleted);
+                                    qc.eventManager.emit(EventDef.TaskCompleted, e.isCompleted);
                                 },
                             }
                             qc.platform.showRewardedAd(ad);

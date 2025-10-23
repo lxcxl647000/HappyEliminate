@@ -1523,7 +1523,7 @@
       "b": 255,
       "a": 255
     },
-    "_string": "如何使用道具",
+    "_string": "如何使用金币",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 28,
@@ -2852,7 +2852,7 @@
       "b": 255,
       "a": 255
     },
-    "_string": "如何获得道具",
+    "_string": "如何获得金币",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 28,

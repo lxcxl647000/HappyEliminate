@@ -1,4 +1,4 @@
-import { Asset, AssetManager, assetManager, ImageAsset, Node, resources, Sprite, SpriteFrame, Texture2D, UITransform, Vec3 } from "cc";
+import { Asset, AssetManager, assetManager, ImageAsset, Node, Sprite, SpriteFrame, Texture2D, tween, UITransform, Vec3 } from "cc";
 import AssetLoader from "../framework/lib/asset/AssetLoader";
 
 export default class CocosUtils {
@@ -58,7 +58,6 @@ export default class CocosUtils {
                 const texture = new Texture2D();
                 texture.image = imageAsset;
                 spriteFrame.texture = texture;
-                sprite.spriteFrame = spriteFrame;
                 if (sprite) {
                     sprite.spriteFrame = spriteFrame;
                 }
@@ -83,5 +82,25 @@ export default class CocosUtils {
                 loadBundle(bundle);
             }
         });
+    }
+
+    // 打开弹窗动画
+    public static openPopAnimation(totalNode: Node, cb: Function) {
+        if (totalNode) {
+            if (totalNode) {
+                totalNode.setScale(0.3, 0.3);
+                tween(totalNode)
+                    .to(5 / 30, { scale: new Vec3(1, 1, 1) }, { easing: 'sineInOut' })
+                    .to(4 / 30, { scale: new Vec3(.95, .95, 1) }, { easing: 'sineInOut' })
+                    .to(4 / 30, { scale: new Vec3(1, 1, 1) }, { easing: 'sineInOut' })
+                    .call(() => {
+                        cb && cb();
+                    })
+                    .start();
+            }
+        }
+        else {
+            cb && cb();
+        }
     }
 }

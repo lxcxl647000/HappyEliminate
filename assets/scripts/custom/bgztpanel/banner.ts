@@ -280,6 +280,8 @@ export class banner extends Component {
 
     }
     initItems() {
+        // 清空现有项目数组
+        this.m_item = [];
         this.node.children.forEach((item: Node, index) => {
             let itemWidth = item.getComponent(UITransform).width;
             item.x = index * itemWidth * this.m_spacingRatio;
@@ -288,6 +290,45 @@ export class banner extends Component {
             item.getComponent(UITransform).anchorX = 0.5;
             this.m_item.push(item);
         });
+        // 初始化完成后，将当前使用的主题居中
+        this.scheduleOnce(() => {
+            this.centerCurrentTheme();
+        }, 0);
+    }
+    // 新增方法：将当前使用的主题居中
+    centerCurrentTheme() {
+        if (this.m_item.length === 0) return;
+
+        // 查找当前使用的主题项
+        const currentThemeId = PlayerMgr.ins.userInfo.summary.current_theme_id;
+        let currentIndex = -1;
+        let currentThemeItem: Node = null;
+
+        for (let i = 0; i < this.m_item.length; i++) {
+            if (this.m_item[i]['bg_id'] == currentThemeId) {
+                currentIndex = i;
+                currentThemeItem = this.m_item[i];
+                break;
+            }
+        }
+
+        if (currentThemeItem) {
+            // 计算屏幕中心位置
+            const screenCenterX = this.node.getComponent(UITransform).width / 2;
+
+            // 计算需要移动的距离，使当前主题项居中
+            const offset = screenCenterX - currentThemeItem.x;
+
+            // 移动所有项目
+            this.moveX(v2(offset, 0));
+
+            // 更新左右项目和缩放
+            this.updateLeftRight(-offset);
+            this.updateScale();
+
+            // 触发居中事件
+            this.onItemCentered(currentThemeItem);
+        }
     }
     submitClick() {
         if (this.centerNode['bg_id'] == PlayerMgr.ins.userInfo.summary.current_theme_id) {

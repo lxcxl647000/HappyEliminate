@@ -187,16 +187,6 @@ export default class PlayerMgr {
         return null;
     }
 
-    public setLevelInfo(info: Currentlevel) {
-        let levelInfo = this.getLevelsInfo(info.level_no);
-        if (levelInfo) {
-            levelInfo = info;
-        }
-        else {
-            this.userInfo.current_level.push(info);
-        }
-    }
-
     // 接口请求首页数据
     public async getHomeData(cb?: Function) {
         console.log('调用了首页数据');

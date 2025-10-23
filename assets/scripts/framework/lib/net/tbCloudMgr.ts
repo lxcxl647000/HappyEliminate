@@ -1,6 +1,7 @@
 import cloud from '@tbmp/mp-cloud-sdk';
 import { baseConfig } from '../../../configs/baseConfig';
 import PlayerMgr from '../../../manager/PlayerMgr';
+import { qc } from '../../qc';
 
 export class tbCloudMgr {
     private static _instance: tbCloudMgr;
@@ -13,7 +14,7 @@ export class tbCloudMgr {
     }
     public init(): Promise<void> {
         return new Promise((resolve, reject) => {
-            console.log('appid : === ' + baseConfig.appid);
+            console.log('appid : === ' + qc.platform.getAppId());
             if (!this._cloudObject) {
                 // this._cloudObject = new cloud.Cloud();
                 this._cloudObject = new cloud['Cloud']();

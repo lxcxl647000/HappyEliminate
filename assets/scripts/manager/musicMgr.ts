@@ -1,7 +1,8 @@
-import { _decorator, AudioClip, AudioSource, AudioSourceComponent, Component, Node } from 'cc';
+import { _decorator, AudioClip, AudioSource, Component, Node } from 'cc';
 import { SettingMgr } from './SettingMgr';
 import CocosUtils from '../utils/CocosUtils';
 import { BundleConfigs } from '../configs/BundleConfigs';
+import { qc } from '../framework/qc';
 const { ccclass, property } = _decorator;
 
 @ccclass('musicMgr')
@@ -34,7 +35,7 @@ export class musicMgr extends Component {
   * 停止背景音乐
   */
     public stopMusic() {
-        this.bgmComp.stop();
+        qc.platform.stopMusic();
     }
     /**
    * 设置音量
@@ -47,16 +48,10 @@ export class musicMgr extends Component {
      * @param audio 音乐名
      */
     public async playMusic(audio: string) {
-        console.log('playmusic-------------');
-
         if (!SettingMgr.ins.musicEnabled) {
             return;
         }
-        musicMgr.ins.stopMusic();
-        CocosUtils.loadFromBundle<AudioClip>(BundleConfigs.audioBundle, audio, AudioClip).then((clip: AudioClip) => {
-            this.bgmComp.clip = clip;
-            this.bgmComp.play();
-        });
+        qc.platform.playMusic(audio);
     }
     /**
     * 播放一次性音效
@@ -68,6 +63,27 @@ export class musicMgr extends Component {
         CocosUtils.loadFromBundle<AudioClip>(BundleConfigs.audioBundle, audio, AudioClip).then((clip: AudioClip) => {
             this.soundComp.playOneShot(clip, SettingMgr.ins.soundVal);
         });
+    }
+
+    /**
+     * 使用cocos的api播放音乐
+     */
+    public playMusicByCocos(audio: string) {
+        if (!SettingMgr.ins.musicEnabled) {
+            return;
+        }
+        this.bgmComp.stop();
+        CocosUtils.loadFromBundle<AudioClip>(BundleConfigs.audioBundle, audio, AudioClip).then((clip: AudioClip) => {
+            this.bgmComp.clip = clip;
+            this.bgmComp.play();
+        });
+    }
+
+    /**
+     * 使用cocos的api停止音乐
+     */
+    public stopMusicByCocos() {
+        this.bgmComp.stop();
     }
 }
 

@@ -9,6 +9,7 @@ import { GetGoldConfig } from '../../configs/GetGoldConfig';
 import ConfigMgr from '../../manager/ConfigMgr';
 import { configConfigs } from '../../configs/configConfigs';
 import ItemMgr from '../../manager/ItemMgr';
+import CocosUtils from '../../utils/CocosUtils';
 const { ccclass, property } = _decorator;
 
 @ccclass('AddGoldPanel')
@@ -21,7 +22,9 @@ export class AddGoldPanel extends PanelComponent {
     private _getGoldDatas: GetGoldConfig[] = [];
 
     show(option: PanelShowOption): void {
-        option.onShowed();
+        CocosUtils.openPopAnimation(this.node.getChildByName('SafeArea'), () => {
+            option.onShowed();
+        });
 
         this._init();
     }

@@ -31,6 +31,16 @@ export class BoomMatchTool implements ITool {
                 }
             });
         }
+        else if (data.swapCell && data.swapCell.tool && data.swapCell.tool.getType() === ToolType.TYPE_MATCH) {
+            let triggerData = {
+                cell: data.swapCell,
+                tool: data.swapCell.tool,
+                grid: data.grid,
+                swapCell: data.cell,
+            } as ToolsStateEnterData;
+            qc.eventManager.emit(EventDef.Trigger_Tool, triggerData);
+            return;
+        }
         else {
             data.grid.rangeCells((c: Cell, i: number, j: number) => {
                 const dis = Vec2.distance(data.cell.gridID, c.gridID);

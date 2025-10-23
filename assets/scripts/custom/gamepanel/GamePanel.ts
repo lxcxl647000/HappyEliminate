@@ -236,6 +236,11 @@ export class GamePanel extends PanelComponent {
                         if (!this.isFirstStableHappened) {
                             this.isFirstStableHappened = true;
 
+                            // 特殊处理如果是第一关，就给玩家存个档表示已经玩了第一关了，不一定是要通关，因为主界面有去玩第一关的强制引导需要这个存档
+                            if (this.levelData.levelIndex === 1 && PlayerMgr.ins.userInfo.current_level.length === 0) {
+                                qc.storage.setItem(Constants.Force_Guide_Level_1_KEY, 1);
+                            }
+
                             this._showGameTarget();
                         }
                         else {
@@ -292,6 +297,9 @@ export class GamePanel extends PanelComponent {
         qc.eventManager.on(EventDef.PassTargetGuide, this._passTargetGuide, this);
         qc.eventManager.on(EventDef.Update_Theme, this._updateTheme, this);
         qc.eventManager.on(EventDef.OnShow, this._onshow, this);
+        qc.eventManager.on(EventDef.Trigger_Tools, this._triggerTools, this);
+        qc.eventManager.on(EventDef.Trigger_Tool, this._triggerToolCell, this);
+        qc.eventManager.on(EventDef.Replay_Btn_Event, this._replayBtnEvent, this);
         this._init();
         this._updateSoundStatus();
         this._updateMusicStatus();
@@ -309,6 +317,9 @@ export class GamePanel extends PanelComponent {
         qc.eventManager.off(EventDef.PassTargetGuide, this._passTargetGuide, this);
         qc.eventManager.off(EventDef.Update_Theme, this._updateTheme, this);
         qc.eventManager.off(EventDef.OnShow, this._onshow, this);
+        qc.eventManager.off(EventDef.Trigger_Tools, this._triggerTools, this);
+        qc.eventManager.off(EventDef.Replay_Btn_Event, this._replayBtnEvent, this);
+        qc.eventManager.off(EventDef.Trigger_Tool, this._triggerToolCell, this);
     }
 
     private noNeedToCheckGameStatus: boolean = false;
@@ -577,17 +588,15 @@ export class GamePanel extends PanelComponent {
             this.levelData.starCount = 1;
         }
 
-        let levelInfo: Currentlevel = {
-            level_no: this.levelData.levelIndex,
-            best_score: this.scoreValue.score,
-            best_stars: this.levelData.starCount,
-            play_times: 0,
-            pass_status: '',
-            create_time: '',
-            update_time: ''
-        };
-        PlayerMgr.ins.setLevelInfo(levelInfo);
-        PlayerMgr.ins.userInfo.summary.total_stars += this.levelData.starCount;
+        if (PlayerMgr.ins.userInfo.current_level.length < this.levelData.levelIndex) {
+            PlayerMgr.ins.userInfo.summary.total_stars += this.levelData.starCount;
+        }
+        else {
+            let curLevel = PlayerMgr.ins.userInfo.current_level[this.levelData.levelIndex - 1];
+            if (curLevel.best_stars < this.levelData.starCount) {
+                PlayerMgr.ins.userInfo.summary.total_stars += this.levelData.starCount - curLevel.best_stars;
+            }
+        }
         PlayerMgr.ins.userInfo.summary.total_score += this.scoreValue.score;
         qc.eventManager.emit(EventDef.Update_Stars, this.levelData.levelIndex, this.levelData.starCount);
         if (this.levelData.levelIndex > PlayerMgr.ins.userInfo.summary.latest_passed_level) {
@@ -867,32 +876,38 @@ export class GamePanel extends PanelComponent {
                         if (this._isFinish) {
                             return;
                         }
-                        if (PlayerMgr.ins.userInfo.props.strength < Constants.Energy_Cost) {
-                            CommonTipsMgr.ins.showTips('体力不足');
-                            return;
-                        }
-
-                        // 新手引导第一关特殊处理 在结算时才发送使用道具给服务器，避免玩家在游戏中就把道具使用了，但未完成引导，再次触发引导时没有道具可用,这里如果重玩需要给玩家加回去
-                        if (this.levelData.levelIndex === 1 && PlayerMgr.ins.userInfo.current_level.length === 0) {
-                            if (PlayerMgr.ins.getItemNum(ItemType.Hammer) === 0) {
-                                PlayerMgr.ins.addItem(ItemType.Hammer, 1);
-                            }
-                            if (PlayerMgr.ins.getItemNum(ItemType.Boom) === 0) {
-                                PlayerMgr.ins.addItem(ItemType.Boom, 1);
-                            }
-                        }
-                        LevelMgr.ins.goToLevel(this.levelData.mapId, this.levelData.levelIndex, null, (selectTools: { [id: number]: number }) => {
-                            LevelMgr.ins.replay(this.levelData.levelIndex, () => {
-                                PlayerMgr.ins.addEnergy(-Constants.Energy_Cost);
-                                this._seletToolFromGameStart = selectTools;
-                                this._init(true);
-                                this._resetStatus(true);
-                            });
-                        });
+                        this._replayBtnEvent();
                     },
                 }
             }
         );
+    }
+
+    private _replayBtnEvent(isFromPassFail: boolean = false) {
+        if (PlayerMgr.ins.userInfo.props.strength < Constants.Energy_Cost) {
+            CommonTipsMgr.ins.showTips('体力不足');
+            return;
+        }
+
+        // 新手引导第一关特殊处理 在结算时才发送使用道具给服务器，避免玩家在游戏中就把道具使用了，但未完成引导，再次触发引导时没有道具可用,这里如果重玩需要给玩家加回去
+        if (this.levelData.levelIndex === 1 && PlayerMgr.ins.userInfo.current_level.length === 0) {
+            if (PlayerMgr.ins.getItemNum(ItemType.Hammer) === 0) {
+                PlayerMgr.ins.addItem(ItemType.Hammer, 1);
+            }
+            if (PlayerMgr.ins.getItemNum(ItemType.Boom) === 0) {
+                PlayerMgr.ins.addItem(ItemType.Boom, 1);
+            }
+        }
+        LevelMgr.ins.goToLevel(this.levelData.mapId, this.levelData.levelIndex, null, (selectTools: { [id: number]: number }) => {
+            LevelMgr.ins.replay(this.levelData.levelIndex, () => {
+                PlayerMgr.ins.addEnergy(-Constants.Energy_Cost);
+                this._seletToolFromGameStart = selectTools;
+                this._init(true);
+                this._resetStatus(true);
+            });
+        }, isFromPassFail ? () => {
+            this._backToMainPanel();
+        } : null);
     }
 
     private _updateSoundStatus() {
@@ -1000,5 +1015,41 @@ export class GamePanel extends PanelComponent {
         this._musicCD = 1;
         this._soundCD = 1;
         this._vibrateCD = 1;
+    }
+
+    onCloseExchangeTool() {
+        if (this.exchangeTool.node.active) {
+            this.exchangeTool.node.active = false;
+        }
+    }
+
+    public setUseHammerGuideTips(tipsNode: Node) {
+        this.toolTitle.active = false;
+        let pos = CocosUtils.setNodeToTargetPos(tipsNode, this.toolTitle);
+        tipsNode.setPosition(pos);
+        tipsNode.active = true;
+    }
+
+    public minusSteps() {
+        this.stepsValue--;
+        this.updateStepNode();
+    }
+
+    private _triggerTools(toolCells: Cell[]) {
+        for (let i = 0; i < toolCells.length; i++) {
+            let cell = toolCells[i];
+            this.levelGridScript.getGridStateMachine().transitionTo(
+                ConstStatus.getInstance().toolsState,
+                {
+                    cell: cell,
+                    tool: cell.tool,
+                    grid: this.levelGridScript.grid
+                } as ToolsStateEnterData
+            );
+        }
+    }
+
+    private _triggerToolCell(data: ToolsStateEnterData) {
+        this.levelGridScript.getGridStateMachine().transitionTo(ConstStatus.getInstance().toolsState, data);
     }
 }

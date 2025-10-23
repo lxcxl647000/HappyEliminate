@@ -23,4 +23,7 @@ export default class adapter implements adapter_interface {
     onBilibili(): boolean {
         return this._adapter.onBilibili();
     }
+    onTt(): boolean {
+        return this._adapter.onTt();
+    }
 }

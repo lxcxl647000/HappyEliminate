@@ -2,6 +2,7 @@ import { assetManager, AssetManager, instantiate, Node, Prefab, v3, Widget } fro
 import { PanelComponent } from "./PanelComponent";
 import { PanelConfig } from "./PanelConfig";
 import { PanelStateEnum } from "./PanelStateEnum";
+import { PanelConfigs } from "../../../configs/PanelConfigs";
 
 /**
  * 面板路由器
@@ -471,6 +472,12 @@ export default class PanelRouter {
     }
 
     public async showPanel(option: ShowPanelOption) {
+        await this.loadAsync(option.panel);
+        this.show(option);
+    }
+
+    public async showPanelWithLoading(option: ShowPanelOption) {
+        await this.loadAsync(PanelConfigs.loadingPanel);
         await this.loadAsync(option.panel);
         this.show(option);
     }

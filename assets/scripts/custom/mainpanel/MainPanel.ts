@@ -1,4 +1,4 @@
-import { _decorator, Animation, Component, Label, Node, Sprite, tween, Vec3, Widget } from 'cc';
+import { _decorator, Animation, Label, Node, Sprite, tween, Vec3, Widget } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
@@ -16,6 +16,8 @@ import { SettingMgr } from '../../manager/SettingMgr';
 import CocosUtils from '../../utils/CocosUtils';
 import { BundleConfigs } from '../../configs/BundleConfigs';
 import { LevelNodeData } from './LevelNodeData';
+import { Constants } from '../../game/Constants';
+import PoolMgr from '../../manager/PoolMgr';
 
 const { ccclass, property } = _decorator;
 
@@ -45,6 +47,8 @@ export class MainPanel extends PanelComponent {
     vibrateSprite: CustomSprite = null;
     @property(Label)
     leftLevelLabel: Label = null;
+    @property(Node)
+    forceGuide: Node = null;
 
     private _maskSprite: Sprite = null;
     private _currentLevel: LevelConfig = null;
@@ -96,6 +100,7 @@ export class MainPanel extends PanelComponent {
         this._updateMusicStatus();
         this._updateSoundStatus();
         this._updateVibrateStatus();
+        this._checkForceGuide();
     }
     hide(option: PanelHideOption): void {
 
@@ -328,18 +333,40 @@ export class MainPanel extends PanelComponent {
         if (PlayerMgr.ins.userInfo.prompt.show == 1 && PlayerMgr.ins.userInfo.prompt.type == 2 && PlayerMgr.ins.userInfo.prompt.can_open == 1) {
             this.redPackBtn();
         }
+        this._checkForceGuide();
     }
 
-    private _flyRedPackAnimation() {
-        // PoolMgr.ins.getNodeFromPool(BundleConfigs.commonBundle, 'prefabs/FlyRedPack', (node: Node) => {
-        //     let toPos = CocosUtils.setNodeToTargetPos(node, this.flyToTarget);
-        //     this.flyRedPack.addChild(node);
-        //     tween(node)
-        //         .to(1.7, { position: toPos })
-        //         .call(() => {
-        //             PoolMgr.ins.putNodeToPool(node);
-        //         });
-        // });
+    private _flyRedPackAnimation(addCash: number) {
+        PoolMgr.ins.getNodeFromPool(BundleConfigs.commonBundle, 'prefabs/FlyRedPack', (node: Node) => {
+            node.setScale(0.2, 0.2);
+            node.setRotationFromEuler(0, 0, 8);
+            this.flyRedPack.addChild(node);
+            node.setPosition(0, 0);
+
+            let toPos = CocosUtils.setNodeToTargetPos(node, this.flyToTarget);
+            tween(node)
+                .to(53 / 30, { position: toPos }, { easing: 'sineInOut' })
+                .start();
+            tween(node)
+                .to(3 / 30, { scale: new Vec3(.7, .7, 1) }, { easing: 'sineInOut' })
+                .to(3 / 30, { scale: new Vec3(.8, .8, 1) }, { easing: 'sineInOut' })
+                .to(2 / 30, { scale: new Vec3(.8, .8, 1) }, { easing: 'sineInOut' })
+                .to(3 / 30, { scale: new Vec3(1.1, 1.1, 1) }, { easing: 'sineInOut' })
+                .to(2 / 30, { scale: new Vec3(1.1, 1.1, 1) }, { easing: 'sineInOut' })
+                .to(3 / 30, { scale: new Vec3(1.2, 1.2, 1) }, { easing: 'sineInOut' })
+                .to(11 / 30, { scale: new Vec3(.8, .8, 1) }, { easing: 'sineInOut' })
+                .to(6 / 30, { scale: new Vec3(.6, .6, 1) }, { easing: 'sineInOut' })
+                .to(10 / 30, { scale: new Vec3(.4, .4, 1) }, { easing: 'sineInOut' })
+                .to(10 / 30, { scale: new Vec3(.27, .27, 1) }, { easing: 'sineInOut' })
+                .call(() => {
+                    PlayerMgr.ins.addCash(addCash);
+                    PoolMgr.ins.putNodeToPool(node);
+                })
+                .start();
+            tween(node)
+                .to(46 / 30, { eulerAngles: new Vec3(0, 0, 0) }, { easing: 'sineInOut' })
+                .start();
+        });
     }
 
     onMusic() {
@@ -399,6 +426,7 @@ export class MainPanel extends PanelComponent {
         }
         else {
             SettingMgr.ins.vibrateEnabled = true;
+            qc.platform.vibrateShort();
         }
         qc.eventManager.emit(EventDef.UpdateVibrateStatus);
     }
@@ -445,6 +473,9 @@ export class MainPanel extends PanelComponent {
         this._musicCD = 1;
         this._soundCD = 1;
         this._vibrateCD = 1;
+        if (SettingMgr.ins.musicEnabled) {
+            musicMgr.ins.playMusic('bg_music');
+        }
         await PlayerMgr.ins.getHomeData();
         PlayerMgr.ins.getEnergy();
         qc.eventManager.emit(EventDef.Update_RewardCount);
@@ -452,5 +483,11 @@ export class MainPanel extends PanelComponent {
 
     private _onhide() {
         PlayerMgr.ins.clearTime();
+        musicMgr.ins.stopMusic();
+    }
+
+    private _checkForceGuide() {
+        let doLevel1: boolean = qc.storage.getItem(Constants.Force_Guide_Level_1_KEY, 0) === 1;
+        this.forceGuide.active = !doLevel1 && PlayerMgr.ins.userInfo.current_level.length === 0;
     }
 }

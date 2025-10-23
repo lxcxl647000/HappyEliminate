@@ -16,7 +16,6 @@ import PlayerMgr from '../../manager/PlayerMgr';
 import LevelMgr, { PassReward } from '../../manager/LevelMgr';
 import { musicMgr } from '../../manager/musicMgr';
 import { rewardedVideoAd } from '../../framework/lib/platform/platform_interface';
-import { baseConfig } from '../../configs/baseConfig';
 import CommonTipsMgr from '../../manager/CommonTipsMgr';
 import { Constants } from '../../game/Constants';
 const { ccclass, property } = _decorator;
@@ -70,6 +69,18 @@ export class DiaLogScript extends DiaLogBaseScript {
     continueBtnNode: Node = null;
     @property(UITransform)
     bg: UITransform = null;
+    @property(Node)
+    adBtnNode: Node = null;
+    @property(Node)
+    goldBtnNode: Node = null;
+    @property(Node)
+    exitBtnNode: Node = null;
+    @property(Node)
+    replayBtnNode: Node = null;
+    @property(Node)
+    resurrectionTipsNode: Node = null;
+    @property(Node)
+    finalFailedNode: Node = null;
 
 
     // 成功还是失败
@@ -82,6 +93,7 @@ export class DiaLogScript extends DiaLogBaseScript {
     private _continueBtnDoublePosY: number = -419;
     private _rewards: PassReward[] = [];
     private _isDouble: boolean = false;
+    private _leftResurrectionCount: number = 1;
 
     update(deltaTime: number) {
 
@@ -117,6 +129,15 @@ export class DiaLogScript extends DiaLogBaseScript {
         this.failedStarNode.active = this.failedNode.active = !this.success;
         if (!this.success) {
             this._setTarget(level);
+            if (this._leftResurrectionCount > 0) {
+                this._leftResurrectionCount--;
+                this.resurrectionTipsNode.active = this.adBtnNode.active = this.goldBtnNode.active = true;
+                this.finalFailedNode.active = this.exitBtnNode.active = this.replayBtnNode.active = false;
+            }
+            else {
+                this.resurrectionTipsNode.active = this.adBtnNode.active = this.goldBtnNode.active = false;
+                this.finalFailedNode.active = this.exitBtnNode.active = this.replayBtnNode.active = true;
+            }
         }
         else {
             musicMgr.ins.playMusic('victory');
@@ -184,7 +205,7 @@ export class DiaLogScript extends DiaLogBaseScript {
 
     addStepsByAd() {
         let ad: rewardedVideoAd = {
-            adUnitId: baseConfig.adUnitIds[0],
+            adUnitId: qc.platform.getAllAdUnitIds()[0],
             successCb: () => {
                 this.node.active = false;
                 qc.eventManager.emit(EventDef.Resurrection);
@@ -229,6 +250,10 @@ export class DiaLogScript extends DiaLogBaseScript {
             PlayerMgr.ins.addItem(reward.type, count);
         }
     }
+
+    onReplay() {
+        qc.eventManager.emit(EventDef.Replay_Btn_Event, true);
+        this.node.active = false;
+        this._leftResurrectionCount = 1;
+    }
 }
-
-

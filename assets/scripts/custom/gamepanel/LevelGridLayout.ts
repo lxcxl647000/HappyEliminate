@@ -29,6 +29,10 @@ import { qc } from '../../framework/qc';
 import EventDef from '../../constants/EventDef';
 import { GuideType } from '../../manager/GuideMgr';
 import CommonTipsMgr from '../../manager/CommonTipsMgr';
+import { ColMatchTool } from '../../game/tools/ColMatchTool';
+import { TypeMatchTool } from '../../game/tools/TypeMatchTool';
+import { BoomMatchTool } from '../../game/tools/BoomMatchTool';
+import { RowMatchTool } from '../../game/tools/RowMatchTool';
 
 
 export interface GridListener {
@@ -226,6 +230,20 @@ export class LevelGridLayout extends Component {
         // } else if (rand > 5) {
         //     cell.tool = new BoomMatchTool()
         // }
+
+        // if (cell.gridID.x === 4 && cell.gridID.y === 3) {
+        //     cell.tool = new ColMatchTool();
+        // }
+        // if (cell.gridID.x === 3 && cell.gridID.y === 3) {
+        //     cell.tool = new TypeMatchTool();
+        // }
+        // if (cell.gridID.x === 2 && cell.gridID.y === 3) {
+        //     cell.tool = new RowMatchTool();
+        // }
+        // if (cell.gridID.x === 3 && cell.gridID.y === 4) {
+        //     cell.tool = new BoomMatchTool();
+        // }
+
         if (cell.tool) {
             cellScript.setToolType(cell.tool.getType());
         } else {
@@ -271,18 +289,8 @@ export class LevelGridLayout extends Component {
                     this.prepareClickSwap(cell);
                     return;
                 }
-                // 如果选中了道具，则需要进行一次道具触发
+                // 如果选中了道具，则需要再点一次进行道具触发
                 if (cell.tool) {
-                    // 选中了道具，进行处理
-                    // 跳转state
-                    // this.gridStateMachine.transitionTo(
-                    //     ConstStatus.getInstance().toolsState,
-                    //     {
-                    //         cell: cell,
-                    //         tool: cell.tool,
-                    //         grid: this.grid
-                    //     } as ToolsStateEnterData
-                    // );
                     let selectCell = cell.node.getComponent(CellScript);
                     if (selectCell.selected) {
                         this.gridStateMachine.transitionTo(
@@ -293,6 +301,7 @@ export class LevelGridLayout extends Component {
                                 grid: this.grid
                             } as ToolsStateEnterData
                         );
+                        this._gamepanel.minusSteps();
                     }
                     else {
                         this.prepareClickSwap(cell);

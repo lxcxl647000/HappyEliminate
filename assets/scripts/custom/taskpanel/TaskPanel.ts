@@ -16,6 +16,8 @@ const { ccclass, property } = _decorator;
 
 @ccclass('TaskPanel')
 export class TaskPanel extends PanelComponent {
+    @property(Node)
+    animation: Node = null;
     @property(ListCom)
     list: ListCom = null;
     @property(Node)
@@ -223,6 +225,7 @@ export class TaskPanel extends PanelComponent {
 
     show(option: PanelShowOption): void {
         option.onShowed();
+        this.animation.getComponent(Animation).play();
     }
 
     hide(option: PanelHideOption): void {

@@ -9,7 +9,7 @@ import CocosUtils from '../../utils/CocosUtils';
 import { BundleConfigs } from '../../configs/BundleConfigs';
 import ConfigMgr from '../../manager/ConfigMgr';
 import { configConfigs } from '../../configs/configConfigs';
-import {ItemConfig, ItemType} from '../../configs/ItemConfig';
+import { ItemConfig, ItemType } from '../../configs/ItemConfig';
 import CommonTipsMgr from "../../manager/CommonTipsMgr";
 import PlayerMgr from "../../manager/PlayerMgr";
 import { rewardedVideoAd } from "../../framework/lib/platform/platform_interface";
@@ -44,7 +44,7 @@ export class signPanel extends PanelComponent {
     rewardCount: Label = null;
     @property(Label)
     taskBtnLabel: Label = null;
-    
+
     private gift_id = '';
     private hasClaimedToday = '';
     private taskData = null;
@@ -68,7 +68,7 @@ export class signPanel extends PanelComponent {
         }
     }
     init() {
-        this.rewardParentNode.destroyAllChildren();
+        // this.rewardParentNode.destroyAllChildren();
         SignApi.ins.getGiftList((res) => {
             this.dateLabel.string = res.date.replace(/(\d+)\.(\d+)-(\d+)\.(\d+)/, '$1月$2日-$3月$4日');
 
@@ -78,10 +78,11 @@ export class signPanel extends PanelComponent {
 
             for (let i = 0; i < rewardData.length; i++) {
                 // 父节点
-                let itemNode = instantiate(this.rewardNode);
-                itemNode.active = true;
-                this.rewardParentNode.addChild(itemNode);
-                itemNode.getComponentInChildren(Label).string = `第${rewardData[i].day_index}天`;
+                // let itemNode = instantiate(this.rewardNode);
+                // itemNode.active = true;
+                // this.rewardParentNode.addChild(itemNode);
+                // itemNode.getComponentInChildren(Label).string = `第${rewardData[i].day_index}天`;
+
                 if (res.currentDay === Number(rewardData[i].day_index)) {
                     this.gift_id = rewardData[i].reward.gift_id;
                 }
@@ -104,49 +105,59 @@ export class signPanel extends PanelComponent {
                 });
 
                 const rewardArr = newRewardData[i].rewardList;
+                let expiredBgNode = this.rewardParentNode.children[i];
                 // 奖励类型 type 1: 金币，2: 锤子，3: 体力，4: 炸弹， 5：主题碎片，6：步数，7：打乱棋盘
-                let expiredBgNode = itemNode.getChildByName('expiredBg');
+                // let expiredBgNode = itemNode.getChildByName('expiredBg');
+
+                expiredBgNode.getComponentInChildren(Label).string = `第${rewardData[i].day_index}天`;
+
+                let rewardImgItem = expiredBgNode.getChildByName('rewardItemNode');
+
+                // rewardImgItem.destroyAllChildren();
+                if (rewardImgItem.children.length < 1) {
+                    for (let k = 0; k < rewardArr.length; k++) {
+                        const rewardType = rewardArr[k].type;
 
 
-                for (let k = 0; k < rewardArr.length; k++) {
-                    const rewardType = rewardArr[k].type;
-                    let rewardImgItem = expiredBgNode.getChildByName('rewardItemNode');
-                    let rewardImg = instantiate(this.rewardImg);
-                    rewardImg.active = true;
-                    rewardImgItem.addChild(rewardImg);
-                    let itemConfig = ConfigMgr.ins.getConfig<ItemConfig>(configConfigs.itemConfig, rewardType);
-                    if (itemConfig) {
-                        CocosUtils.loadTextureFromBundle(BundleConfigs.iconBundle, itemConfig.icon, rewardImg.getComponentInChildren(Sprite));
-                        if (rewardType === 1) {
-                            rewardImg.getComponentInChildren(Label).string = `${String(rewardArr[k].rewardCount)}${itemConfig.name}`;
-                        } else if (rewardType === 5) {
-                            rewardImg.getComponentInChildren(Label).string = `碎片×${String(rewardArr[k].rewardCount)}`;
-                        } else if (rewardType === 7) {
-                            rewardImg.getComponentInChildren(Label).string = `打乱×${String(rewardArr[k].rewardCount)}`;
-                        } else {
-                            rewardImg.getComponentInChildren(Label).string = `${itemConfig.name}×${String(rewardArr[k].rewardCount)}`;
+                        let rewardImg = instantiate(this.rewardImg);
+                        rewardImg.active = true;
+                        rewardImgItem.addChild(rewardImg);
+
+                        let itemConfig = ConfigMgr.ins.getConfig<ItemConfig>(configConfigs.itemConfig, rewardType);
+                        if (itemConfig) {
+                            CocosUtils.loadTextureFromBundle(BundleConfigs.iconBundle, itemConfig.icon, rewardImg.getComponentInChildren(Sprite));
+                            if (rewardType === 1) {
+                                rewardImg.getComponentInChildren(Label).string = `${String(rewardArr[k].rewardCount)}${itemConfig.name}`;
+                            } else if (rewardType === 5) {
+                                rewardImg.getComponentInChildren(Label).string = `碎片×${String(rewardArr[k].rewardCount)}`;
+                            } else if (rewardType === 7) {
+                                rewardImg.getComponentInChildren(Label).string = `打乱×${String(rewardArr[k].rewardCount)}`;
+                            } else {
+                                rewardImg.getComponentInChildren(Label).string = `${itemConfig.name}×${String(rewardArr[k].rewardCount)}`;
+                            }
                         }
                     }
-
-                    expiredBgNode.getChildByName('rewardItemNode').addChild(rewardImg)
+                }
+                for (let k = 0; k < rewardArr.length; k++) {
                     if (newRewardData[i].label === '已过期' || newRewardData[i].label === '已领取') {
-                        rewardImg.getComponent(Sprite).color = new Color(255, 255, 255, 100);
+                        rewardImgItem.children[k].getComponent(Sprite).color = new Color(255, 255, 255, 100);
                     }
                 }
-                if (rewardArr.length > 1) {
-                    expiredBgNode.getComponent(UITransform).width = 284;
-                    expiredBgNode.parent.getComponent(UITransform).width = 284;
-                }
 
+                // if (rewardArr.length > 1) {
+                //     expiredBgNode.getComponent(UITransform).width = 284;
+                //     expiredBgNode.parent.getComponent(UITransform).width = 284;
+                // }
 
                 if (newRewardData[i].label === '明日领') {
-                    itemNode.getComponentInChildren(Label).string = newRewardData[i].label;
+                    expiredBgNode.getComponentInChildren(Label).string = newRewardData[i].label;
                 }
 
                 let bgSprite = expiredBgNode.getComponent(CustomSprite);
                 if (newRewardData[i].label === '已过期') {
                     bgSprite.index = 0;
                     expiredBgNode.getChildByName('timeoutIcon').active = true;
+                    // expiredBgNode.getChildByName('timeoutIcon').getComponent(Sprite).color = new Color(255, 255, 255, 100);
                     if (rewardArr.length > 1) {
                         expiredBgNode.getChildByName('timeoutIcon').setPosition(145, -20, 0);
                     }
@@ -162,6 +173,7 @@ export class signPanel extends PanelComponent {
                 }
                 if (newRewardData[i].label === '已领取') {
                     expiredBgNode.getChildByName('claimIcon').active = true;
+                    // expiredBgNode.getChildByName('claimIcon').getComponent(Sprite).color = new Color(255, 255, 255, 100);
                     if (rewardArr.length > 1) {
                         expiredBgNode.getChildByName('claimIcon').setPosition(145, -20, 0);
                     }
@@ -213,20 +225,17 @@ export class signPanel extends PanelComponent {
             await PlayerMgr.ins.getHomeData();
         } else if (this.hasClaimedToday === '2') { //再领一次
             let ad: rewardedVideoAd = {
-                adUnitId: baseConfig.adUnitIds[0],
-                successCb: (res) => {
+                adUnitId: qc.platform.getAllAdUnitIds()[0],
+                successCb: async (res) => {
+                    await SignApi.ins.receiveAgain({
+                        gift_id: this.gift_id
+                    }, (res) => {
+                        this.getReward(res.rewards.reward_type, res.rewards.gold_num, res.rewards.prop_num);
+                    });
+                    await PlayerMgr.ins.getHomeData();
                 },
-                failCb: async (res) => {
-                    if (res.isCompleted) {
-                        await SignApi.ins.receiveAgain({
-                            gift_id: this.gift_id
-                        }, (res) => {
-                            this.getReward(res.rewards.reward_type, res.rewards.gold_num, res.rewards.prop_num);
-                        });
-                        await PlayerMgr.ins.getHomeData();
-                    } else {
-                        CommonTipsMgr.ins.showTips('未完成广告浏览');
-                    }
+                failCb: (res) => {
+                    CommonTipsMgr.ins.showTips('未完成广告浏览');
                 },
             }
             qc.platform.showRewardedAd(ad);
@@ -252,12 +261,17 @@ export class signPanel extends PanelComponent {
                 }
                 this.rewardCount.string = this.taskData.reward_type == '1' ? `+${this.taskData.money}元` : `+${this.taskData.integral}金币`;
                 this.taskBtnLabel.string = this.taskData.isComplete ? '已完成' : this.taskData.button_text;
+                if (this.taskData.isComplete) {
+                    this.taskBtnLabel.node.parent.getChildByName('completeBtn').getComponent(CustomSprite).index = 1;
+                } else {
+                    this.taskBtnLabel.node.parent.getChildByName('completeBtn').getComponent(CustomSprite).index = 0;
+                }
             }
         });
     }
 
     handleCompleteTask() {
-        if (this.taskData.isCompleteTask) {
+        if (this.taskData.isComplete) {
             return;
         }
         renwuMgr.ins.clickTask(+this.taskData.id, () => {
@@ -272,13 +286,10 @@ export class signPanel extends PanelComponent {
                     let ad: rewardedVideoAd = {
                         adUnitId: this.taskData.ad_id,
                         successCb: (e) => {
+                            this.completeTask();
                         },
                         failCb: (e) => {
-                            if (!e.isCompleted) {
-                                CommonTipsMgr.ins.showTips('浏览未完成');
-                            } else {
-                                this.completeTask();
-                            }
+                            CommonTipsMgr.ins.showTips('浏览未完成');
                         },
                     }
                     qc.platform.showRewardedAd(ad);
@@ -312,7 +323,7 @@ export class signPanel extends PanelComponent {
         if (renwuMgr.ins.jumpTask) {
             // @ts-ignore
             let readTimeBool = (new Date() - renwuMgr.ins.recordTime) / 1000 < renwuMgr.ins.jumpTask.browse_time;
-            if(this.taskData.task_type !== '12') {
+            if (this.taskData.task_type !== '12') {
                 if (readTimeBool) {
                     CommonTipsMgr.ins.showTips(`访问${renwuMgr.ins.jumpTask.browse_time}秒以上,才能领取奖励哦`);
                     renwuMgr.ins.recordTime = null;
@@ -324,7 +335,9 @@ export class signPanel extends PanelComponent {
     }
 
     show(option: PanelShowOption): void {
-        option.onShowed();
+        CocosUtils.openPopAnimation(this.node.getChildByName('SafeArea'), () => {
+            option.onShowed();
+        });
         this.init();
         this.getTask();
     }

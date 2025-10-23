@@ -16,6 +16,7 @@ import { rewardedVideoAd } from '../../framework/lib/platform/platform_interface
 import { baseConfig } from '../../configs/baseConfig';
 import GetItemMgr from '../../manager/GetItemMgr';
 import LevelMgr from '../../manager/LevelMgr';
+import ItemMgr from '../../manager/ItemMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameStartPanel')
@@ -34,12 +35,14 @@ export class GameStartPanel extends PanelComponent {
     private _selectTools: { [id: number]: number } = {};
     private _cdTime: number = 0;
     private _replayCb: Function = null;
+    private _closeCb: Function = null;
 
     show(option: PanelShowOption): void {
         option.onShowed();
         this._selectTools = {};
         this._level = option.data.levelConfig as LevelConfig;
         this._replayCb = option.data.replayCb;
+        this._closeCb = option.data.closeCb;
 
         this._init();
     }
@@ -97,6 +100,7 @@ export class GameStartPanel extends PanelComponent {
     }
 
     onCloseClick() {
+        this._closeCb && this._closeCb();
         this._hidePanel();
     }
 
@@ -104,6 +108,8 @@ export class GameStartPanel extends PanelComponent {
         qc.panelRouter.hide({
             panel: PanelConfigs.gameStartPanel
         });
+        this._closeCb = null;
+        this._replayCb = null;
     }
 
     async onStartClick() {
@@ -149,16 +155,18 @@ export class GameStartPanel extends PanelComponent {
 
     onAdGetTool() {
         let ad: rewardedVideoAd = {
-            adUnitId: baseConfig.adUnitIds[0],
+            adUnitId: qc.platform.getAllAdUnitIds()[0],
             successCb: () => {
+                let item = ItemMgr.ins.getItem(ItemType.Boom);
+                if (item) {
+                    ItemMgr.ins.getItemByAd(item.type, () => {
+                        PlayerMgr.ins.addItem(item.id, 1);
+                        GetItemMgr.ins.showGetItem(item.id, 1);
+                    });
+                }
             },
             failCb: (res) => {
-                if (res.isCompleted) {
-                    PlayerMgr.ins.addItem(ItemType.Boom, 1);
-                    GetItemMgr.ins.showGetItem(ItemType.Boom, 1);
-                } else {
-                    CommonTipsMgr.ins.showTips('未完成广告浏览');
-                }
+                CommonTipsMgr.ins.showTips('未完成广告浏览');
             }
         }
         qc.platform.showRewardedAd(ad);

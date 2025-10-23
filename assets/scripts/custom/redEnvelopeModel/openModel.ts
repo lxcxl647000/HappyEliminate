@@ -1,4 +1,4 @@
-import { _decorator, assetManager, AssetManager, ImageAsset, SpriteFrame, Component, instantiate, Label, log, Mask, Node, Sprite, Texture2D, UITransform, UI } from 'cc';
+import { _decorator, assetManager, AssetManager, ImageAsset, SpriteFrame, Component, instantiate, Label, log, Mask, Node, Sprite, Texture2D, UITransform, UI, Animation } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
@@ -7,6 +7,7 @@ import CustomSprite from '../componetUtils/CustomSprite';
 import redModelApi from '../../api/redModle';
 import CommonTipsMgr from "../../manager/CommonTipsMgr";
 import LevelMgr from '../../manager/LevelMgr';
+import EventDef from '../../constants/EventDef';
 
 const { ccclass, property } = _decorator;
 @ccclass('redEnvelopePanel')
@@ -35,15 +36,20 @@ export class redEnvelopePanel extends PanelComponent {
     yindaoBtn: Node;
     modelInfo: any = null;
     optionData: any = null;
+    // flyredpack大于0的话表示关闭界面的时候会走主界面飞红包动画，加红包余额就在飞红包结束之后去加
+    private _flyRedPack: number = 0;
+
     // modeltype: (string)[] = ['新人/通关/引导', '立即收下']
     show(option: PanelShowOption): void {
+        this._flyRedPack = 0;
         // console.log(this.tmp);
         log('------------------');
         option.onShowed();
         console.log(option.data);
         this.optionData = option.data;
-
+        this._flyRedPack = option.data.flyRedPack || 0;
         this.init(option.data);
+        this.getComponent(Animation).play();
     }
     // 每次打开都会触发
     protected onEnable(): void {
@@ -68,8 +74,8 @@ export class redEnvelopePanel extends PanelComponent {
             panel: PanelConfigs.redEnvelopeModelPanel,
             onHided: () => {
                 console.log('close test panel-----------');
-                if (this.optionData && this.optionData.closeFunc) {
-                    this.optionData.closeFunc();
+                if (this._flyRedPack > 0) {
+                    qc.eventManager.emit(EventDef.FlyRedPackAnimation, this._flyRedPack);
                 }
             }
         });
@@ -133,8 +139,8 @@ export class redEnvelopePanel extends PanelComponent {
             })
             if (res) {
                 if (res.code == 200) {
-                   
-                    PlayerMgr.ins.addCash(Number(res.data.amount))
+
+                    this._flyRedPack = Number(res.data.amount);
                     this.modelFlag.getComponent(CustomSprite).index = 1
                     this.modelMoeny.getComponent(Label).fontSize = 105
                     this.modelMoeny.getComponent(Label).string = Number(res.data.amount).toFixed(2)
@@ -142,7 +148,7 @@ export class redEnvelopePanel extends PanelComponent {
                     this.modelContentNa.active = false
                     this.modelContentOpen.active = true
                     this.xingrenTile.active = false
-                     PlayerMgr.ins.getHomeData();
+                    PlayerMgr.ins.getHomeData();
                 }
                 console.log(res);
 
