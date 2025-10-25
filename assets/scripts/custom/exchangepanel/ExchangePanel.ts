@@ -42,6 +42,8 @@ export class ExchangePanel extends PanelComponent {
             const oData = res.strength_video;
             if (oData.done === oData.limit) {
                 this.btnLabel.node.parent.getComponent(CustomSprite).index = 1;
+                this.btnLabel.node.parent.getChildByName('vedioIcon').active = false;
+                this.btnLabel.node.setPosition(0, 5, 0);
                 this.btnLabel.string = '已达上限';
             } else {
                 this.btnLabel.node.parent.getComponent(CustomSprite).index = 0;
@@ -127,6 +129,8 @@ export class ExchangePanel extends PanelComponent {
                     qc.eventManager.emit(EventDef.Update_RewardCount);
                     if (data.done === 3) {
                         this.btnLabel.node.parent.getComponent(CustomSprite).index = 1;
+                        this.btnLabel.node.parent.getChildByName('vedioIcon').active = false;
+                        this.btnLabel.node.setPosition(0, 5, 0);
                         this.btnLabel.string = '已达上限';
                     } else {
                         this.btnLabel.node.parent.getComponent(CustomSprite).index = 0;

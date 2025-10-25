@@ -88,10 +88,15 @@ export class MapNodeData extends Component {
             let map = LevelMgr.ins.getMap(this._mapId + 1);
             if (map) {
                 let level = map.values().next();
+                let starts = PlayerMgr.ins.getMapStars(this._mapId);
                 if (level && level.value.unlock_stars) {
-                    str = `收集胜利星${PlayerMgr.ins.userInfo.summary.total_stars}/${level.value.unlock_stars}`;
-                    this.lockProgress.progress = PlayerMgr.ins.userInfo.summary.total_stars / level.value.unlock_stars;
+                    if (starts > level.value.unlock_stars) starts = level.value.unlock_stars;
+                    str = `收集胜利星${starts}/${level.value.unlock_stars}`;
+                    this.lockProgress.progress = starts / level.value.unlock_stars;
                 }
+            }
+            else {
+                str = '即将上线';
             }
             this.lockDes.string = str;
         }

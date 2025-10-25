@@ -12,7 +12,7 @@ export default class platform_wx implements platform_interface {
 
     }
 
-    fromOtherAppToShowAd(): void {
+    fromOtherAppToCompleteTask(type: string): void {
 
     }
 

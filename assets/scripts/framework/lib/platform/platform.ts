@@ -48,8 +48,8 @@ export default class platform implements platform_interface {
         this._platform.showRewardedAd(ad);
     }
 
-    fromOtherAppToShowAd(): void {
-        this._platform.fromOtherAppToShowAd();
+    fromOtherAppToCompleteTask(type: string): void {
+        this._platform.fromOtherAppToCompleteTask(type);
     }
 
     reportScene(sceneId: number): void {

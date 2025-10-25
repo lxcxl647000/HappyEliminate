@@ -337,7 +337,7 @@ export class banner extends Component {
         } else if (this.centerNode['owned'] == 1) {
             themesApi.ins.themeUse({ theme_id: this.centerNode['bg_id'] }).then((res) => {
                 if (res.code == 200) {
-                    CommonTipsMgr.ins.showTips(res.msg);
+                    CommonTipsMgr.ins.showTips('已使用');
                     PlayerMgr.ins.updateTheme(this.centerNode['bg_id']);
                     this.btn.getComponent(CustomSprite).index = 1
                     this.btnLabel.string = '当前使用'
@@ -346,7 +346,7 @@ export class banner extends Component {
         } else {
             themesApi.ins.themeExchange({ theme_id: this.centerNode['bg_id'] }).then((res) => {
                 if (res.code == 200) {
-                    CommonTipsMgr.ins.showTips(res.msg);
+                    CommonTipsMgr.ins.showTips('兑换成功');
                     qc.eventManager.emit(EventDef.Update_Theme_Clips)
 
                 }

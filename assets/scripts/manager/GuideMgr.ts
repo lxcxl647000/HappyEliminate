@@ -5,6 +5,8 @@ import { BundleConfigs } from "../configs/BundleConfigs";
 import { Guide, IGuide } from "../commonTs/Guide";
 import { ItemType } from "../configs/ItemConfig";
 import PlayerMgr from "./PlayerMgr";
+import { qc } from "../framework/qc";
+import { Constants } from "../game/Constants";
 
 export enum GuideType {
     Invalid = 0,
@@ -266,5 +268,10 @@ export default class GuideMgr {
             doNext: doNext?.bind(this),
         }
         this._createGuide(guidInfo);
+    }
+
+    public checkMainPanelForceGuide(node: Node): void {
+        let doLevel1: boolean = qc.storage.getItem(Constants.Force_Guide_Level_1_KEY, 0) === 1;
+        node.active = !doLevel1 && PlayerMgr.ins.userInfo.current_level.length === 0;
     }
 }

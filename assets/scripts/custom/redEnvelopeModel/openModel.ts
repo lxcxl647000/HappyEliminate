@@ -34,6 +34,8 @@ export class redEnvelopePanel extends PanelComponent {
     yindaoSz: Node;
     @property(Node)
     yindaoBtn: Node;
+    @property(Node)
+    close: Node;
     modelInfo: any = null;
     optionData: any = null;
     // flyredpack大于0的话表示关闭界面的时候会走主界面飞红包动画，加红包余额就在飞红包结束之后去加
@@ -86,6 +88,7 @@ export class redEnvelopePanel extends PanelComponent {
 
         if (data.type == 0) {
             if (this.modelInfo.prompt.type == 1) {
+                this.close.active = false
                 this.modelFlag.getComponent(CustomSprite).index = 2
                 this.modelTiele.getComponent(CustomSprite).index = 0
                 this.xingrenTile.getComponent(Label).string = '恭喜获得新人红包 最高奖励10元'
@@ -148,7 +151,7 @@ export class redEnvelopePanel extends PanelComponent {
                     this.modelContentNa.active = false
                     this.modelContentOpen.active = true
                     this.xingrenTile.active = false
-                    PlayerMgr.ins.getHomeData();
+                    // PlayerMgr.ins.getHomeData();
                 }
                 console.log(res);
 

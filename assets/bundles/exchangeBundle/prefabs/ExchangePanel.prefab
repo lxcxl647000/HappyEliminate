@@ -2134,7 +2134,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "Group 1437255387@2x",
+    "_name": "vedioIcon",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -2323,7 +2323,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 26,
-      "y": 7,
+      "y": 5,
       "z": 0
     },
     "_lrot": {

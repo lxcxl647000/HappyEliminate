@@ -163,62 +163,100 @@ export default class platform_taobao implements platform_interface {
         qc.eventManager.emit(EventDef.OnHide, res);
     }
 
-    fromOtherAppToShowAd(): void {
+    fromOtherAppToCompleteTask(type: string): void {
         let res = my['getStorageSync']({ key: 'hdkf_share_info' });
-        if (JSON.parse(res.data).taskSign) {
+        let data = JSON.parse(res.data);
+        if (data.taskSign) {
+            let sendToServer = (tips: string) => {
+                let TaskValue = JSON.parse(res.data).taskSign
 
-            // JSON.parse(res.data).adTime
-            let num = 0
-            if (JSON.parse(res.data).adTime == 15) {
-                num = 1
+                let url = `https://mobile.yundps.com/TaoBaoCallback/taskCallback?taskSign=${TaskValue}`;
+                let httpRequest = new XMLHttpRequest(); //第一步：建立所需的对象
+                httpRequest.open('GET', url, true); //第二步：打开连接  将请求参数写在url中  ps:"./Ptest.php?name=test&nameone=testone"
+                httpRequest.send(); //第三步：发送请求  将请求参数写在URL中
+                /**
+                * 获取数据后的处理程序
+                */
+                httpRequest.onreadystatechange = function () {
+                    if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+                        var json = httpRequest.responseText; //获取到json字符串，还需解析
+                        console.log(json, '发送了请求');
+                        CommonTipsMgr.ins.showTips(tips);
+                        my['removeStorageSync']({
+                            key: 'hdkf_share_info',
+                        });
+                    } else {
+
+                    }
+                };
             }
-            console.log(JSON.parse(res.data), '数据', JSON.parse(res.data).taskSign);
-            setTimeout(() => {
-                let ad: rewardedVideoAd = {
-                    adUnitId: qc.platform.getAllAdUnitIds()[num],
-                    successCb: () => {
-                        let res = my['getStorageSync']({ key: 'hdkf_share_info' });
-                        let TaskValue = JSON.parse(res.data).taskSign
 
-                        let url = `https://mobile.yundps.com/TaoBaoCallback/taskCallback?taskSign=${TaskValue}`;
-                        let httpRequest = new XMLHttpRequest(); //第一步：建立所需的对象
-                        httpRequest.open('GET', url, true); //第二步：打开连接  将请求参数写在url中  ps:"./Ptest.php?name=test&nameone=testone"
-                        httpRequest.send(); //第三步：发送请求  将请求参数写在URL中
-                        /**
-                        * 获取数据后的处理程序
-                        */
-                        httpRequest.onreadystatechange = function () {
-                            if (httpRequest.readyState == 4 && httpRequest.status == 200) {
-                                var json = httpRequest.responseText; //获取到json字符串，还需解析
-                                console.log(json, '发送了请求');
-                                CommonTipsMgr.ins.showTips('浏览已完成');
-                                my['removeStorageSync']({
-                                    key: 'hdkf_share_info',
-                                });
-                            } else {
+            if (data.info_data) {
+                const infoData = JSON.parse(data.info_data?.replace(/'/g, '"'));
+                // 从其他小程序跳过闯关完成任务
+                if (infoData.taskType === 'game') {
+                    type === 'game' && sendToServer('闯关已完成');
+                } else {
+                    let num = 0
+                    if (JSON.parse(res.data).adTime == 15) {
+                        num = 1
+                    }
+                    console.log(JSON.parse(res.data), '数据', JSON.parse(res.data).taskSign);
+                    setTimeout(() => {
+                        let ad: rewardedVideoAd = {
+                            adUnitId: qc.platform.getAllAdUnitIds()[num],
+                            successCb: () => {
+                                sendToServer('浏览已完成');
+                            },
+                            failCb: (e) => {
+                                if (!e.isCompleted) {
+                                    CommonTipsMgr.ins.showTips('浏览未完成');
+                                }
 
+                            },
+                            errorCb: () => {
+                                CommonTipsMgr.ins.showTips('浏览未完成');
                             }
-                        };
-                    },
-                    failCb: (e) => {
-                        if (!e.isCompleted) {
+                        }
+                        qc.platform.showRewardedAd(ad);
+
+                    }, 1500);
+                }
+                // 从其他小程序调过来看视频完成任务
+
+            } else {
+                let num = 0
+                if (JSON.parse(res.data).adTime == 15) {
+                    num = 1
+                }
+                console.log(JSON.parse(res.data), '数据', JSON.parse(res.data).taskSign);
+                setTimeout(() => {
+                    let ad: rewardedVideoAd = {
+                        adUnitId: qc.platform.getAllAdUnitIds()[num],
+                        successCb: () => {
+                            sendToServer('浏览已完成');
+                        },
+                        failCb: (e) => {
+                            if (!e.isCompleted) {
+                                CommonTipsMgr.ins.showTips('浏览未完成');
+                            }
+
+                        },
+                        errorCb: () => {
                             CommonTipsMgr.ins.showTips('浏览未完成');
                         }
-
-                    },
-                    errorCb: () => {
-                        CommonTipsMgr.ins.showTips('浏览未完成');
                     }
+                    qc.platform.showRewardedAd(ad);
 
-                }
-                qc.platform.showRewardedAd(ad);
-
-            }, 1500);
+                }, 1500);
+            }
         }
     }
 
     reportScene(sceneId: number): void {
         const SDK = my['tb'].getInteractiveSDK()
+        console.log('reportScene--------------', sceneId, SDK);
+
         SDK.reportScene({
             sceneId: sceneId,
             timestamp: Date.now(),

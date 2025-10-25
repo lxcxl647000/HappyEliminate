@@ -56,7 +56,10 @@ export class contentItem extends Component {
                     // this.process.getComponent(UITransform).width = () * 394;
                 }
                 if (this.processText) {
-                    this.processText.string = `(${data.progress_text})`;
+                      if (data.progress>= data.finish_num) {
+                        data.progress = data.finish_num
+                    }
+                    this.processText.string = `(${ data.progress}/${data.finish_num})`;
                 }
 
                 // 设置奖励信息

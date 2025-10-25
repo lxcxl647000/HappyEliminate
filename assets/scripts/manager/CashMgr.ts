@@ -45,7 +45,10 @@ export default class CashMgr {
         let res = await httpMgr.ins.xhrRequest<ICash>('/game/withdrawConfig');
         if (res) {
             this._cashData = res.data;
-            cb && cb();
+            cb && cb(true);
+        }
+        else {
+            cb && cb(false);
         }
     }
 

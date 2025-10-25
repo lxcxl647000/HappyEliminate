@@ -12,7 +12,7 @@ export default class platform_web implements platform_interface {
 
     }
 
-    fromOtherAppToShowAd(): void {
+    fromOtherAppToCompleteTask(type: string): void {
     }
 
     reportScene(sceneId: number): void {

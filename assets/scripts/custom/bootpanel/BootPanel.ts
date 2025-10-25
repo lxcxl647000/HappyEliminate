@@ -56,29 +56,29 @@ export default class BootPanel extends Component {
         await AssetLoader.loadBundle(BundleConfigs.commonBundle);
         await AssetLoader.loadBundle(BundleConfigs.audioBundle);
 
-        await AssetLoader.loadBundle(BundleConfigs.gameBundle);
+        // await AssetLoader.loadBundle(BundleConfigs.gameBundle);
         await AssetLoader.loadBundle(BundleConfigs.mainBundle);
         await AssetLoader.loadBundle(BundleConfigs.iconBundle);
 
         this._onLoadProgressChanged(0.5, "加载游戏资源...");
+        await AssetLoader.loadBundle(BundleConfigs.loadingBundle);
         await AssetLoader.loadBundle(BundleConfigs.userInfoBundle);
-        await AssetLoader.loadBundle(BundleConfigs.chengjiuBundle);
-        await AssetLoader.loadBundle(BundleConfigs.redEnvelopeBundle);
+        // await AssetLoader.loadBundle(BundleConfigs.chengjiuBundle);
+        // await AssetLoader.loadBundle(BundleConfigs.redEnvelopeBundle);
         await AssetLoader.loadBundle(BundleConfigs.exchangeBundle);
         await AssetLoader.loadBundle(BundleConfigs.taskBundle);
         await AssetLoader.loadBundle(BundleConfigs.redEnvelopeModelBundle);
         await AssetLoader.loadBundle(BundleConfigs.gameStartBundle);
         await AssetLoader.loadBundle(BundleConfigs.luckyTurntableBundle);
         await AssetLoader.loadBundle(BundleConfigs.getItemBundle);
-        await AssetLoader.loadBundle(BundleConfigs.cashBundle);
-        await AssetLoader.loadBundle(BundleConfigs.bgztBundle);
-         await AssetLoader.loadBundle(BundleConfigs.loadingBundle);
+        // await AssetLoader.loadBundle(BundleConfigs.cashBundle);
+        // await AssetLoader.loadBundle(BundleConfigs.bgztBundle);
         this._onLoadProgressChanged(0.6, "加载游戏资源...");
         await ConfigMgr.ins.loadConfigs();
         this._onLoadProgressChanged(0.7, "加载游戏资源...");
         await qc.panelRouter.loadAsync(PanelConfigs.mainPanel);
         this._onLoadProgressChanged(.8, "加载游戏资源...");
-        await qc.panelRouter.loadAsync(PanelConfigs.gamePanel);
+        // await qc.panelRouter.loadAsync(PanelConfigs.gamePanel);
         this._onLoadProgressChanged(.9, "加载游戏资源...");
         await PoolMgr.ins.preloadPool();
 

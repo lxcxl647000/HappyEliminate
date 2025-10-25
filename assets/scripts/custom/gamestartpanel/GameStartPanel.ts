@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node } from 'cc';
+import { _decorator, Animation, Color, Component, Label, Node } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
@@ -13,10 +13,10 @@ import { Constants } from '../../game/Constants';
 import { SelectTool } from './SelectTool';
 import CommonTipsMgr from '../../manager/CommonTipsMgr';
 import { rewardedVideoAd } from '../../framework/lib/platform/platform_interface';
-import { baseConfig } from '../../configs/baseConfig';
 import GetItemMgr from '../../manager/GetItemMgr';
 import LevelMgr from '../../manager/LevelMgr';
 import ItemMgr from '../../manager/ItemMgr';
+import GuideMgr from '../../manager/GuideMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameStartPanel')
@@ -29,6 +29,14 @@ export class GameStartPanel extends PanelComponent {
     toolParent: Node = null;
     @property(Label)
     energyCostLabel: Label = null;
+    @property(Node)
+    guideNode: Node = null;
+    @property(CustomSprite)
+    adBtn: CustomSprite = null;
+    @property(Node)
+    adNomarlNode: Node = null;
+    @property(Node)
+    adNoTimesNode: Node = null;
 
     private _level: LevelConfig = null;
     private _tools: ItemType[] = [ItemType.Boom, ItemType.Steps];
@@ -44,7 +52,12 @@ export class GameStartPanel extends PanelComponent {
         this._replayCb = option.data.replayCb;
         this._closeCb = option.data.closeCb;
 
+        this._updateAdBtn();
         this._init();
+        GuideMgr.ins.checkMainPanelForceGuide(this.guideNode);
+        if (this.guideNode.active) {
+            this.guideNode.getComponentInChildren(Animation).play();
+        }
     }
     hide(option: PanelHideOption): void {
         option.onHided();
@@ -127,11 +140,8 @@ export class GameStartPanel extends PanelComponent {
                 await PlayerMgr.ins.getHomeData()
                 PlayerMgr.ins.getEnergy()
 
-                qc.panelRouter.showPanel({
+                qc.panelRouter.showPanelWithLoading({
                     panel: PanelConfigs.gamePanel,
-                    onShowed: () => {
-
-                    },
                     data: { level: this._level, selectTools: this._selectTools }
                 });
                 this._cdTime = 0;
@@ -154,14 +164,19 @@ export class GameStartPanel extends PanelComponent {
     }
 
     onAdGetTool() {
+        if (PlayerMgr.ins.userInfo.prop_video_remain <= 0) {
+            return;
+        }
         let ad: rewardedVideoAd = {
             adUnitId: qc.platform.getAllAdUnitIds()[0],
             successCb: () => {
                 let item = ItemMgr.ins.getItem(ItemType.Boom);
                 if (item) {
-                    ItemMgr.ins.getItemByAd(item.type, () => {
+                    ItemMgr.ins.getItemByAd(item.type, (data: any) => {
                         PlayerMgr.ins.addItem(item.id, 1);
                         GetItemMgr.ins.showGetItem(item.id, 1);
+                        PlayerMgr.ins.userInfo.prop_video_remain = data.remain;
+                        this._updateAdBtn();
                     });
                 }
             },
@@ -171,6 +186,17 @@ export class GameStartPanel extends PanelComponent {
         }
         qc.platform.showRewardedAd(ad);
     }
+
+    private _updateAdBtn() {
+        if (PlayerMgr.ins.userInfo.prop_video_remain) {
+            this.adBtn.index = 0;
+            this.adNomarlNode.active = true;
+            this.adNoTimesNode.active = false;
+        }
+        else {
+            this.adBtn.index = 1;
+            this.adNomarlNode.active = false;
+            this.adNoTimesNode.active = true;
+        }
+    }
 }
-
-

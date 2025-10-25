@@ -12,8 +12,8 @@ export default class platform_bilibili implements platform_interface {
 
     }
 
-    fromOtherAppToShowAd(): void {
-        throw new Error("Method not implemented.");
+    fromOtherAppToCompleteTask(type: string): void {
+
     }
 
     reportScene(sceneId: number): void {

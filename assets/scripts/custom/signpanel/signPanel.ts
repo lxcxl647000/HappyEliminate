@@ -13,7 +13,6 @@ import { ItemConfig, ItemType } from '../../configs/ItemConfig';
 import CommonTipsMgr from "../../manager/CommonTipsMgr";
 import PlayerMgr from "../../manager/PlayerMgr";
 import { rewardedVideoAd } from "../../framework/lib/platform/platform_interface";
-import { baseConfig } from "../../configs/baseConfig";
 import EventDef from "../../constants/EventDef";
 import GetItemMgr from "../../manager/GetItemMgr";
 
@@ -47,6 +46,7 @@ export class signPanel extends PanelComponent {
 
     private gift_id = '';
     private hasClaimedToday = '';
+    private day_index = 0;
     private taskData = null;
 
     private getBtnStatus(type) {
@@ -85,6 +85,7 @@ export class signPanel extends PanelComponent {
 
                 if (res.currentDay === Number(rewardData[i].day_index)) {
                     this.gift_id = rewardData[i].reward.gift_id;
+                    this.day_index = rewardData[i].day_index;
                 }
 
                 const newRewardData = rewardData.map(item => {
@@ -141,6 +142,7 @@ export class signPanel extends PanelComponent {
                 for (let k = 0; k < rewardArr.length; k++) {
                     if (newRewardData[i].label === '已过期' || newRewardData[i].label === '已领取') {
                         rewardImgItem.children[k].getComponent(Sprite).color = new Color(255, 255, 255, 100);
+                        expiredBgNode.getChildByName('redDot').active = false;
                     }
                 }
 
@@ -209,12 +211,13 @@ export class signPanel extends PanelComponent {
         const reward_type = type.split(',');
         if (reward_type.indexOf('1') !== -1) { // 金币
             PlayerMgr.ins.addGold(Number(count1));
-        } else if (reward_type.indexOf('3') !== -1) { // 体力
+        }
+        if (reward_type.indexOf('3') !== -1) { // 体力
             PlayerMgr.ins.addEnergy(Number(count2));
         }
     }
 
-    // 领取签到
+    // 领取签到G
     async handleReceive() {
         if (this.hasClaimedToday === '1') { // 未领取
             await SignApi.ins.receiveGift({

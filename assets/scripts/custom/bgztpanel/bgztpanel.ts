@@ -23,14 +23,20 @@ export class bgztpanel extends PanelComponent {
     suo: Node = null
     @property(Label)
     themeNum: Label = null;
+    @property(Node)
+    btn: Node = null;
+    @property(Node)
+    btnIcon: Node = null;
+    @property(Label)
+    btnLabel: Label = null;
     start() {
 
     }
     show(option: PanelShowOption): void {
         option.onShowed();
-        this.getList()
+        this.getList(true);
     }
-    getList() {
+    getList(isFirst?: boolean) {
         themesApi.ins.getThemesList().then(res => {
 
             if (res.code == 200) {
@@ -66,8 +72,41 @@ export class bgztpanel extends PanelComponent {
                 });
                 qc.eventManager.emit('Call_Banner')
             }
+            if (isFirst) {
+                qc.eventManager.emit(EventDef.Close_Loading);
+            }
         })
     }
+
+    private _updateTheme() {
+        themesApi.ins.getThemesList().then(res => {
+            if (res.code == 200) {
+                this.themeNum.string = res.data.fragments
+                if (this.theme.children) {
+                    for (let i = 0; i < this.theme.children.length; i++) {
+                        let themeNode = this.theme.children[i];
+                        let item = res.data.list[i];
+                        if (item.id == 1) {
+                            themeNode.getComponentInChildren(CustomSprite).index = 1
+                        } else if (item.id == 2) {
+                            themeNode.getComponentInChildren(CustomSprite).index = 0
+                        }
+                        let bgSuo = themeNode.getChildByName('bgsuo');
+                        let suo = themeNode.getChildByName('suo');
+                        suo.active = bgSuo.active = item.owned != 1;
+                        themeNode['bg_id'] = item.id;
+                        themeNode['title_name'] = item.name;
+                        themeNode['owned'] = item.owned;
+                        themeNode.active = true;
+                    }
+                }
+                this.btnIcon.active = false;
+                this.btn.getComponent(CustomSprite).index = 0;
+                this.btnLabel.string = '立即使用';
+            }
+        });
+    }
+
     hide(option: PanelHideOption): void {
         option.onHided();
     }
@@ -75,12 +114,12 @@ export class bgztpanel extends PanelComponent {
 
     }
     onEnable() {
-        qc.eventManager.on(EventDef.Update_Theme_Clips, this.getList, this);
+        qc.eventManager.on(EventDef.Update_Theme_Clips, this._updateTheme, this);
 
 
     }
     protected onDisable(): void {
-        qc.eventManager.off(EventDef.Update_Theme_Clips, this.getList, this);
+        qc.eventManager.off(EventDef.Update_Theme_Clips, this._updateTheme, this);
     }
     closeModel() {
         this.theme.removeAllChildren()

@@ -284,6 +284,7 @@ export class GamePanel extends PanelComponent {
         } else {
             this.levelGridScript.initConstStatus();
         }
+        qc.eventManager.emit(EventDef.Close_Loading);
     }
 
     start() {
@@ -415,16 +416,22 @@ export class GamePanel extends PanelComponent {
             }
 
             this.scheduleOnce(() => {
-                for (let i = 0; i < randomCells.length; i++) {
-                    let cell = randomCells[i];
-                    this.levelGridScript.getGridStateMachine().transitionTo(
-                        ConstStatus.getInstance().toolsState,
-                        {
-                            cell: cell,
-                            tool: cell.tool,
-                            grid: this.levelGridScript.grid
-                        } as ToolsStateEnterData
-                    );
+                if (randomCells.length === 0) {
+                    this.gameStatus.stepLeftReduceComplete = true;
+                    cb && cb();
+                }
+                else {
+                    for (let i = 0; i < randomCells.length; i++) {
+                        let cell = randomCells[i];
+                        this.levelGridScript.getGridStateMachine().transitionTo(
+                            ConstStatus.getInstance().toolsState,
+                            {
+                                cell: cell,
+                                tool: cell.tool,
+                                grid: this.levelGridScript.grid
+                            } as ToolsStateEnterData
+                        );
+                    }
                 }
             }, Constants.PROGRESS_CHANGE_DURATION * randomCells.length + .5);
 
@@ -497,6 +504,7 @@ export class GamePanel extends PanelComponent {
 
     private gamePass() {
         console.log("game pass");
+        qc.platform.fromOtherAppToCompleteTask('game');
         this.levelGridScript.stop();
 
         // 更新游戏进度
@@ -514,13 +522,13 @@ export class GamePanel extends PanelComponent {
             }
         }
 
+        qc.platform.reportScene(401);
         LevelMgr.ins.sendLevelPassToServer(this.levelData.levelIndex,
             this.progressNode.getComponent(ProgressScript).getStarCountr(),
             this.scoreValue.score,
             PlayerMgr.ins.userInfo.summary.map_on,
             (data: PassData) => {
                 // 显示游戏结束弹窗
-                qc.platform.reportScene(401);
                 this.showGameDialog(true, data.rewards);
             });
     }
@@ -588,6 +596,15 @@ export class GamePanel extends PanelComponent {
             this.levelData.starCount = 1;
         }
 
+        let levelInfo: Currentlevel = {
+            level_no: this.levelData.levelIndex,
+            best_score: this.scoreValue.score,
+            best_stars: this.levelData.starCount,
+            play_times: 0,
+            pass_status: '',
+            create_time: '',
+            update_time: ''
+        };
         if (PlayerMgr.ins.userInfo.current_level.length < this.levelData.levelIndex) {
             PlayerMgr.ins.userInfo.summary.total_stars += this.levelData.starCount;
         }
@@ -595,8 +612,14 @@ export class GamePanel extends PanelComponent {
             let curLevel = PlayerMgr.ins.userInfo.current_level[this.levelData.levelIndex - 1];
             if (curLevel.best_stars < this.levelData.starCount) {
                 PlayerMgr.ins.userInfo.summary.total_stars += this.levelData.starCount - curLevel.best_stars;
+                curLevel.best_stars = this.levelData.starCount;
+            }
+            else {
+                this.levelData.starCount = curLevel.best_stars;
             }
         }
+
+        PlayerMgr.ins.setLevelInfo(levelInfo);
         PlayerMgr.ins.userInfo.summary.total_score += this.scoreValue.score;
         qc.eventManager.emit(EventDef.Update_Stars, this.levelData.levelIndex, this.levelData.starCount);
         if (this.levelData.levelIndex > PlayerMgr.ins.userInfo.summary.latest_passed_level) {
@@ -612,9 +635,16 @@ export class GamePanel extends PanelComponent {
                     PlayerMgr.ins.userInfo.summary.map_on++;
                     let levelConfig = LevelMgr.ins.getLevel(mapId, nextLevel);
                     // 成功解锁//
-                    if (levelConfig && levelConfig.unlock_stars && PlayerMgr.ins.userInfo.summary.total_stars >= levelConfig.unlock_stars) {
+                    let stars = PlayerMgr.ins.getMapStars(mapId - 1);
+                    if (levelConfig && levelConfig.unlock_stars && stars >= levelConfig.unlock_stars) {
                         PlayerMgr.ins.userInfo.summary.latest_passed_level++;
                         qc.eventManager.emit(EventDef.Unlock_Map);
+                    }
+                    // 未解锁成功
+                    else {
+                        PlayerMgr.ins.userInfo.summary.map_on--;
+                        PlayerMgr.ins.userInfo.summary.latest_passed_level = this.levelData.levelIndex;
+                        qc.eventManager.emit(EventDef.Update_Level, true);
                     }
                 }
                 else {
@@ -623,7 +653,27 @@ export class GamePanel extends PanelComponent {
             }
         }
         else {
-            qc.eventManager.emit(EventDef.Jump_Level, PlayerMgr.ins.userInfo.summary.map_on, PlayerMgr.ins.userInfo.summary.latest_passed_level);
+            let nextMap = LevelMgr.ins.getMap(PlayerMgr.ins.userInfo.summary.map_on + 1);
+            if (nextMap) {
+                let lvConfig = nextMap.values().next().value as LevelConfig;
+                if (lvConfig.unlock_stars <= PlayerMgr.ins.getMapStars(PlayerMgr.ins.userInfo.summary.map_on)) {
+                    let passCount = PlayerMgr.ins.getPassLevels(PlayerMgr.ins.userInfo.summary.map_on);
+                    let map = LevelMgr.ins.getMap(PlayerMgr.ins.userInfo.summary.map_on);
+                    if (passCount >= map.size) {// 解锁成功
+                        PlayerMgr.ins.userInfo.summary.map_on++;
+                        qc.eventManager.emit(EventDef.Unlock_Map);
+                    }
+                    else {
+                        qc.eventManager.emit(EventDef.Jump_Level, PlayerMgr.ins.userInfo.summary.map_on, PlayerMgr.ins.userInfo.summary.latest_passed_level);
+                    }
+                }
+                else {
+                    qc.eventManager.emit(EventDef.Jump_Level, PlayerMgr.ins.userInfo.summary.map_on, PlayerMgr.ins.userInfo.summary.latest_passed_level);
+                }
+            }
+            else {
+                qc.eventManager.emit(EventDef.Jump_Level, PlayerMgr.ins.userInfo.summary.map_on, PlayerMgr.ins.userInfo.summary.latest_passed_level);
+            }
         }
     }
 

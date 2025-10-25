@@ -126,7 +126,7 @@ export default class platform_tt implements platform_interface {
         this._rewardedVideoAdMap.set(adUnitId, rewardedVideoAd);
     }
 
-    fromOtherAppToShowAd(): void {
+    fromOtherAppToCompleteTask(type: string): void {
 
     }
 

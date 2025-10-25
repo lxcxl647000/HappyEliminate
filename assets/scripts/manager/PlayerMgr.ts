@@ -3,6 +3,7 @@ import { ItemType } from "../configs/ItemConfig";
 import { qc } from "../framework/qc";
 import { baseConfig } from '../configs/baseConfig';
 import HomeApi from "../api/index";
+import LevelMgr from "./LevelMgr";
 interface Prompt {
     can_open: any;
     show: number;
@@ -41,7 +42,8 @@ interface userInfoFace {
     props: Props;
     prompt: Prompt;
     is_new_today: number;
-    strength_recover: any
+    strength_recover: any;
+    prop_video_remain: number;
 }
 
 export interface Currentlevel {
@@ -208,6 +210,7 @@ export default class PlayerMgr {
         }
         this.userInfo = res.data
 
+        this.userInfo.prop_video_remain = +res.data.prop_video_remain;
         this.userInfo.props.user_id = +res.data.props.user_id;
         this.userInfo.props.money = +res.data.props.money;
         this.userInfo.props.integral = +res.data.props.integral;
@@ -232,6 +235,12 @@ export default class PlayerMgr {
         qc.eventManager.emit(EventDef.Update_Left_Level_Redpack);
         console.log('this.userInfo', this.userInfo);
         cb && cb();
+    }
+
+    public async getStrengthData() {
+        let res = await HomeApi.ins.getHomeData({ userId: baseConfig.userId });
+        this.userInfo.props.strength = +res.data.props.strength;
+        qc.eventManager.emit(EventDef.Update_Energy);
     }
 
     // 首页体力恢复方法
@@ -265,7 +274,7 @@ export default class PlayerMgr {
                         this.runTime = this.runTime - 1000
                         if (this.runTime <= 0) {
                             // this.addEnergy(1)
-                            await this.getHomeData()
+                            await this.getStrengthData()
                             this.addEnergy(0)
                             qc.eventManager.emit(EventDef.Update_RewardCount)
                             this.runTime = this.timeNum
@@ -288,5 +297,48 @@ export default class PlayerMgr {
     public updateTheme(theme_id: string) {
         this.userInfo.summary.current_theme_id = theme_id;
         qc.eventManager.emit(EventDef.Update_Theme, theme_id);
+    }
+
+    // 更具地图id获得该地图的星星数
+    public getMapStars(mapId: number) {
+        let stars = 0;
+        let levels = PlayerMgr.ins.userInfo.current_level;
+        let map = LevelMgr.ins.getMap(mapId);
+        if (map) {
+            for (let level of map.values()) {
+                for (let levelData of levels) {
+                    if (levelData.level_no === level.levelIndex) {
+                        stars += levelData.best_stars;
+                    }
+                }
+            }
+        }
+        return stars;
+    }
+
+    public getPassLevels(mapId: number) {
+        let levels = PlayerMgr.ins.userInfo.current_level;
+        let map = LevelMgr.ins.getMap(mapId);
+        let passCount = 0;
+        if (map) {
+            for (let level of map.values()) {
+                for (let levelData of levels) {
+                    if (levelData.level_no === level.levelIndex) {
+                        passCount++;
+                    }
+                }
+            }
+        }
+        return passCount;
+    }
+
+    public setLevelInfo(info: Currentlevel) {
+        let levelInfo = this.getLevelsInfo(info.level_no);
+        if (levelInfo) {
+            levelInfo = info;
+        }
+        else {
+            this.userInfo.current_level.push(info);
+        }
     }
 }

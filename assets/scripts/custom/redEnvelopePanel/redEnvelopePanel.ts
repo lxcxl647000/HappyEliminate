@@ -69,7 +69,7 @@ export class chengjiuPanel extends PanelComponent {
             this.taskList = [
                 {
                     taskName: '任务1',
-                    taskNum: res.data.passed_today,
+                    taskNum: res.data.passed_today>10?res.data.passed_today=10:res.data.passed_today,
                     taskAllNum: 10,
                     taskReamake: '闯关10关',
                     taskState: res.data.passed_today >= 10 ? 1 : 0,
@@ -78,7 +78,7 @@ export class chengjiuPanel extends PanelComponent {
                 },
                 {
                     taskName: '任务1',
-                    taskNum: res.data.task_done,
+                    taskNum: res.data.task_done>10?res.data.task_done=10:res.data.task_done,
                     taskAllNum: 10,
                     taskReamake: '做10个任务',
                     taskState: res.data.task_done >= 10 ? 1 : 0,
@@ -96,6 +96,15 @@ export class chengjiuPanel extends PanelComponent {
             // 显示红包金额
             this.redMoney.string = '8.8'
             this.title.string = '最高8.8元，轻松到账'
+            if (Number(res.data.pass_amount)>0) {
+                console.log(1111111111111222);
+                
+                this.taskFlag.getComponent(CustomSprite).index = 1
+                this.taskopen.active = false
+                // PlayerMgr.ins.addCash(Number(res.data.amount))
+                this.redMoney.string = Number(res.data.pass_amount).toFixed(2)
+                this.redMoney.color = new Color(243, 23, 23, 255)
+            }
         });
 
     }

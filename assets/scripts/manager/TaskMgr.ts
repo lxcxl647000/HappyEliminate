@@ -62,6 +62,7 @@ interface Tag {
     allList: string[];
     index: string[];
     clean: any[];
+    sign: any[];
 }
 
 interface Category {
@@ -100,7 +101,8 @@ export class renwuMgr {
     public async getTaskList(cb: Function) {
         let res = await httpMgr.ins.xhrRequest<TaskData>('/task/getList');
         if (res) {
-            this._taskList = res.data.task.filter((item: Task) => item.isComplete !== 1);
+            const list =  res.data.task.filter((item: Task) => item.id !== res.data.tag.sign[0]);
+            this._taskList = list.filter((item: Task) => item.isComplete !== 1);
             cb && cb();
         }
     }

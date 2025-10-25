@@ -53,7 +53,6 @@ export class CashPanel extends PanelComponent {
         option.onShowed();
 
         this._init();
-        qc.eventManager.emit(EventDef.Close_Loading);
     }
     hide(option: PanelHideOption): void {
         option.onHided();
@@ -92,13 +91,18 @@ export class CashPanel extends PanelComponent {
     private _init() {
         this.cashLabel.string = PlayerMgr.ins.userInfo.props.money.toFixed(2);
         this.scroll.scrollToTop();
-        this._initData();
+        this._initData(true);
     }
 
-    private _initData() {
-        CashMgr.ins.requestCashData(() => {
-            this._initSelectCashList();
-            this._initDefaultAccount();
+    private _initData(isFirst: boolean) {
+        CashMgr.ins.requestCashData((flag: boolean) => {
+            if (flag) {
+                this._initSelectCashList();
+                this._initDefaultAccount();
+            }
+            if (isFirst) {
+                qc.eventManager.emit(EventDef.Close_Loading);
+            }
         });
     }
 
@@ -121,7 +125,7 @@ export class CashPanel extends PanelComponent {
                 PlayerMgr.ins.addCash(-res.data.amount);
                 this.cashLabel.string = PlayerMgr.ins.userInfo.props.money.toFixed(2);
                 CommonTipsMgr.ins.showTips('提现成功');
-                this._initData();
+                this._initData(false);
             }
             else {
                 CommonTipsMgr.ins.showTips(res.msg);
@@ -191,6 +195,10 @@ export class CashPanel extends PanelComponent {
     onClickMask() {
         this.conditionNode.active = false;
         this.maskNode.active = false;
+    }
+
+    onEditDiBegin(e: EditBox) {
+        
     }
 }
 

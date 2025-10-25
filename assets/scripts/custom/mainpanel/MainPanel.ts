@@ -16,8 +16,8 @@ import { SettingMgr } from '../../manager/SettingMgr';
 import CocosUtils from '../../utils/CocosUtils';
 import { BundleConfigs } from '../../configs/BundleConfigs';
 import { LevelNodeData } from './LevelNodeData';
-import { Constants } from '../../game/Constants';
 import PoolMgr from '../../manager/PoolMgr';
+import GuideMgr from '../../manager/GuideMgr';
 
 const { ccclass, property } = _decorator;
 
@@ -89,7 +89,7 @@ export class MainPanel extends PanelComponent {
         if (PlayerMgr.ins.userInfo.prompt.show == 1) {
             this.redPackBtn()
         }
-        qc.platform.fromOtherAppToShowAd();
+        qc.platform.fromOtherAppToCompleteTask('ad');
         this.gm.active = baseConfig.gm;
         this._updateLevel(false);
         this._updateTheme(PlayerMgr.ins.userInfo.summary.current_theme_id, () => {
@@ -100,7 +100,7 @@ export class MainPanel extends PanelComponent {
         this._updateMusicStatus();
         this._updateSoundStatus();
         this._updateVibrateStatus();
-        this._checkForceGuide();
+        GuideMgr.ins.checkMainPanelForceGuide(this.forceGuide);
     }
     hide(option: PanelHideOption): void {
 
@@ -140,6 +140,10 @@ export class MainPanel extends PanelComponent {
     private _initMap() {
         let level = PlayerMgr.ins.userInfo.summary.latest_passed_level + 1;
         let mapId = PlayerMgr.ins.userInfo.summary.map_on;
+        let levelData = LevelMgr.ins.getLevel(mapId, level);
+        if (!levelData) {
+            level = PlayerMgr.ins.userInfo.summary.latest_passed_level;
+        }
         this.mapList.numItems = mapId;
         this._jumpToLevel(mapId, level);
 
@@ -172,6 +176,10 @@ export class MainPanel extends PanelComponent {
                     let pos = this.mapList.scrollView.content.position;
                     tween(this.mapList.scrollView.content)
                         .to(0.2, { position: new Vec3(pos.x, pos.y + offsetY, pos.z) }, { easing: 'sineInOut' })
+                        .call(() => {
+                            this.mapList.scrollView.enabled = false;
+                            this.mapList.scrollView.enabled = true;
+                        })
                         .start();
                 }
             }
@@ -194,9 +202,12 @@ export class MainPanel extends PanelComponent {
             qc.eventManager.emit(EventDef.Active_Next_Level, level);
         }
         this._currentLevel = LevelMgr.ins.getLevel(mapId, nextLevel);
-        this.levelLabel.string = `第${nextLevel}关`;
+        if (!this._currentLevel) {
+            this._currentLevel = LevelMgr.ins.getLevel(mapId, level);
+        }
+        this.levelLabel.string = `第${this._currentLevel.levelIndex}关`;
 
-        needUpdateNext && this._jumpToLevel(mapId, nextLevel);
+        needUpdateNext && this._jumpToLevel(mapId, this._currentLevel.levelIndex);
     }
 
     private _unlockMap() {
@@ -328,7 +339,7 @@ export class MainPanel extends PanelComponent {
         if (PlayerMgr.ins.userInfo.prompt.show == 1 && PlayerMgr.ins.userInfo.prompt.type == 2 && PlayerMgr.ins.userInfo.prompt.can_open == 1) {
             this.redPackBtn();
         }
-        this._checkForceGuide();
+        GuideMgr.ins.checkMainPanelForceGuide(this.forceGuide);
     }
 
     private _flyRedPackAnimation(addCash: number) {
@@ -432,7 +443,7 @@ export class MainPanel extends PanelComponent {
 
     // 主题弹窗
     bgztBtn() {
-        qc.panelRouter.showPanel({
+        qc.panelRouter.showPanelWithLoading({
             panel: PanelConfigs.bgztPanel,
             onShowed: () => {
             },
@@ -479,10 +490,5 @@ export class MainPanel extends PanelComponent {
     private _onhide() {
         PlayerMgr.ins.clearTime();
         musicMgr.ins.stopMusic();
-    }
-
-    private _checkForceGuide() {
-        let doLevel1: boolean = qc.storage.getItem(Constants.Force_Guide_Level_1_KEY, 0) === 1;
-        this.forceGuide.active = !doLevel1 && PlayerMgr.ins.userInfo.current_level.length === 0;
     }
 }
