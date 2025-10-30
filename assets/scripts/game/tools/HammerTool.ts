@@ -1,27 +1,27 @@
 import { Animation, Node } from "cc";
 import { BundleConfigs } from "../../configs/BundleConfigs";
 import PoolMgr from "../../manager/PoolMgr";
-import { ToolsStateEnterData } from "../gridstate/ToolsState";
-import { ITool, ToolType } from "./ITool";
+import { BlockToolEnterData } from "../state/BlockToolState";
 import { musicMgr } from "../../manager/musicMgr";
 import { qc } from "../../framework/qc";
 import EventDef from "../../constants/EventDef";
 import GuideMgr, { GuideType } from "../../manager/GuideMgr";
+import { ITool, ToolType } from "../GameConstant";
 
 /**
  * 任意消除一个
  */
 export class HammerTool implements ITool {
-    getType(): ToolType {
-        return ToolType.TYPE_HAMMER;
+    getToolType(): ToolType {
+        return ToolType.Hammer;
     }
-    process(data: ToolsStateEnterData, onComplete: () => void) {
-        if (data.cell) {
-            data.cell.match = true;
-            let cellNode = data.cell.node;
+    useTool(data: BlockToolEnterData, onComplete: Function) {
+        if (data.block) {
+            data.block.match = true;
+            let blockNode = data.block.blockNode;
             PoolMgr.ins.getNodeFromPool(BundleConfigs.gameBundle, 'prefabs/HammerEffect', (hammer: Node) => {
-                hammer.parent = cellNode.parent;
-                hammer.setPosition(cellNode.position);
+                hammer.parent = blockNode.parent;
+                hammer.setPosition(blockNode.position);
                 let ani = hammer.getComponent(Animation);
                 if (ani) {
                     ani.once(Animation.EventType.FINISHED, () => {

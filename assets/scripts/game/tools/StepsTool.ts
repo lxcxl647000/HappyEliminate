@@ -1,19 +1,17 @@
 import EventDef from "../../constants/EventDef";
 import { qc } from "../../framework/qc";
-import { Constants } from "../Constants";
-import { ToolsStateEnterData } from "../gridstate/ToolsState";
-import { ITool, ToolType } from "./ITool";
+import { GameConstant, ITool, ToolType } from "../GameConstant";
+import { BlockToolEnterData } from "../state/BlockToolState";
 
 /**
  * 增加步数+3
  */
 export class StepsTool implements ITool {
-    getType(): ToolType {
-        return ToolType.TYPE_STEPS;
+    getToolType(): ToolType {
+        return ToolType.Steps;
     }
-    process(data: ToolsStateEnterData, onComplete: () => void) {
-        qc.eventManager.emit(EventDef.UseStepsTool, Constants.Tool_Add_Steps);
-        // 没有动画，执行完成直接回调
+    useTool(data: BlockToolEnterData, onComplete: Function) {
+        qc.eventManager.emit(EventDef.UseStepsTool, GameConstant.Tool_Add_Steps);
         onComplete();
     }
 }

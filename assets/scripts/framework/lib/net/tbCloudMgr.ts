@@ -1,7 +1,5 @@
 import cloud from '@tbmp/mp-cloud-sdk';
-import { baseConfig } from '../../../configs/baseConfig';
-import PlayerMgr from '../../../manager/PlayerMgr';
-import { qc } from '../../qc';
+import { PlatformConfig } from '../platform/configs/PlatformConfig';
 
 export class tbCloudMgr {
     private static _instance: tbCloudMgr;
@@ -12,17 +10,16 @@ export class tbCloudMgr {
         }
         return tbCloudMgr._instance;
     }
-    public init(): Promise<void> {
+    public init(cb: Function): Promise<void> {
         return new Promise((resolve, reject) => {
-            console.log('appid : === ' + qc.platform.getAppId());
+            console.log('appid : === ' + PlatformConfig.ins.config.appId);
             if (!this._cloudObject) {
-                // this._cloudObject = new cloud.Cloud();
                 this._cloudObject = new cloud['Cloud']();
                 try {
                     this._cloudObject.init({
                         env: 'online'
                     });
-                    this.getToken();
+                    this.getToken(cb);
                     resolve();
                 } catch (e) {
                     console.error("cloud初始化错误：" + e);
@@ -30,14 +27,12 @@ export class tbCloudMgr {
                 }
             }
             else {
-                this.getToken();
+                this.getToken(cb);
                 resolve();
             }
         });
     }
-    async getToken() {
-        // console.log("cloud对象:", JSON.stringify(this._cloudObject, null, 2));
-        // console.log("application对象:", JSON.stringify(this._cloudObject.application, null, 2));
+    async getToken(cb: Function) {
         const config = {
             path: '/TaoBaoCallback/happyCatchingCatBack',
             method: 'GET',
@@ -51,7 +46,7 @@ export class tbCloudMgr {
             exts: {
                 cloudAppId: "57772",
                 timeout: 4000,
-                domain: baseConfig.domain
+                domain: PlatformConfig.ins.config.domain
             }
         };
         console.log("请求配置:", JSON.stringify(config, null, 2));
@@ -60,10 +55,10 @@ export class tbCloudMgr {
             console.log("请求结果:", JSON.stringify(result, null, 2));
             let res = JSON.parse(result);
             console.log('userid : === ' + res.user_id);
-            baseConfig.token = res.token;
-            baseConfig.userId = res.user_id;
-            await PlayerMgr.ins.getHomeData();
-            PlayerMgr.ins.getEnergy();
+            console.log('token : === ' + res.token);
+            PlatformConfig.ins.config.token = res.token;
+            PlatformConfig.ins.config.userId = res.user_id;
+            cb && cb();
         } catch (error) {
             console.error("请求失败:", error);
         }

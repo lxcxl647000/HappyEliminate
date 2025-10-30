@@ -13,6 +13,7 @@ import { ItemType } from "../../configs/ItemConfig";
 import GetItemMgr from "../../manager/GetItemMgr";
 import CommonTipsMgr from "../../manager/CommonTipsMgr";
 import CustomSprite from "../../custom/componetUtils/CustomSprite";
+import { PlatformConfig } from '../../framework/lib/platform/configs/PlatformConfig';
 
 @ccclass('ExchangePanel')
 export class ExchangePanel extends PanelComponent {
@@ -120,7 +121,7 @@ export class ExchangePanel extends PanelComponent {
             return;
         }
         let ad: rewardedVideoAd = {
-            adUnitId: qc.platform.getAllAdUnitIds()[0],
+            adUnitId: PlatformConfig.ins.config.adUnitIds[0],
             successCb: (res) => {
                 strengthApi.ins.strengthClaim((data) => {
                     // const count = Number(data.strength) - Number(PlayerMgr.ins.userInfo.props.strength)

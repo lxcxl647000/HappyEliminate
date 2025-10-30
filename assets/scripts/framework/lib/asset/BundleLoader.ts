@@ -1,9 +1,4 @@
 import { Asset, AssetManager, SceneAsset } from "cc";
-
-/**
- * 提供 Promise 写法的 Bundler 加载器，但是这种写法会缺失加载进度
- *
- */
 export default class BundleLoader {
     static load<T extends Asset>(bundle: AssetManager.Bundle, path: string, type?: typeof Asset): Promise<T> {
         return new Promise<T>((resolve, reject) => {

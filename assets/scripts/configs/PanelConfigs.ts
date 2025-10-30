@@ -157,7 +157,10 @@ export const PanelConfigs = {
         layerZIndex: PanelLayerEnum.PopLayer1,
         index: 3,
     }
-
-
-
+    ,
+    sideRewardPanel: <PanelConfig>{
+        prefabPath: `${BundleConfigs.sideRewardBundle}/prefabs/SideRewardPanel`,
+        layerZIndex: PanelLayerEnum.PopLayer,
+        index: 1,
+    }
 };

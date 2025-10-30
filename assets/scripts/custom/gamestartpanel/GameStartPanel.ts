@@ -1,15 +1,14 @@
-import { _decorator, Animation, Color, Component, Label, Node } from 'cc';
+import { _decorator, Animation, Label, Node } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
 import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
 import { LevelConfig } from '../../configs/LevelConfig';
-import { GoalTypeCounter, GoalValue } from '../../game/goal/GoalTyps';
+import { TargetForTypeCount, ITargetVal } from '../../game/target/TargetTyps';
 import CustomSprite from '../componetUtils/CustomSprite';
 import PlayerMgr from '../../manager/PlayerMgr';
-import { ToolType } from '../../game/tools/ITool';
 import { ItemType } from '../../configs/ItemConfig';
 import EventDef from '../../constants/EventDef';
-import { Constants } from '../../game/Constants';
+import { GameConstant, ToolType } from '../../game/GameConstant';
 import { SelectTool } from './SelectTool';
 import CommonTipsMgr from '../../manager/CommonTipsMgr';
 import { rewardedVideoAd } from '../../framework/lib/platform/platform_interface';
@@ -17,6 +16,7 @@ import GetItemMgr from '../../manager/GetItemMgr';
 import LevelMgr from '../../manager/LevelMgr';
 import ItemMgr from '../../manager/ItemMgr';
 import GuideMgr from '../../manager/GuideMgr';
+import { PlatformConfig } from '../../framework/lib/platform/configs/PlatformConfig';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameStartPanel')
@@ -81,23 +81,23 @@ export class GameStartPanel extends PanelComponent {
     }
 
     private _init() {
-        this.energyCostLabel.string = `-${Constants.Energy_Cost}`;
-        this.levelLabel.string = this._level.levelIndex.toString();
+        this.energyCostLabel.string = `-${GameConstant.Energy_Cost}`;
+        this.levelLabel.string = this._level.lvID.toString();
         this._initTarget();
         this._initTools();
     }
 
     private _initTarget() {
-        let goal = this._level.goal as GoalValue;
-        if (goal) {
-            let goals = goal.value as GoalTypeCounter[];
+        let target = this._level.target as ITargetVal;
+        if (target) {
+            let targets = target.value as TargetForTypeCount[];
             for (let i = 0; i < this.targetParent.children.length; i++) {
                 let target = this.targetParent.children[i];
-                target.active = i < goals.length;
+                target.active = i < targets.length;
                 if (target.active) {
                     let icon = target.getComponent(CustomSprite);
-                    icon.index = goals[i].cellType;
-                    icon.getComponentInChildren(Label).string = goals[i].counter.toString();
+                    icon.index = targets[i].blockType;
+                    icon.getComponentInChildren(Label).string = targets[i].count.toString();
                 }
             }
         }
@@ -135,8 +135,8 @@ export class GameStartPanel extends PanelComponent {
             this._hidePanel();
         }
         else {
-            if (PlayerMgr.ins.userInfo.props.strength >= Constants.Energy_Cost) {
-                await LevelMgr.ins.sendLevelToServer(this._level.levelIndex)
+            if (PlayerMgr.ins.userInfo.props.strength >= GameConstant.Energy_Cost) {
+                await LevelMgr.ins.sendLevelToServer(this._level.lvID)
                 await PlayerMgr.ins.getHomeData()
                 PlayerMgr.ins.getEnergy()
 
@@ -155,10 +155,10 @@ export class GameStartPanel extends PanelComponent {
     private _updateSelectTool(itemType: ItemType, num: number) {
         let toolType = ToolType.INVALID;
         if (itemType === ItemType.Boom) {
-            toolType = ToolType.BOOM_MATCH;
+            toolType = ToolType.BoomInGrid;
         }
         else if (itemType === ItemType.Steps) {
-            toolType = ToolType.TYPE_STEPS;
+            toolType = ToolType.Steps;
         }
         this._selectTools[toolType] = num;
     }
@@ -168,7 +168,7 @@ export class GameStartPanel extends PanelComponent {
             return;
         }
         let ad: rewardedVideoAd = {
-            adUnitId: qc.platform.getAllAdUnitIds()[0],
+            adUnitId: PlatformConfig.ins.config.adUnitIds[0],
             successCb: () => {
                 let item = ItemMgr.ins.getItem(ItemType.Boom);
                 if (item) {

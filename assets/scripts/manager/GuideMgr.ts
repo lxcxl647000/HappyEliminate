@@ -1,12 +1,12 @@
 import { Node, UITransform, Vec2 } from "cc";
-import { Cell } from "../game/Types";
 import PoolMgr from "./PoolMgr";
 import { BundleConfigs } from "../configs/BundleConfigs";
 import { Guide, IGuide } from "../commonTs/Guide";
 import { ItemType } from "../configs/ItemConfig";
 import PlayerMgr from "./PlayerMgr";
 import { qc } from "../framework/qc";
-import { Constants } from "../game/Constants";
+import { GameConstant } from "../game/GameConstant";
+import { Block } from "../game/Block";
 
 export enum GuideType {
     Invalid = 0,
@@ -156,7 +156,7 @@ export default class GuideMgr {
     }
 
     // 强制合成
-    public forceGuide_Eliminate(guide_cells: number[][], allCells: Cell[][], guideParent: Node, type: GuideType, doNext: Function): void {
+    public forceGuide_Eliminate(guide_blocks: number[][], allBlocks: Block[][], guideParent: Node, type: GuideType, doNext: Function): void {
         let tips: string = '';
         let forceGuideAreaPosOffset: Vec2 = null;
         let fingerAniOffset: Vec2 = null;
@@ -192,36 +192,36 @@ export default class GuideMgr {
                 isRow = false;
                 break;
         }
-        if (guide_cells) {
-            let cells: Cell[] = [];
-            for (let cellIndex of guide_cells) {
-                let i = cellIndex[0];
-                let j = cellIndex[1];
-                let cell = allCells[i][j];
-                cells.push(cell);
+        if (guide_blocks) {
+            let blocks: Block[] = [];
+            for (let blockIndex of guide_blocks) {
+                let i = blockIndex[0];
+                let j = blockIndex[1];
+                let block = allBlocks[i][j];
+                blocks.push(block);
             }
-            if (cells.length > 0) {
+            if (blocks.length > 0) {
                 if (type === GuideType.Force_Level_2_Eliminate) {
-                    cells[0].node['guidecantclick'] = true;
+                    blocks[0].blockNode['guidecantclick'] = true;
                 }
                 let width = 0;
                 let height = 0;
-                for (let cell of cells) {
+                for (let block of blocks) {
                     if (isRow) {
-                        width += cell.node.getComponent(UITransform).width;
-                        height = cell.node.getComponent(UITransform).height;
+                        width += block.blockNode.getComponent(UITransform).width;
+                        height = block.blockNode.getComponent(UITransform).height;
                     }
                     else {
-                        width = cell.node.getComponent(UITransform).width;
-                        height += cell.node.getComponent(UITransform).height;
+                        width = block.blockNode.getComponent(UITransform).width;
+                        height += block.blockNode.getComponent(UITransform).height;
                     }
                 }
                 width += widthOffset;
                 height += heightOffset;
-                let cellNode = cells[cells.length - 1].node;
+                let blockNode = blocks[blocks.length - 1].blockNode;
                 let guidInfo: IGuide = {
                     parent: guideParent,
-                    targetNode: cellNode,
+                    targetNode: blockNode,
                     targetPosOffset: targetPosOffset,
                     forceGuideArea: { posOffset: forceGuideAreaPosOffset, width, height },
                     tips: tips,
@@ -238,7 +238,7 @@ export default class GuideMgr {
         }
     }
 
-    public forceGuideUseTool(cellNode: Node, guideParent: Node, guideType: GuideType, doNext: Function): void {
+    public forceGuideUseTool(blockNode: Node, guideParent: Node, guideType: GuideType, doNext: Function): void {
         let tips = '';
         let tipsOffset: Vec2 = null;
         switch (guideType) {
@@ -251,11 +251,11 @@ export default class GuideMgr {
                 tipsOffset = new Vec2(-60, 150);
                 break;
         }
-        let width = cellNode.getComponent(UITransform).width;
-        let height = cellNode.getComponent(UITransform).height;
+        let width = blockNode.getComponent(UITransform).width;
+        let height = blockNode.getComponent(UITransform).height;
         let guidInfo: IGuide = {
             parent: guideParent,
-            targetNode: cellNode,
+            targetNode: blockNode,
             targetPosOffset: new Vec2(60, -70),
             forceGuideArea: { posOffset: null, width, height },
             tips: tips,
@@ -271,7 +271,7 @@ export default class GuideMgr {
     }
 
     public checkMainPanelForceGuide(node: Node): void {
-        let doLevel1: boolean = qc.storage.getItem(Constants.Force_Guide_Level_1_KEY, 0) === 1;
+        let doLevel1: boolean = qc.storage.getItem(GameConstant.Force_Guide_Level_1_KEY, 0) === 1;
         node.active = !doLevel1 && PlayerMgr.ins.userInfo.current_level.length === 0;
     }
 }

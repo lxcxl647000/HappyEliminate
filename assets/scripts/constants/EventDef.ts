@@ -51,4 +51,6 @@ export default class EventDef {
     public static Trigger_Tool = 'Trigger_Tool';
     // 关闭loading
     public static Close_Loading = 'Close_Loading';
+    // 关闭主界面侧边栏奖励入口
+    public static Hide_Side_Reward = 'Hide_Side_Rewardp';
 }

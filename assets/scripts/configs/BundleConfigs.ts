@@ -25,5 +25,6 @@ export const BundleConfigs = {
     getItemBundle: 'getItemBundle',
     cashBundle: 'cashBundle',
     bgztBundle: 'bgztBundle',
-    loadingBundle: 'loadingBundle'
+    loadingBundle: 'loadingBundle',
+    sideRewardBundle: 'sideRewardBundle',
 };

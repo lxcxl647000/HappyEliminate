@@ -5735,4 +5735,6 @@ declare namespace wx {
 
   //预览图片
   export function previewMedia(op: any);
+
+  export function updateKeyboard(obj: any);
 }

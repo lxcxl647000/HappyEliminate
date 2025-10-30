@@ -6,13 +6,12 @@ import { ItemConfig, ItemType } from '../../configs/ItemConfig';
 import CocosUtils from '../../utils/CocosUtils';
 import { BundleConfigs } from '../../configs/BundleConfigs';
 import { rewardedVideoAd } from '../../framework/lib/platform/platform_interface';
-import { baseConfig } from '../../configs/baseConfig';
 import PlayerMgr from '../../manager/PlayerMgr';
 import CommonTipsMgr from '../../manager/CommonTipsMgr';
 import ConfigMgr from '../../manager/ConfigMgr';
 import { configConfigs } from '../../configs/configConfigs';
 import ItemMgr, { IItem } from '../../manager/ItemMgr';
-import EventDef from '../../constants/EventDef';
+import { PlatformConfig } from '../../framework/lib/platform/configs/PlatformConfig';
 const { ccclass, property } = _decorator;
 
 @ccclass('GetItemPanel')
@@ -99,7 +98,7 @@ export class GetItemPanel extends PanelComponent {
 
     onAdBtn() {
         let ad: rewardedVideoAd = {
-            adUnitId: qc.platform.getAllAdUnitIds()[0],
+            adUnitId: PlatformConfig.ins.config.adUnitIds[0],
             successCb: () => {
                 PlayerMgr.ins.addItem(this._itemType, 2 * this._num);
                 this._hidePanel();

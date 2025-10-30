@@ -3,16 +3,12 @@ import platform_interface, { rewardedVideoAd } from "./platform_interface";
 
 export default class platform_bilibili implements platform_interface {
     showRewardedAd(ad: rewardedVideoAd): void {
-        ad && ad.successCb && ad.successCb();
+
     }
     init(): void {
 
     }
     createRewardedAd(adUnitId: string) {
-
-    }
-
-    fromOtherAppToCompleteTask(type: string): void {
 
     }
 
@@ -38,13 +34,10 @@ export default class platform_bilibili implements platform_interface {
         musicMgr.ins.stopMusicByCocos();
     }
 
-    getAllAdUnitIds(): string[] {
-        return [
-            '',
-        ];
+    login(cb: Function): void {
+
     }
 
-    getAppId(): string {
-        return '3000000137357221';
+    updateKeyboard(str: string): void {
     }
 }

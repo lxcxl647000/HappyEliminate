@@ -1,7 +1,7 @@
 import { _decorator, Component, EditBox, Node } from 'cc';
 import { PanelComponent, PanelHideOption, PanelShowOption } from '../../framework/lib/router/PanelComponent';
 import { qc } from '../../framework/qc';
-import { Constants } from '../../game/Constants';
+import { GameConstant } from '../../game/GameConstant';
 import PlayerMgr from '../../manager/PlayerMgr';
 import { PanelConfigs } from '../../configs/PanelConfigs';
 import GetItemMgr from '../../manager/GetItemMgr';
@@ -53,7 +53,7 @@ export class GMPanel extends PanelComponent {
     }
 
     onClearLuckyTurntable() {
-        qc.storage.setObj(Constants.LUCKY_TURNTABLE_DATA_KEY, { time: 0, count: 0 });
+        qc.storage.setObj(GameConstant.LUCKY_TURNTABLE_DATA_KEY, { time: 0, count: 0 });
 
     }
 }

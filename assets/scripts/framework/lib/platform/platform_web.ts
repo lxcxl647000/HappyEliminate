@@ -12,9 +12,6 @@ export default class platform_web implements platform_interface {
 
     }
 
-    fromOtherAppToCompleteTask(type: string): void {
-    }
-
     reportScene(sceneId: number): void {
 
     }
@@ -37,13 +34,10 @@ export default class platform_web implements platform_interface {
         musicMgr.ins.stopMusicByCocos();
     }
 
-    getAllAdUnitIds(): string[] {
-        return [
-            '',
-        ];
+    login(cb: Function): void {
+        cb && cb();
     }
 
-    getAppId(): string {
-        return '3000000137357221';
+    updateKeyboard(str: string): void {
     }
 }

@@ -3,8 +3,8 @@ import AssetLoader from "../../scripts/framework/lib/asset/AssetLoader";
 import { qc } from "../framework/qc";
 import { BundleConfigs } from "../configs/BundleConfigs";
 import { PanelConfigs } from "../configs/PanelConfigs";
-import { baseConfig } from "../configs/baseConfig";
 import { httpMgr } from "../framework/lib/net/httpMgr";
+import { PlatformConfig } from "../framework/lib/platform/configs/PlatformConfig";
 const { ccclass, property } = _decorator;
 
 @ccclass
@@ -13,12 +13,14 @@ export default class MainSceneCtrl extends Component {
     rootLayerNode: Node = null;
 
     onLoad() {
+        // 初始化平台
+        qc.platform.init();
         // 初始化面板路由器
-        qc.panelRouter.init(this.rootLayerNode, true);
+        qc.panelRouter.init(this.rootLayerNode);
     }
 
     async start() {
-        // httpMgr.ins.xhrRequest('/public/xcxct', 'GET', { scene: '0', path: '', adzone_id: baseConfig.adzoneId });
+        // httpMgr.ins.xhrRequest('/public/xcxct', 'GET', { scene: '0', path: '', adzone_id: PlatformConfig.ins.config.adzoneId });
 
         // 加载 Bundle
         // await AssetLoader.loadBundle(BundleConfigs.configBundle);
@@ -27,7 +29,7 @@ export default class MainSceneCtrl extends Component {
 
         // await AssetLoader.loadBundle(BundleConfigs.bootBundle);
 
-        // if (baseConfig.gm) await AssetLoader.loadBundle(BundleConfigs.gmBundle);
+        // if (PlatformConfig.ins.config.gm) await AssetLoader.loadBundle(BundleConfigs.gmBundle);
 
         // 加载启动页
         // await qc.panelRouter.loadAsync(PanelConfigs.bootPanel);

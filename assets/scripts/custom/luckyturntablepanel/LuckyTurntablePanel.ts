@@ -4,14 +4,14 @@ import { qc } from '../../framework/qc';
 import { PanelConfigs } from '../../configs/PanelConfigs';
 import { LuckyRewardItem } from './LuckyRewardItem';
 import MathUtils from '../../utils/MathUtils';
-import { Constants } from '../../game/Constants';
+import { GameConstant } from '../../game/GameConstant';
 import TimeUtils from '../../utils/TimeUtils';
 import GetItemMgr from '../../manager/GetItemMgr';
 import { rewardedVideoAd } from '../../framework/lib/platform/platform_interface';
-import { baseConfig } from '../../configs/baseConfig';
 import { LuckyTurntableConfig } from '../../configs/LuckyTurntableConfig';
 import ConfigMgr from '../../manager/ConfigMgr';
 import { configConfigs } from '../../configs/configConfigs';
+import { PlatformConfig } from '../../framework/lib/platform/configs/PlatformConfig';
 const { ccclass, property } = _decorator;
 
 interface TurntableStorageData {
@@ -57,7 +57,7 @@ export class LuckyTurntablePanel extends PanelComponent {
     }
 
     private _init() {
-        this._useData = qc.storage.getObj(Constants.LUCKY_TURNTABLE_DATA_KEY, this._useData);
+        this._useData = qc.storage.getObj(GameConstant.LUCKY_TURNTABLE_DATA_KEY, this._useData);
         if (!TimeUtils.IsSameDay(this._useData.time, TimeUtils.now())) {
             this._useData.count = 0;
         }
@@ -75,7 +75,7 @@ export class LuckyTurntablePanel extends PanelComponent {
     }
 
     private _updateBtnStatus() {
-        if (this._useData.count >= Constants.LuckyTurntable_TotalNum) {
+        if (this._useData.count >= GameConstant.LuckyTurntable_TotalNum) {
             this.startBtnNode.active = false;
             this.startADBtnNode.active = false;
         }
@@ -109,7 +109,7 @@ export class LuckyTurntablePanel extends PanelComponent {
 
     onClickAdStart() {
         let ad: rewardedVideoAd = {
-            adUnitId: qc.platform.getAllAdUnitIds()[0],
+            adUnitId: PlatformConfig.ins.config.adUnitIds[0],
             successCb: () => {
                 this._onTurnTable();
             }
@@ -136,7 +136,7 @@ export class LuckyTurntablePanel extends PanelComponent {
         this._useData.count++;
         this.maskNode.active = true;
         this._getResult();
-        qc.storage.setObj(Constants.LUCKY_TURNTABLE_DATA_KEY, this._useData);
+        qc.storage.setObj(GameConstant.LUCKY_TURNTABLE_DATA_KEY, this._useData);
 
         let angle = 360 * this.TurnCycles;
         this.rotateNode.angle = this.OrignalAngle;

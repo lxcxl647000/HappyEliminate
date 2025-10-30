@@ -48,7 +48,7 @@ export class LevelNodeData extends Component {
     }
 
     private _updateStars(level: number, stars: number) {
-        if (level !== this._levelData.levelIndex) {
+        if (level !== this._levelData.lvID) {
             return;
         }
         for (let i = 1; i <= this.stars.children.length; i++) {
@@ -62,14 +62,14 @@ export class LevelNodeData extends Component {
     updateLevel(data: LevelConfig) {
         this._levelData = data;
 
-        this.levelLabel.string = this._levelData.levelIndex.toString();
-        this.levelStatus.index = PlayerMgr.ins.userInfo.summary.latest_passed_level < this._levelData.levelIndex ? 0 : 1;
-        let levelInfo = PlayerMgr.ins.getLevelsInfo(this._levelData.levelIndex);
+        this.levelLabel.string = this._levelData.lvID.toString();
+        this.levelStatus.index = PlayerMgr.ins.userInfo.summary.latest_passed_level < this._levelData.lvID ? 0 : 1;
+        let levelInfo = PlayerMgr.ins.getLevelsInfo(this._levelData.lvID);
         let starCount = levelInfo ? levelInfo.best_stars : 0;
-        this._updateStars(this._levelData.levelIndex, starCount);
+        this._updateStars(this._levelData.lvID, starCount);
 
         // 当前要闯的关
-        let isCurLevel = this._levelData.levelIndex === PlayerMgr.ins.userInfo.summary.latest_passed_level + 1;
+        let isCurLevel = this._levelData.lvID === PlayerMgr.ins.userInfo.summary.latest_passed_level + 1;
         if (isCurLevel) {
             this._setHeadTargetPos();
         }
@@ -77,22 +77,22 @@ export class LevelNodeData extends Component {
 
     onClickLevel() {
         if (this._levelData) {
-            if (this._levelData.levelIndex > PlayerMgr.ins.userInfo.summary.latest_passed_level + 1) {
+            if (this._levelData.lvID > PlayerMgr.ins.userInfo.summary.latest_passed_level + 1) {
                 return;
             }
-            LevelMgr.ins.goToLevel(this._levelData.mapId, this._levelData.levelIndex, null);
+            LevelMgr.ins.goToLevel(this._levelData.mapId, this._levelData.lvID, null);
         }
     }
 
     private _activeLevel(level: number) {
-        if (this._levelData.levelIndex === level + 1) {
+        if (this._levelData.lvID === level + 1) {
             this._setHeadTargetPos();
             return;
         }
-        else if (level !== this._levelData.levelIndex) {
+        else if (level !== this._levelData.lvID) {
             return;
         }
-        if (level !== this._levelData.levelIndex) {
+        if (level !== this._levelData.lvID) {
             return;
         }
         this._playAni(false);

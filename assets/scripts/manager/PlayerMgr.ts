@@ -1,9 +1,10 @@
 import EventDef from "../constants/EventDef";
 import { ItemType } from "../configs/ItemConfig";
 import { qc } from "../framework/qc";
-import { baseConfig } from '../configs/baseConfig';
 import HomeApi from "../api/index";
 import LevelMgr from "./LevelMgr";
+import { PlatformConfig } from "../framework/lib/platform/configs/PlatformConfig";
+import { SettingMgr } from "./SettingMgr";
 interface Prompt {
     can_open: any;
     show: number;
@@ -192,10 +193,10 @@ export default class PlayerMgr {
     // 接口请求首页数据
     public async getHomeData(cb?: Function) {
         console.log('调用了首页数据');
-        let res = await HomeApi.ins.getHomeData({ userId: baseConfig.userId })
+        let res = await HomeApi.ins.getHomeData({ userId: PlatformConfig.ins.config.userId })
         if (!res.data.props) {
             res.data.props = {};
-            res.data.props.user_id = baseConfig.userId;
+            res.data.props.user_id = PlatformConfig.ins.config.userId;
             res.data.props.money = 0;
             res.data.props.integral = 0;
             res.data.props.total_money = 0;
@@ -210,21 +211,21 @@ export default class PlayerMgr {
         }
         this.userInfo = res.data
 
-        this.userInfo.prop_video_remain = +res.data.prop_video_remain;
+        this.userInfo.prop_video_remain = res.data.prop_video_remain === undefined ? 0 : +res.data.prop_video_remain;
         this.userInfo.props.user_id = +res.data.props.user_id;
-        this.userInfo.props.money = +res.data.props.money;
-        this.userInfo.props.integral = +res.data.props.integral;
-        this.userInfo.props.total_money = +res.data.props.total_money;
-        this.userInfo.props.total_integral = +res.data.props.total_integral;
-        this.userInfo.props.total_withdraw_money = +res.data.props.total_withdraw_money;
-        this.userInfo.props.strength = +res.data.props.strength;
+        this.userInfo.props.money = res.data.props.money === undefined ? 0 : +res.data.props.money;
+        this.userInfo.props.integral = res.data.props.integral === undefined ? 0 : +res.data.props.integral;
+        this.userInfo.props.total_money = res.data.props.total_money === undefined ? 0 : +res.data.props.total_money;
+        this.userInfo.props.total_integral = res.data.props.total_integral === undefined ? 0 : +res.data.props.total_integral;
+        this.userInfo.props.total_withdraw_money = res.data.props.total_withdraw_money === undefined ? 0 : +res.data.props.total_withdraw_money;
+        this.userInfo.props.strength = res.data.props.strength === undefined ? 0 : +res.data.props.strength;
         qc.eventManager.emit(EventDef.Update_Energy);
-        this.userInfo.props.hammer_num = +res.data.props.hammer_num;
+        this.userInfo.props.hammer_num = res.data.props.hammer_num === undefined ? 0 : +res.data.props.hammer_num;
 
-        this.userInfo.props.bomb_num = +res.data.props.bomb_num;
-        this.userInfo.props.board_num = +res.data.props.board_num;
-        this.userInfo.props.step_number = +res.data.props.step_number;
-        this.userInfo.props.theme_num = +res.data.props.theme_num;
+        this.userInfo.props.bomb_num = res.data.props.bomb_num === undefined ? 0 : +res.data.props.bomb_num;
+        this.userInfo.props.board_num = res.data.props.board_num === undefined ? 0 : +res.data.props.board_num;
+        this.userInfo.props.step_number = res.data.props.step_number === undefined ? 0 : +res.data.props.step_number;
+        this.userInfo.props.theme_num = res.data.props.theme_num === undefined ? 0 : +res.data.props.theme_num;
         qc.eventManager.emit(EventDef.Update_Gold);
         if (res.data.summary.map_on === 0) {
             PlayerMgr.ins.userInfo.summary.map_on = 1;
@@ -232,13 +233,22 @@ export default class PlayerMgr {
         if (res.data.summary.current_theme_id === undefined || res.data.summary.current_theme_id === '0') {
             PlayerMgr.ins.userInfo.summary.current_theme_id = '1';
         }
+        if (res.data.summary.music_on !== undefined) {
+            SettingMgr.ins.initMusicEnabled(+res.data.summary.music_on === 0);
+        }
+        if (res.data.summary.sound_on !== undefined) {
+            SettingMgr.ins.initSoundEnabled(+res.data.summary.sound_on === 0);
+        }
+        if (res.data.summary.vibrate_on !== undefined) {
+            SettingMgr.ins.initVibrateEnabled(+res.data.summary.vibrate_on === 0);
+        }
         qc.eventManager.emit(EventDef.Update_Left_Level_Redpack);
         console.log('this.userInfo', this.userInfo);
         cb && cb();
     }
 
     public async getStrengthData() {
-        let res = await HomeApi.ins.getHomeData({ userId: baseConfig.userId });
+        let res = await HomeApi.ins.getHomeData({ userId: PlatformConfig.ins.config.userId });
         this.userInfo.props.strength = +res.data.props.strength;
         qc.eventManager.emit(EventDef.Update_Energy);
     }
@@ -307,7 +317,7 @@ export default class PlayerMgr {
         if (map) {
             for (let level of map.values()) {
                 for (let levelData of levels) {
-                    if (levelData.level_no === level.levelIndex) {
+                    if (levelData.level_no === level.lvID) {
                         stars += levelData.best_stars;
                     }
                 }
@@ -323,7 +333,7 @@ export default class PlayerMgr {
         if (map) {
             for (let level of map.values()) {
                 for (let levelData of levels) {
-                    if (levelData.level_no === level.levelIndex) {
+                    if (levelData.level_no === level.lvID) {
                         passCount++;
                     }
                 }

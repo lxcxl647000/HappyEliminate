@@ -21,4 +21,8 @@ export default class adapter_cocos implements adapter_interface {
     public onTt(): boolean {
         return sys.platform === sys.Platform.BYTEDANCE_MINI_GAME;
     }
+
+    public onAlipay(): boolean {
+        return sys.platform === sys.Platform.ALIPAY_MINI_GAME;
+    }
 }

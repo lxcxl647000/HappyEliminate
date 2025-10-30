@@ -1,13 +1,12 @@
 import { AudioClip } from "cc";
-import { baseConfig } from "../../../configs/baseConfig";
 import EventDef from "../../../constants/EventDef";
-import CommonTipsMgr from "../../../manager/CommonTipsMgr";
 import { SettingMgr } from "../../../manager/SettingMgr";
 import CocosUtils from "../../../utils/CocosUtils";
 import { qc } from "../../qc";
 import { tbCloudMgr } from "../net/tbCloudMgr";
 import platform_interface, { rewardedVideoAd } from "./platform_interface";
 import { BundleConfigs } from "../../../configs/BundleConfigs";
+import { PlatformConfig } from "./configs/PlatformConfig";
 const my = globalThis['my'];
 
 class RewardedVideoAd {
@@ -111,8 +110,7 @@ export default class platform_taobao implements platform_interface {
     }
     init() {
         console.log('init taobao');
-        tbCloudMgr.ins.init();
-        let adUnitIds = qc.platform.getAllAdUnitIds();
+        let adUnitIds = PlatformConfig.ins.config.adUnitIds;
         for (let adUnitId of adUnitIds) {
             this.createRewardedAd(adUnitId);
         }
@@ -163,96 +161,6 @@ export default class platform_taobao implements platform_interface {
         qc.eventManager.emit(EventDef.OnHide, res);
     }
 
-    fromOtherAppToCompleteTask(type: string): void {
-        let res = my['getStorageSync']({ key: 'hdkf_share_info' });
-        let data = JSON.parse(res.data);
-        if (data.taskSign) {
-            let sendToServer = (tips: string) => {
-                let TaskValue = JSON.parse(res.data).taskSign
-
-                let url = `https://mobile.yundps.com/TaoBaoCallback/taskCallback?taskSign=${TaskValue}`;
-                let httpRequest = new XMLHttpRequest(); //第一步：建立所需的对象
-                httpRequest.open('GET', url, true); //第二步：打开连接  将请求参数写在url中  ps:"./Ptest.php?name=test&nameone=testone"
-                httpRequest.send(); //第三步：发送请求  将请求参数写在URL中
-                /**
-                * 获取数据后的处理程序
-                */
-                httpRequest.onreadystatechange = function () {
-                    if (httpRequest.readyState == 4 && httpRequest.status == 200) {
-                        var json = httpRequest.responseText; //获取到json字符串，还需解析
-                        console.log(json, '发送了请求');
-                        CommonTipsMgr.ins.showTips(tips);
-                        my['removeStorageSync']({
-                            key: 'hdkf_share_info',
-                        });
-                    } else {
-
-                    }
-                };
-            }
-
-            if (data.info_data) {
-                const infoData = JSON.parse(data.info_data?.replace(/'/g, '"'));
-                // 从其他小程序跳过闯关完成任务
-                if (infoData.taskType === 'game') {
-                    type === 'game' && sendToServer('闯关已完成');
-                } else {
-                    let num = 0
-                    if (JSON.parse(res.data).adTime == 15) {
-                        num = 1
-                    }
-                    console.log(JSON.parse(res.data), '数据', JSON.parse(res.data).taskSign);
-                    setTimeout(() => {
-                        let ad: rewardedVideoAd = {
-                            adUnitId: qc.platform.getAllAdUnitIds()[num],
-                            successCb: () => {
-                                sendToServer('浏览已完成');
-                            },
-                            failCb: (e) => {
-                                if (!e.isCompleted) {
-                                    CommonTipsMgr.ins.showTips('浏览未完成');
-                                }
-
-                            },
-                            errorCb: () => {
-                                CommonTipsMgr.ins.showTips('浏览未完成');
-                            }
-                        }
-                        qc.platform.showRewardedAd(ad);
-
-                    }, 1500);
-                }
-                // 从其他小程序调过来看视频完成任务
-
-            } else {
-                let num = 0
-                if (JSON.parse(res.data).adTime == 15) {
-                    num = 1
-                }
-                console.log(JSON.parse(res.data), '数据', JSON.parse(res.data).taskSign);
-                setTimeout(() => {
-                    let ad: rewardedVideoAd = {
-                        adUnitId: qc.platform.getAllAdUnitIds()[num],
-                        successCb: () => {
-                            sendToServer('浏览已完成');
-                        },
-                        failCb: (e) => {
-                            if (!e.isCompleted) {
-                                CommonTipsMgr.ins.showTips('浏览未完成');
-                            }
-
-                        },
-                        errorCb: () => {
-                            CommonTipsMgr.ins.showTips('浏览未完成');
-                        }
-                    }
-                    qc.platform.showRewardedAd(ad);
-
-                }, 1500);
-            }
-        }
-    }
-
     reportScene(sceneId: number): void {
         const SDK = my['tb'].getInteractiveSDK()
         console.log('reportScene--------------', sceneId, SDK);
@@ -270,12 +178,12 @@ export default class platform_taobao implements platform_interface {
         console.log('淘宝分享参数', shareInfo.querys)
         if (shareInfo.querys) {
             if (shareInfo.querys.adzoneId) {
-                baseConfig.adzoneId = shareInfo.querys.adzoneId;
+                PlatformConfig.ins.config.adzoneId = shareInfo.querys.adzoneId;
             }
-            my['setStorageSync']({
-                key: 'hdkf_share_info',
-                data: JSON.stringify(shareInfo.querys)
-            });
+            qc.platform.hdkf_share_info = shareInfo.querys;
+        }
+        else {
+            qc.platform.hdkf_share_info = null;
         }
         cb && cb();
     }
@@ -300,14 +208,10 @@ export default class platform_taobao implements platform_interface {
         this._innerAudioContext.stop();
     }
 
-    getAllAdUnitIds(): string[] {
-        return [
-            'mm_35753112_3352750338_116152650086',// 激励广告_30//
-            'mm_35753112_3352750338_116157550320'
-        ];
+    login(cb: Function): void {
+        tbCloudMgr.ins.init(cb);
     }
 
-    getAppId(): string {
-        return '3000000137357221';
+    updateKeyboard(str: string): void {
     }
 }

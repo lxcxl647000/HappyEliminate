@@ -23,7 +23,7 @@ export class SelectTool extends Component {
         this.num.string = 'x' + this._itemNum;
 
         // 新手引导第一关特殊处理 在新手引导时不能让玩家选择炸弹道具，引导会使用炸弹
-        if (level.levelIndex === 1 && PlayerMgr.ins.userInfo.current_level.length === 0) {
+        if (level.lvID === 1 && PlayerMgr.ins.userInfo.current_level.length === 0) {
             if (type === ItemType.Boom) {
                 this.node.active = false;
             }

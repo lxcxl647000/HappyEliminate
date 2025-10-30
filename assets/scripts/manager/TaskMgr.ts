@@ -1,5 +1,5 @@
-import { baseConfig } from "../configs/baseConfig";
 import { httpMgr } from "../framework/lib/net/httpMgr";
+import { PlatformConfig } from "../framework/lib/platform/configs/PlatformConfig";
 
 interface TaskData {
     category: Category;
@@ -101,21 +101,21 @@ export class renwuMgr {
     public async getTaskList(cb: Function) {
         let res = await httpMgr.ins.xhrRequest<TaskData>('/task/getList');
         if (res) {
-            const list =  res.data.task.filter((item: Task) => item.id !== res.data.tag.sign[0]);
+            const list = res.data.task.filter((item: Task) => item.id !== res.data.tag.sign[0]);
             this._taskList = list.filter((item: Task) => item.isComplete !== 1);
             cb && cb();
         }
     }
 
     public async clickTask(taskId: number, cb: Function) {
-        let res = await httpMgr.ins.xhrRequest('/Task/taskClickLog', 'GET', { taskId, channelId: baseConfig.adzoneId });
+        let res = await httpMgr.ins.xhrRequest('/Task/taskClickLog', 'GET', { taskId, channelId: PlatformConfig.ins.config.adzoneId });
         if (res) {
             cb && cb();
         }
     }
 
     public async completeTask(task, cb: Function) {
-        let res = await httpMgr.ins.xhrRequest<TaskCompleteData>('/task/complete', 'GET', { taskId: task.id, channelId: baseConfig.adzoneId });
+        let res = await httpMgr.ins.xhrRequest<TaskCompleteData>('/task/complete', 'GET', { taskId: task.id, channelId: PlatformConfig.ins.config.adzoneId });
         if (res && res.data) {
             cb && cb(res.data);
         }
@@ -123,7 +123,7 @@ export class renwuMgr {
 
     // 阶段性奖励
     public async getTaskRewardStages(cb: Function) {
-        let res=  await httpMgr.ins.xhrRequest('/game/getTaskRewardStages', 'GET');
+        let res = await httpMgr.ins.xhrRequest('/game/getTaskRewardStages', 'GET');
         if (res && res.data) {
             cb && cb(res.data);
         }
@@ -131,7 +131,7 @@ export class renwuMgr {
 
     // 领取阶段性奖励
     public async claimStageReward(stage: string, cb: Function) {
-        let res=  await httpMgr.ins.xhrRequest('/game/claimStageReward', 'GET', { stage: stage});
+        let res = await httpMgr.ins.xhrRequest('/game/claimStageReward', 'GET', { stage: stage });
         if (res && res.data) {
             cb && cb(res.data);
         }

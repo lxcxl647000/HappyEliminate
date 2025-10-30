@@ -4707,7 +4707,7 @@ declare namespace tt {
   export function createCanvas(): any;
   export function onShareAppMessage(callback: Function): void;
   export function getEnvInfoSync(): any;
-  export function getFileSystemManager():any
+  export function getFileSystemManager(): any
   /**
    * 批量添加卡券。
    */
@@ -5761,4 +5761,10 @@ declare namespace tt {
   export function openCustomerServiceConversation(any: any): void;
 
   export function loadSubpackage(any: any): any;
+
+  export function updateKeyboard(obj: any): void;
+
+  export function checkScene(obj: any): boolean;
+
+  export function navigateToScene(obj: any): void;
 }

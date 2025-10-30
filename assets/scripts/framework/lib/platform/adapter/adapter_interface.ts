@@ -13,4 +13,7 @@ export default interface adapter_interface {
 
     /**是否在tt运行环境 */
     onTt(): boolean;
+
+    /**是否在alipay运行环境 */
+    onAlipay(): boolean;
 }

@@ -26,4 +26,7 @@ export default class adapter implements adapter_interface {
     onTt(): boolean {
         return this._adapter.onTt();
     }
+    onAlipay(): boolean {
+        return this._adapter.onAlipay();
+    }
 }

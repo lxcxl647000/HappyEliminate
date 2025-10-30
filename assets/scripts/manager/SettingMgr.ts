@@ -1,6 +1,7 @@
 import { _decorator } from 'cc';
 import { qc } from '../framework/qc';
-import { Constants } from '../game/Constants';
+import { GameConstant } from '../game/GameConstant';
+import { httpMgr } from '../framework/lib/net/httpMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('shezhiMgr')
@@ -14,61 +15,75 @@ export class SettingMgr {
     }
 
     private _vibrateEnabled: boolean = true;
+    private _initVibrateEnabled: boolean = true;
     private _musicEnabled: boolean = true;
+    private _initMusicEnabled: boolean = true;
     private _soundEnabled: boolean = true;
+    private _initSoundEnabled: boolean = true;
+
     private _soundVal: number = 1;
     private _musicVal: number = .8;
 
+    public initVibrateEnabled(val: boolean) {
+        if (this._initVibrateEnabled) {
+            this._initVibrateEnabled = false;
+            this._vibrateEnabled = val;
+        }
+    }
+    public initSoundEnabled(val: boolean) {
+        if (this._initSoundEnabled) {
+            this._initSoundEnabled = false;
+            this._soundEnabled = val;
+        }
+    }
+    public initMusicEnabled(val: boolean) {
+        if (this._initMusicEnabled) {
+            this._initMusicEnabled = false;
+            this._musicEnabled = val;
+        }
+    }
+
     public get vibrateEnabled() {
-        let enabled = qc.storage.getItem(Constants.VIBRATE_ENABLED_KEY, 1);
-        this._vibrateEnabled = enabled === 1;
         return this._vibrateEnabled;
     }
     public set vibrateEnabled(val: boolean) {
-        let enabled = val ? 1 : 0;
-        qc.storage.setItem(Constants.VIBRATE_ENABLED_KEY, enabled);
         this._vibrateEnabled = val;
+        this.setSwitch('vibrate_on', val ? '0' : '1');
 
     }
     public get musicEnabled() {
-        let enabled = qc.storage.getItem(Constants.MUSIC_ENABLED_KEY, 1);
-        this._musicEnabled = enabled === 1;
         return this._musicEnabled;
     }
     public set musicEnabled(val: boolean) {
-        let enabled = val ? 1 : 0;
-        qc.storage.setItem(Constants.MUSIC_ENABLED_KEY, enabled);
         this._musicEnabled = val;
+        this.setSwitch('music_on', val ? '0' : '1');
     }
 
     public get soundEnabled() {
-        let enabled = qc.storage.getItem(Constants.SOUND_ENABLED_KEY, 1);
-        this._soundEnabled = enabled === 1;
         return this._soundEnabled;
     }
     public set soundEnabled(val: boolean) {
-        let enabled = val ? 1 : 0;
-        qc.storage.setItem(Constants.SOUND_ENABLED_KEY, enabled);
         this._soundEnabled = val;
+        this.setSwitch('sound_on', val ? '0' : '1');
     }
 
     public get soundVal() {
-        let val = qc.storage.getItem(Constants.SoundVal_KEY, 1);
+        let val = qc.storage.getItem(GameConstant.SoundVal_KEY, 1);
         this._soundVal = val;
         return this._soundVal;
     }
     public set soundVal(val: number) {
-        qc.storage.setItem(Constants.SoundVal_KEY, val);
+        qc.storage.setItem(GameConstant.SoundVal_KEY, val);
         this._soundVal = val;
     }
 
     public get musicVal() {
-        let val = qc.storage.getItem(Constants.MusicVal_KEY, .8);
+        let val = qc.storage.getItem(GameConstant.MusicVal_KEY, .8);
         this._musicVal = val;
         return this._musicVal;
     }
     public set musicVal(val: number) {
-        qc.storage.setItem(Constants.MusicVal_KEY, val);
+        qc.storage.setItem(GameConstant.MusicVal_KEY, val);
         this._musicVal = val;
     }
 
@@ -88,6 +103,8 @@ export class SettingMgr {
             this.soundVal = 0
         }
     }
+
+    public async setSwitch(setSwitch: string, value: string) {
+        await httpMgr.ins.xhrRequest('/game/updateSwitch', 'GET', { switch: setSwitch, value });
+    }
 }
-
-

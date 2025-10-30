@@ -15,6 +15,7 @@ import PlayerMgr from "../../manager/PlayerMgr";
 import { rewardedVideoAd } from "../../framework/lib/platform/platform_interface";
 import EventDef from "../../constants/EventDef";
 import GetItemMgr from "../../manager/GetItemMgr";
+import { PlatformConfig } from '../../framework/lib/platform/configs/PlatformConfig';
 
 const { ccclass, property } = _decorator;
 
@@ -228,7 +229,7 @@ export class signPanel extends PanelComponent {
             await PlayerMgr.ins.getHomeData();
         } else if (this.hasClaimedToday === '2') { //再领一次
             let ad: rewardedVideoAd = {
-                adUnitId: qc.platform.getAllAdUnitIds()[0],
+                adUnitId: PlatformConfig.ins.config.adUnitIds[0],
                 successCb: async (res) => {
                     await SignApi.ins.receiveAgain({
                         gift_id: this.gift_id

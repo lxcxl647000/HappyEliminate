@@ -32,10 +32,10 @@ export default class LevelMgr {
     private _levels: Map<number, LevelConfig> = new Map();
     // key为地图id//
     private _maps: Map<number, Map<number, LevelConfig>> = null;
-    public getLevel(mapId: number, levelIndex: number): LevelConfig {
+    public getLevel(mapId: number, lvID: number): LevelConfig {
         let map = this.getMap(mapId);
         if (map) {
-            return map.get(levelIndex);
+            return map.get(lvID);
         }
         else {
             return null;
@@ -47,13 +47,13 @@ export default class LevelMgr {
             let levels = ConfigMgr.ins.getConfigArr<LevelConfig>(configConfigs.levelConfig);
             if (levels) {
                 for (let level of levels) {
-                    this._levels.set(level.levelIndex, level);
+                    this._levels.set(level.lvID, level);
                     if (this._maps.has(level.mapId)) {
-                        this._maps.get(level.mapId).set(level.levelIndex, level);
+                        this._maps.get(level.mapId).set(level.lvID, level);
                     }
                     else {
                         let map = new Map<number, LevelConfig>();
-                        map.set(level.levelIndex, level);
+                        map.set(level.lvID, level);
                         this._maps.set(level.mapId, map);
                     }
                 }

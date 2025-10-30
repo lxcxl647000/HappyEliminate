@@ -9,6 +9,9 @@ const { ccclass, property } = _decorator;
 export class musicMgr extends Component {
     private soundComp: AudioSource = null;
     private bgmComp: AudioSource = null;
+
+    private _curMusic: string = '';
+    public get curMusic() { return this._curMusic; }
     /**
      * 单例
      */
@@ -51,6 +54,7 @@ export class musicMgr extends Component {
         if (!SettingMgr.ins.musicEnabled) {
             return;
         }
+        this._curMusic = audio;
         qc.platform.playMusic(audio);
     }
     /**

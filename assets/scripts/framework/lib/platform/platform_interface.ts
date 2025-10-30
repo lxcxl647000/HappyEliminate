@@ -4,8 +4,6 @@ export default interface platform_interface {
     // 激励广告//
     createRewardedAd(adUnitId: string): any
     showRewardedAd(ad: rewardedVideoAd): void
-    // 从其他小程序跳过来完成任务：闯关、看广告//
-    fromOtherAppToCompleteTask(type: string): void
     // 上报场景值//
     reportScene(sceneId: number): void
     // 获取分享信息//
@@ -16,10 +14,11 @@ export default interface platform_interface {
     playMusic(url: string): void
     // 停止音乐
     stopMusic(): void
-    // 获取所有广告位
-    getAllAdUnitIds(): string[]
-    // 获取appid
-    getAppId(): string
+    // 登录
+    login(cb: Function): void
+    // 更新键盘输入框内容
+    updateKeyboard(str: string): void
+
 }
 
 export interface rewardedVideoAd {

@@ -198,7 +198,9 @@ export class CashPanel extends PanelComponent {
     }
 
     onEditDiBegin(e: EditBox) {
-        
+        if (e.string !== '') {
+            qc.platform.updateKeyboard(e.string);
+        }
     }
 }
 

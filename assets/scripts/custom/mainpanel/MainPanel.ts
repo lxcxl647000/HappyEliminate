@@ -8,7 +8,6 @@ import PlayerMgr from '../../manager/PlayerMgr';
 import EventDef from '../../constants/EventDef';
 import ListCom from '../../framework/lib/components/scrollviewplus/ListCom';
 import { MapNodeData } from './MapNodeData';
-import { baseConfig } from '../../configs/baseConfig';
 import ItemMgr from '../../manager/ItemMgr';
 import { musicMgr } from '../../manager/musicMgr';
 import CustomSprite from '../componetUtils/CustomSprite';
@@ -18,6 +17,8 @@ import { BundleConfigs } from '../../configs/BundleConfigs';
 import { LevelNodeData } from './LevelNodeData';
 import PoolMgr from '../../manager/PoolMgr';
 import GuideMgr from '../../manager/GuideMgr';
+import { PlatformConfig } from '../../framework/lib/platform/configs/PlatformConfig';
+import adapter from '../../framework/lib/platform/adapter/adapter';
 
 const { ccclass, property } = _decorator;
 
@@ -49,6 +50,8 @@ export class MainPanel extends PanelComponent {
     leftLevelLabel: Label = null;
     @property(Node)
     forceGuide: Node = null;
+    @property(Node)
+    sideRewardBtn: Node = null;
 
     private _maskSprite: Sprite = null;
     private _currentLevel: LevelConfig = null;
@@ -79,7 +82,7 @@ export class MainPanel extends PanelComponent {
     }
 
     show(option: PanelShowOption): void {
-        if (!this._vibrateFlag) {
+        if (adapter.inst.onTaobao() && !this._vibrateFlag) {
             this._vibrateFlag = true;
             qc.platform.vibrateShort();
         }
@@ -90,7 +93,7 @@ export class MainPanel extends PanelComponent {
             this.redPackBtn()
         }
         qc.platform.fromOtherAppToCompleteTask('ad');
-        this.gm.active = baseConfig.gm;
+        this.gm.active = PlatformConfig.ins.config.gm;
         this._updateLevel(false);
         this._updateTheme(PlayerMgr.ins.userInfo.summary.current_theme_id, () => {
             this._initMap();
@@ -101,6 +104,7 @@ export class MainPanel extends PanelComponent {
         this._updateSoundStatus();
         this._updateVibrateStatus();
         GuideMgr.ins.checkMainPanelForceGuide(this.forceGuide);
+        this._onshow();
     }
     hide(option: PanelHideOption): void {
 
@@ -119,6 +123,7 @@ export class MainPanel extends PanelComponent {
         qc.eventManager.on(EventDef.Update_Theme, this._updateTheme, this);
         qc.eventManager.on(EventDef.OnShow, this._onshow, this);
         qc.eventManager.on(EventDef.OnHide, this._onhide, this);
+        qc.eventManager.on(EventDef.Hide_Side_Reward, this._updateSideReward, this);
         this.levelLabel.string = `第${PlayerMgr.ins.userInfo.summary.latest_passed_level + 1}关`;
     }
 
@@ -135,6 +140,7 @@ export class MainPanel extends PanelComponent {
         qc.eventManager.off(EventDef.Update_Theme, this._updateTheme, this);
         qc.eventManager.off(EventDef.OnShow, this._onshow, this);
         qc.eventManager.off(EventDef.OnHide, this._onhide, this);
+        qc.eventManager.off(EventDef.Hide_Side_Reward, this._updateSideReward, this);
     }
 
     private _initMap() {
@@ -162,7 +168,7 @@ export class MainPanel extends PanelComponent {
                     let levelsPosNode = mapData.levels;
                     for (let levelNode of levelsPosNode.children) {
                         let levelData = levelNode.getComponentInChildren(LevelNodeData);
-                        if (levelData && levelData.levelData.levelIndex === level) {
+                        if (levelData && levelData.levelData.lvID === level) {
                             lvPosNode = levelNode;
                             break;
                         }
@@ -205,9 +211,9 @@ export class MainPanel extends PanelComponent {
         if (!this._currentLevel) {
             this._currentLevel = LevelMgr.ins.getLevel(mapId, level);
         }
-        this.levelLabel.string = `第${this._currentLevel.levelIndex}关`;
+        this.levelLabel.string = `第${this._currentLevel.lvID}关`;
 
-        needUpdateNext && this._jumpToLevel(mapId, this._currentLevel.levelIndex);
+        needUpdateNext && this._jumpToLevel(mapId, this._currentLevel.lvID);
     }
 
     private _unlockMap() {
@@ -226,7 +232,7 @@ export class MainPanel extends PanelComponent {
 
     onStartBtn() {
         qc.platform.vibrateShort();
-        LevelMgr.ins.goToLevel(this._currentLevel.mapId, this._currentLevel.levelIndex, null);
+        LevelMgr.ins.goToLevel(this._currentLevel.mapId, this._currentLevel.lvID, null);
     }
     userInfoBTn() {
         qc.panelRouter.showPanel({
@@ -475,20 +481,36 @@ export class MainPanel extends PanelComponent {
         }
     }
 
-    private async _onshow() {
-        this._musicCD = 1;
-        this._soundCD = 1;
-        this._vibrateCD = 1;
-        if (SettingMgr.ins.musicEnabled) {
-            musicMgr.ins.playMusic('bg_music');
+    private async _onshow(res?: any, isFirstShow?: boolean) {
+        qc.platform.checkScene((isExist: boolean) => {
+            this._updateSideReward(isExist);
+        });
+        if (!isFirstShow) {
+            this._musicCD = 1;
+            this._soundCD = 1;
+            this._vibrateCD = 1;
+            if (SettingMgr.ins.musicEnabled) {
+                let music = musicMgr.ins.curMusic === '' ? 'bg_music' : musicMgr.ins.curMusic;
+                musicMgr.ins.playMusic(music);
+            }
+            await PlayerMgr.ins.getHomeData();
+            PlayerMgr.ins.getEnergy();
+            qc.eventManager.emit(EventDef.Update_RewardCount);
         }
-        await PlayerMgr.ins.getHomeData();
-        PlayerMgr.ins.getEnergy();
-        qc.eventManager.emit(EventDef.Update_RewardCount);
     }
 
     private _onhide() {
         PlayerMgr.ins.clearTime();
         musicMgr.ins.stopMusic();
+    }
+
+    onSideReward() {
+        qc.panelRouter.showPanel({
+            panel: PanelConfigs.sideRewardPanel,
+        });
+    }
+
+    private _updateSideReward(isActive: boolean) {
+        this.sideRewardBtn.active = isActive;
     }
 }

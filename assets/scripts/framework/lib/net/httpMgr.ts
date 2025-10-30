@@ -1,8 +1,7 @@
 import { Base64 } from "js-base64";
 import { hexMD5 } from "./utils/md5";
-import { baseConfig } from "../../../configs/baseConfig";
 import CommonTipsMgr from "../../../manager/CommonTipsMgr";
-import { qc } from "../../qc";
+import { PlatformConfig } from "../platform/configs/PlatformConfig";
 
 interface ResponseData<T> {
     code: number;
@@ -21,7 +20,7 @@ export class httpMgr {
 
     public async xhrRequest<T>(api: string, method: string = 'GET', data?: any): Promise<ResponseData<T>> {
         return new Promise<ResponseData<T>>((resolve, reject) => {
-            let url = baseConfig.baseUrl + api;
+            let url = PlatformConfig.ins.config.baseUrl + api;
             if (data) {
                 url += '?';
                 let index = 0;
@@ -38,17 +37,17 @@ export class httpMgr {
 
             let timestamp = parseInt((Date.now() / 1000).toString()).toString();
             let nonce = Math.ceil(Math.random() * 10000) + '';
-            let token = baseConfig.token;
+            let token = PlatformConfig.ins.config.token;
 
-            let appid = qc.platform.getAppId();
+            let appid = PlatformConfig.ins.config.appId;
             let params = {
                 appid: appid,
                 nonce: nonce,
                 timestamp: timestamp,
                 os: '',
-                v: baseConfig.apiVersion,
+                v: PlatformConfig.ins.config.apiVersion,
                 token: token,
-                _url: baseConfig.baseUrl + api
+                _url: PlatformConfig.ins.config.baseUrl + api
             };
             if (data) {
                 Object.assign(params, data);
@@ -70,7 +69,7 @@ export class httpMgr {
             let xhr = new XMLHttpRequest();
             xhr.open(method, url, true);
             xhr.timeout = 5000;
-            xhr.setRequestHeader("adzone-id", baseConfig.adzoneId);
+            xhr.setRequestHeader("adzone-id", PlatformConfig.ins.config.adzoneId);
             xhr.setRequestHeader("cache-control", 'no-cache');
             xhr.setRequestHeader("content-type", 'application/x-www-form-urlencoded');
             xhr.setRequestHeader("os", '');

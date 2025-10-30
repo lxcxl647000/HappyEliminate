@@ -1,6 +1,6 @@
 import { _decorator, Component, Label, Node } from 'cc';
 import { LevelConfig } from '../../configs/LevelConfig';
-import { GoalTypeCounter, GoalValue } from '../../game/goal/GoalTyps';
+import { TargetForTypeCount, ITargetVal } from '../../game/target/TargetTyps';
 import CustomSprite from '../componetUtils/CustomSprite';
 const { ccclass, property } = _decorator;
 
@@ -12,16 +12,16 @@ export class GameShowTarget extends Component {
     public showTarget(level: LevelConfig) {
         this.node.active = true;
         if (level) {
-            let goal = level.goal as GoalValue;
-            if (goal) {
-                let goals = goal.value as GoalTypeCounter[];
+            let target = level.target as ITargetVal;
+            if (target) {
+                let targets = target.value as TargetForTypeCount[];
                 for (let i = 0; i < this.targetParent.children.length; i++) {
                     let target = this.targetParent.children[i];
-                    target.active = i < goals.length;
+                    target.active = i < targets.length;
                     if (target.active) {
                         let icon = target.getComponent(CustomSprite);
-                        icon.index = goals[i].cellType;
-                        icon.getComponentInChildren(Label).string = "x" + goals[i].counter;
+                        icon.index = targets[i].blockType;
+                        icon.getComponentInChildren(Label).string = "x" + targets[i].count;
                     }
                 }
             }

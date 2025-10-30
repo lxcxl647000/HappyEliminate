@@ -1,5 +1,4 @@
 import { _decorator, Color, Component, Label, Node, Sprite } from 'cc';
-import { ToolType } from '../../game/tools/ITool';
 import { GamePanel } from './GamePanel';
 import { qc } from '../../framework/qc';
 import EventDef from '../../constants/EventDef';
@@ -9,7 +8,8 @@ import { GameExchangeTool } from './GameExchangeTool';
 import CommonTipsMgr from '../../manager/CommonTipsMgr';
 import ItemMgr, { IItem } from '../../manager/ItemMgr';
 import { GuideType } from '../../manager/GuideMgr';
-import { IdelState } from '../../game/gridstate/IdelState';
+import { BlockIdleState } from '../../game/state/BlockIdleState';
+import { ToolType } from '../../game/GameConstant';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameSelectToolBtn')
@@ -45,16 +45,16 @@ export class GameSelectToolBtn extends Component {
         this._gamePanel = gamePanel;
         this._toolType = type;
         switch (this._toolType) {
-            case ToolType.TYPE_BOOM:
+            case ToolType.Boom:
                 this._itemType = ItemType.Boom;
                 break;
-            case ToolType.TYPE_HAMMER:
+            case ToolType.Hammer:
                 this._itemType = ItemType.Hammer;
                 break;
-            case ToolType.TYPE_STEPS:
+            case ToolType.Steps:
                 this._itemType = ItemType.Steps;
                 break;
-            case ToolType.RANDOM_GRID:
+            case ToolType.Random:
                 this._itemType = ItemType.Sort;
                 break;
         }
@@ -72,11 +72,11 @@ export class GameSelectToolBtn extends Component {
     }
 
     onClickTool() {
-        if (!this._gamePanel.getIsFirstStableHappened()) {
+        if (!this._gamePanel.getIsFirstStable()) {
             return;
         }
         // 如果不是idel不允许操作
-        if (!(this._gamePanel.getLevelGridScript().getGridStateMachine().getCurrentState() instanceof IdelState)) {
+        if (!(this._gamePanel.getGameBlockGrid().getGridStateMachine().getCurrentState() instanceof BlockIdleState)) {
             return;
         }
         if (this._exchange.node.active) {
@@ -111,16 +111,16 @@ export class GameSelectToolBtn extends Component {
         this._leftUseNum--;
         let itemType = ItemType.Hammer;
         switch (type) {
-            case ToolType.TYPE_HAMMER:
+            case ToolType.Hammer:
                 itemType = ItemType.Hammer;
                 break;
-            case ToolType.TYPE_BOOM:
+            case ToolType.Boom:
                 itemType = ItemType.Boom;
                 break;
-            case ToolType.TYPE_STEPS:
+            case ToolType.Steps:
                 itemType = ItemType.Steps;
                 break;
-            case ToolType.RANDOM_GRID:
+            case ToolType.Random:
                 itemType = ItemType.Sort;
                 break;
             default:
@@ -128,7 +128,7 @@ export class GameSelectToolBtn extends Component {
         }
 
         // 新手引导第一关特殊处理 在结算时才发送使用道具给服务器，避免玩家在游戏中就把道具使用了，但未完成引导，再次触发引导时没有道具可用,这里只做客户端数据的刷新
-        if (this._gamePanel.levelData.levelIndex === 1 && PlayerMgr.ins.userInfo.current_level.length === 0) {
+        if (this._gamePanel.levelData.lvID === 1 && PlayerMgr.ins.userInfo.current_level.length === 0) {
             if (itemType === ItemType.Hammer || itemType === ItemType.Boom) {
                 PlayerMgr.ins.addItem(itemType, -1);
             }
@@ -136,7 +136,7 @@ export class GameSelectToolBtn extends Component {
         else {
             let item: IItem = ItemMgr.ins.getItem(itemType);
             if (item) {
-                ItemMgr.ins.useItem(item.type, this._gamePanel.levelData.levelIndex, () => {
+                ItemMgr.ins.useItem(item.type, this._gamePanel.levelData.lvID, () => {
                     PlayerMgr.ins.addItem(this._itemType, -1);
                     this._updateBtnStuts(this._itemType);
                 });
