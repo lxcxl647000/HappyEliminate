@@ -1,4 +1,4 @@
-import { _decorator, Component, ProgressBar } from "cc";
+import { _decorator, Component, Label, ProgressBar } from "cc";
 import { PanelHideOption, PanelShowOption } from "../../framework/lib/router/PanelComponent";
 import { PanelConfigs } from "../../configs/PanelConfigs";
 import { qc } from "../../framework/qc";
@@ -24,6 +24,10 @@ export default class BootPanel extends Component {
     loadingProgressBar: ProgressBar = null;
     @property(CustomSprite)
     ageTip: CustomSprite = null;
+    @property(Label)
+    ageLabel: Label = null;
+    @property(CustomSprite)
+    gameName: CustomSprite = null;
 
     show(option: PanelShowOption): void {
         option.onShowed();
@@ -33,9 +37,20 @@ export default class BootPanel extends Component {
     protected onEnable(): void {
         if (adapter.inst.onWx() || adapter.inst.onTt()) {
             this.ageTip.index = 1;
+            this.ageLabel.string = '12';
         }
         else {
             this.ageTip.index = 0;
+            this.ageLabel.string = '18';
+        }
+        if (adapter.inst.onTt()) {
+            this.gameName.index = 1;
+        }
+        else if (adapter.inst.onWx()) {
+            this.gameName.index = 2;
+        }
+        else {
+            this.gameName.index = 0;
         }
     }
 
@@ -50,13 +65,13 @@ export default class BootPanel extends Component {
     private async _init() {
         // 登录平台//
         qc.platform.login(async () => {
+            qc.platform.getShareInfo(() => {
+                httpMgr.ins.xhrRequest('/Public/xcxct', 'GET', { scene: '0', path: '', adzone_id: PlatformConfig.ins.config.adzoneId });
+            });
             await PlayerMgr.ins.getHomeData();
             PlayerMgr.ins.getEnergy();
         });
         qc.platform.reportScene(301);
-        qc.platform.getShareInfo(() => {
-            httpMgr.ins.xhrRequest('/Public/xcxct', 'GET', { scene: '0', path: '', adzone_id: PlatformConfig.ins.config.adzoneId });
-        });
         this._initGame();
     }
 

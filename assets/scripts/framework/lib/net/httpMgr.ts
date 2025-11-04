@@ -62,7 +62,6 @@ export class httpMgr {
                         signStr += key + params[key];
                     }
                 });
-            console.log(signStr, 'signStrsignStrsignStrsignStrsignStrsignStr');
 
             let sign = hexMD5(Base64.encode(signStr));
 
@@ -83,8 +82,6 @@ export class httpMgr {
 
             xhr.onreadystatechange = () => {
                 if (xhr.readyState == 4 && xhr.status == 200) {
-                    console.log(xhr.responseText, 'xhr.responseText');
-
                     let res = JSON.parse(xhr.responseText);
                     console.log('responseText : ' + api, res);
                     if (res.code === 200) {

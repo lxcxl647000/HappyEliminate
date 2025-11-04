@@ -3,6 +3,7 @@ import { PanelComponent } from "./PanelComponent";
 import { PanelConfig } from "./PanelConfig";
 import { PanelStateEnum } from "./PanelStateEnum";
 import { PanelConfigs } from "../../../configs/PanelConfigs";
+import { qc } from "../../qc";
 
 export default class PanelRouter {
     private static Tag = "PanelRouter";
@@ -131,6 +132,10 @@ export default class PanelRouter {
     }
 
     show(option: ShowPanelOption) {
+        if (option && option.panel && option.panel.prefabPath === PanelConfigs.redEnvelopeModelPanel.prefabPath && qc.platform.checkNotDisplayRedPack()) {
+            console.log('this platform  cant show redEnvelopeModelPanels-----showwwww');
+            return;
+        }
         let prefabPath = option.panel.prefabPath;
         let panelCache = this._panelCacheMap.get(prefabPath);
         if (!panelCache) {
@@ -320,6 +325,10 @@ export default class PanelRouter {
     }
 
     public async showPanel(option: ShowPanelOption) {
+        if (option && option.panel && option.panel.prefabPath === PanelConfigs.redEnvelopeModelPanel.prefabPath && qc.platform.checkNotDisplayRedPack()) {
+            console.log('this platform  cant show redEnvelopeModelPanels-----');
+            return;
+        }
         await this.loadAsync(option.panel);
         this.show(option);
     }

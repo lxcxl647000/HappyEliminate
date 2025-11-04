@@ -42,16 +42,17 @@ export class TaskPanel extends PanelComponent {
                 this.stageNodeParent.addChild(itemNode);
 
                 if (i === 0 || i === 2 || i === 4) {
+                    let checkNotDisplayRedPack = qc.platform.checkNotDisplayRedPack();
                     if (this.taskRewardState.list[i].claimed === 2) { // 已领取
                         itemNode.getComponent(Animation).stop();
-                        itemNode.getComponentInChildren(CustomSprite).index = 2;
+                        itemNode.getComponentInChildren(CustomSprite).index = checkNotDisplayRedPack ? 3 : 2;
                     }
                     else if (this.taskRewardState.list[i].claimed === 1) {
                         itemNode.getComponent(Animation).play();
-                        itemNode.getComponentInChildren(CustomSprite).index = 0;
+                        itemNode.getComponentInChildren(CustomSprite).index = checkNotDisplayRedPack ? 1 : 0;
                     }
                     else {
-                        itemNode.getComponentInChildren(CustomSprite).index = 0;
+                        itemNode.getComponentInChildren(CustomSprite).index = checkNotDisplayRedPack ? 1 : 0;
                     }
                 }
                 if (i === 1 || i === 3) {
@@ -146,7 +147,7 @@ export class TaskPanel extends PanelComponent {
         });
     }
 
-    private _onShowPage(isSuccess?:boolean) {
+    private _onShowPage(isSuccess?: boolean) {
         if (renwuMgr.ins.jumpTask) {
             // @ts-ignore
             let readTimeBool = (new Date() - renwuMgr.ins.recordTime) / 1000 < renwuMgr.ins.jumpTask.browse_time;
@@ -168,7 +169,7 @@ export class TaskPanel extends PanelComponent {
                     flag = true;
                 }
             }
-            if(flag){
+            if (flag) {
                 renwuMgr.ins.completeTask(renwuMgr.ins.jumpTask, (res) => {
                     if (res.task === 2) {
                         if (res.award_type === '1') {
@@ -212,14 +213,14 @@ export class TaskPanel extends PanelComponent {
     protected onEnable(): void {
         qc.eventManager.on(EventDef.Update_TaskList, this._updateList, this);
         qc.eventManager.on(EventDef.OnShow, this._onshow, this);
-        qc.eventManager.on(EventDef.TaskCompleted,this._taskCompleted,this);
+        qc.eventManager.on(EventDef.TaskCompleted, this._taskCompleted, this);
         this.init();
     }
 
     protected onDisable(): void {
         qc.eventManager.off(EventDef.Update_TaskList, this._updateList, this);
         qc.eventManager.off(EventDef.OnShow, this._onshow, this);
-        qc.eventManager.off(EventDef.TaskCompleted,this._taskCompleted,this);
+        qc.eventManager.off(EventDef.TaskCompleted, this._taskCompleted, this);
 
     }
 
@@ -240,14 +241,14 @@ export class TaskPanel extends PanelComponent {
     }
 
     _onshow(res) {
-        if(renwuMgr.ins.jumpTask.task_type == '8'){
-        this._onShowPage();
+        if (renwuMgr.ins.jumpTask.task_type == '8') {
+            this._onShowPage();
         }
         // this.init();
 
     }
 
-    private _taskCompleted(isSuccess?:boolean){
+    private _taskCompleted(isSuccess?: boolean) {
         this._onShowPage(isSuccess);
     }
 }

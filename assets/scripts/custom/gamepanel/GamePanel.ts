@@ -92,6 +92,14 @@ export class GamePanel extends PanelComponent {
     gameShowTarget: GameShowTarget = null;
     @property(Sprite)
     bgSprite: Sprite = null;
+    @property(Node)
+    hammerCopy: Node = null;
+    @property(Node)
+    randomCopy: Node = null;
+    @property(Node)
+    boomCopy: Node = null;
+    @property(Node)
+    stepsCopy: Node = null;
 
     private levelConfig: LevelConfig = null;
     public levelData: LevelConfig = null;
@@ -330,7 +338,7 @@ export class GamePanel extends PanelComponent {
 
     private initViews(levelConfig: LevelConfig, isReplay: boolean) {
 
-        this.stepsValue = levelConfig.steps;
+        this.stepsValue = levelConfig.totalSteps;
         this.scoreValue.init();
 
         // 根据类adsf型显示目标
@@ -382,7 +390,8 @@ export class GamePanel extends PanelComponent {
                 randomBlocks.push(randomBlock);
 
                 let fromPos = CocosUtils.setNodeToTargetPos(lineEffectNode, this.stepsValueNode);
-                let toPos = CocosUtils.setNodeToTargetPos(lineEffectNode, randomBlock.node);
+                let toPos = CocosUtils.setNodeToTargetPos(lineEffectNode, randomBlock.blockNode);
+
                 let lineEffect = lineEffectNode.getComponent(LineEffect);
                 lineEffect.setDuration(.4);
                 lineEffect.setLinePath(fromPos, toPos);
@@ -555,8 +564,6 @@ export class GamePanel extends PanelComponent {
     }
 
     private updateGameStorage() {
-        // 更新当前level的内容
-        this.levelData.complete = true;
         // 如果完成的分数更低那就不用更新了
         if (this.levelData.score > this.scoreValue.score) {
             // TODO: 如果修改了计算分数的规则，需要检查
@@ -708,7 +715,10 @@ export class GamePanel extends PanelComponent {
         this.toolMask.active = true;
         this.toolTitle.getChildByName('des').getComponent(Label).string = type === ToolType.Hammer ? '点击任意一格敲碎障碍' : '点击任意地方可大范围消除';
         this.toolTitle.active = true;
-        this.toolsCopy.getChildByName(ToolType[type]).active = true;
+        let copyNode = this._getToolsCopyNode(type);
+        if (copyNode) {
+            copyNode.active = true;
+        }
     }
 
     public hideToolMask() {
@@ -734,7 +744,7 @@ export class GamePanel extends PanelComponent {
                 this.node.addChild(lineStarNode);
                 let randomBlock = +tool === ToolType.Steps ? null : this.gameBlockGrid.grid.randomBlock();
                 let fromPos = CocosUtils.setNodeToTargetPos(lineStarNode, this.selectToolFrom);
-                let toPos = CocosUtils.setNodeToTargetPos(lineStarNode, randomBlock ? randomBlock.node : this.stepsValueNode);
+                let toPos = CocosUtils.setNodeToTargetPos(lineStarNode, randomBlock ? randomBlock.blockNode : this.stepsValueNode);
                 let lineEffect = lineStarNode.getComponent(LineEffect);
                 lineEffect.setDuration(.4);
                 lineEffect.setLinePath(fromPos, toPos);
@@ -1075,5 +1085,19 @@ export class GamePanel extends PanelComponent {
 
     private _triggerToolBlock(data: BlockToolEnterData) {
         this.gameBlockGrid.getGridStateMachine().toState(GameStateMgr.ins.blockTool, data);
+    }
+
+    private _getToolsCopyNode(type: ToolType) {
+        switch (type) {
+            case ToolType.Hammer:
+                return this.hammerCopy;
+            case ToolType.Random:
+                return this.randomCopy;
+            case ToolType.Boom:
+                return this.boomCopy;
+            case ToolType.Steps:
+                return this.stepsCopy;
+        }
+        return null;
     }
 }

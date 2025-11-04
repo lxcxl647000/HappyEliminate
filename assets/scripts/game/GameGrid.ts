@@ -322,7 +322,7 @@ export class GameGrid {
         }
     }
 
-    randomBlock() {
+    randomBlock(): Block {
         let blocks = this.blocks;
         const rows = blocks.length;
         const cols = blocks[0].length;

@@ -19,6 +19,7 @@ import PoolMgr from '../../manager/PoolMgr';
 import GuideMgr from '../../manager/GuideMgr';
 import { PlatformConfig } from '../../framework/lib/platform/configs/PlatformConfig';
 import adapter from '../../framework/lib/platform/adapter/adapter';
+import platform_taobao from '../../framework/lib/platform/platform_taobao';
 
 const { ccclass, property } = _decorator;
 
@@ -52,6 +53,10 @@ export class MainPanel extends PanelComponent {
     forceGuide: Node = null;
     @property(Node)
     sideRewardBtn: Node = null;
+    @property(Node)
+    redPackBtnNode: Node = null;
+    @property(Node)
+    cashBtnNode: Node = null;
 
     private _maskSprite: Sprite = null;
     private _currentLevel: LevelConfig = null;
@@ -86,6 +91,11 @@ export class MainPanel extends PanelComponent {
             this._vibrateFlag = true;
             qc.platform.vibrateShort();
         }
+        if (qc.platform.checkNotDisplayRedPack()) {
+            this.redPackBtnNode.active = false;
+            this.cashBtnNode.active = false;
+        }
+
         qc.platform.reportScene(304);
         musicMgr.ins.playMusic('bg_music');
         option.onShowed();
@@ -105,6 +115,15 @@ export class MainPanel extends PanelComponent {
         this._updateVibrateStatus();
         GuideMgr.ins.checkMainPanelForceGuide(this.forceGuide);
         this._onshow();
+
+        if (adapter.inst.onTaobao()) {
+            setTimeout(() => {
+                let platform = qc.platform.platform as platform_taobao;
+                if (platform && platform.checkNeedJumpToAdZoneUrl) {
+                    platform.checkNeedJumpToAdZoneUrl();
+                }
+            }, 300);
+        }
     }
     hide(option: PanelHideOption): void {
 
@@ -458,6 +477,10 @@ export class MainPanel extends PanelComponent {
     }
 
     private _updateLeftLevelLabel() {
+        if (qc.platform.checkNotDisplayRedPack()) {
+            this.leftLevelLabel.node.parent.active = false;
+            return;
+        }
         let leftLevel = PlayerMgr.ins.userInfo.prompt.open_level - PlayerMgr.ins.userInfo.summary.latest_passed_level;
         this.leftLevelLabel.node.parent.active = leftLevel > 0;
         if (leftLevel > 0) {
@@ -482,7 +505,7 @@ export class MainPanel extends PanelComponent {
     }
 
     private async _onshow(res?: any, isFirstShow?: boolean) {
-        qc.platform.checkScene((isExist: boolean) => {
+        PlayerMgr.ins.userInfo.daily_coin_claimed === 0 && qc.platform.checkScene((isExist: boolean) => {
             this._updateSideReward(isExist);
         });
         if (!isFirstShow) {
@@ -512,5 +535,13 @@ export class MainPanel extends PanelComponent {
 
     private _updateSideReward(isActive: boolean) {
         this.sideRewardBtn.active = isActive;
+    }
+
+    protected onDestroy(): void {
+        let sdk = my['tb'].getInteractiveSDK();
+        sdk.toastShow({
+            content: 'mainpanel destroy---',
+            duration: 5000,
+        });
     }
 }

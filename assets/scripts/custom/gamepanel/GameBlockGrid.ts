@@ -57,7 +57,7 @@ export class GameBlockGrid extends Component {
     }
 
     public init(levelConfig: LevelConfig, isReplay: boolean) {
-        this.grid = new GameGrid(levelConfig.grid, GameConstant.BlockSize, levelConfig.types, levelConfig.blockGrid);
+        this.grid = new GameGrid(levelConfig.gameGrid, GameConstant.BlockSize, levelConfig.blockTypes, levelConfig.blockGrid);
         this.initGridBlocks(isReplay);
         this.stopGame = false;
 

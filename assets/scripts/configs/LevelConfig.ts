@@ -3,13 +3,12 @@ import { TargetForTypeCount, ITargetVal } from '../game/target/TargetTyps';
 
 export class LevelConfig {
     lvID: number = 1;
-    steps: number = 20;
+    totalSteps: number = 20;
     target: ITargetVal | number;
-    types: number[] = [1, 2, 3];
-    grid: BlockGridType[][] = []
+    blockTypes: number[] = [1, 2, 3];
+    gameGrid: BlockGridType[][] = []
     blockGrid: BlockType[][] = null;
     guideBlocks: number[][] = null;
-    complete: boolean = false;
     starCount: number = -1;
     score: number = 0;
     fullStar: number = 10000;
@@ -19,7 +18,7 @@ export class LevelConfig {
 
     constructor(level: LevelConfig) {
         this.lvID = level.lvID;
-        this.steps = level.steps;
+        this.totalSteps = level.totalSteps;
         if (typeof (level.target) === 'number') {
             this.target = level.target;
         }
@@ -41,11 +40,10 @@ export class LevelConfig {
                 }
             }
         }
-        this.types = level.types;
-        this.grid = level.grid;
+        this.blockTypes = level.blockTypes;
+        this.gameGrid = level.gameGrid;
         this.blockGrid = level.blockGrid;
         this.guideBlocks = level.guideBlocks;
-        this.complete = level.complete;
         this.starCount = level.starCount;
         this.fullStar = level.fullStar;
         this.mapId = level.mapId;

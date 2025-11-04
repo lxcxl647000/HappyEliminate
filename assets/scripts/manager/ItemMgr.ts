@@ -60,4 +60,12 @@ export default class ItemMgr {
             cb && cb(res.data);
         }
     }
+
+    // 抖音侧边栏复访获得金币
+    public async getCoinByTT(cb: Function) {
+        let res = await httpMgr.ins.xhrRequest('/game/claimDailyCoin', 'GET');
+        if (res) {
+            cb && cb(res.data);
+        }
+    }
 }

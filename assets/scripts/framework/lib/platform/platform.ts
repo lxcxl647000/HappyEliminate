@@ -213,4 +213,8 @@ export default class platform implements platform_interface {
             }
         }
     }
+
+    checkNotDisplayRedPack() {
+        return adapter.inst.onTt() || adapter.inst.onWx();
+    }
 }

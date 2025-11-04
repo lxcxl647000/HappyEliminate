@@ -45,6 +45,7 @@ interface userInfoFace {
     is_new_today: number;
     strength_recover: any;
     prop_video_remain: number;
+    daily_coin_claimed: number;// 1已领取 0未领取
 }
 
 export interface Currentlevel {
@@ -211,6 +212,7 @@ export default class PlayerMgr {
         }
         this.userInfo = res.data
 
+        this.userInfo.daily_coin_claimed = res.data.daily_coin_claimed === undefined ? 0 : res.data.daily_coin_claimed;
         this.userInfo.prop_video_remain = res.data.prop_video_remain === undefined ? 0 : +res.data.prop_video_remain;
         this.userInfo.props.user_id = +res.data.props.user_id;
         this.userInfo.props.money = res.data.props.money === undefined ? 0 : +res.data.props.money;

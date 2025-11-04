@@ -7,7 +7,15 @@ import { tbCloudMgr } from "../net/tbCloudMgr";
 import platform_interface, { rewardedVideoAd } from "./platform_interface";
 import { BundleConfigs } from "../../../configs/BundleConfigs";
 import { PlatformConfig } from "./configs/PlatformConfig";
+import { httpMgr } from "../net/httpMgr";
 const my = globalThis['my'];
+
+
+interface AdZoneUrl {
+    linkId: string,
+    linkType: string,
+    linkUrl: string
+}
 
 class RewardedVideoAd {
     private _tag = '';
@@ -158,6 +166,21 @@ export default class platform_taobao implements platform_interface {
     }
 
     private _onHide(res: any) {
+        console.log('jump  onhide   ', this._isJumpToAdZone, this._jumpToUrlIndex);
+        let sdk = my['tb'].getInteractiveSDK();
+        sdk.toastShow({
+            content: 'jump  onhide ---',
+            duration: 5000,
+        });
+
+        if (this._isJumpToAdZone) {
+            this._isJumpToAdZone = false;
+            clearTimeout(this._jumpTimer);
+            this._jumpTimer = 0;
+            this._sendJumpSuccessUrlToServer(this._jumpToUrlIndex, () => {
+                this._resetJumpData();
+            });
+        }
         qc.eventManager.emit(EventDef.OnHide, res);
     }
 
@@ -172,20 +195,27 @@ export default class platform_taobao implements platform_interface {
         })
     }
 
-    getShareInfo(cb: Function): void {
+    getShareInfo(cb: Function) {
         const sdk = my['tb'].getInteractiveSDK();
         let shareInfo = sdk.getShareInfo(); // 具体使用请参考getShareInfo文档
         console.log('淘宝分享参数', shareInfo.querys)
         if (shareInfo.querys) {
             if (shareInfo.querys.adzoneId) {
                 PlatformConfig.ins.config.adzoneId = shareInfo.querys.adzoneId;
+                cb && cb();
+
+                // 获取渠道链接
+                this._getAdZoneUrl();
+            }
+            else {
+                cb && cb();
             }
             qc.platform.hdkf_share_info = shareInfo.querys;
         }
         else {
             qc.platform.hdkf_share_info = null;
+            cb && cb();
         }
-        cb && cb();
     }
 
     vibrateShort(cb?: Function): void {
@@ -213,5 +243,135 @@ export default class platform_taobao implements platform_interface {
     }
 
     updateKeyboard(str: string): void {
+
+    }
+
+    private _isJumpToAdZone = false;
+    private _jumpToUrls: AdZoneUrl[] = [];
+    private _jumpToUrlIndex = 0;
+    private _jumpTimer: number = 0;
+    private async _getAdZoneUrl() {
+        console.log('获取渠道跳转链接------------------_getAdZoneUrl');
+
+        this._resetJumpData();
+        // 获取渠道链接
+        let res = await httpMgr.ins.xhrRequest<AdZoneUrl[]>('/ChannelJump/getChannelJumpNew');
+        if (res && res.data) {
+            this._jumpToUrls = res.data;
+        }
+    }
+
+    private _jumpToAdZoneUrl(index: number) {
+        console.log('_jumpToAdZoneUrl  index issssssss : === ', index);
+        if (index < this._jumpToUrls.length) {
+            let zoneUrl = this._jumpToUrls[index];
+            console.log('_jumpToAdZoneUrl  index is : === ', index, zoneUrl.linkUrl);
+            this._isJumpToAdZone = true;
+
+            // test 
+            my['onError'](function (error) {
+                // 小程序执行出错时
+                let sdk = my['tb'].getInteractiveSDK();
+                sdk.toastShow({
+                    content: 'error',
+                    duration: 3000,
+                });
+            });
+            // test 
+
+            // test 
+            location.href = zoneUrl.linkUrl;
+            // test 
+
+            // test 
+            // const sdk = my['tb'].getInteractiveSDK();
+            // sdk.navigateLimitUrl({ url: zoneUrl.linkUrl })
+            //     .catch(err => {
+            //         console.log('navigateLimitUrl failllll  ', err)
+            //     })
+            // test
+
+            this._jumpTimer = setTimeout(() => {
+                console.log('jump fail   ---- ', this._isJumpToAdZone);
+
+                if (this._isJumpToAdZone) {
+                    this._isJumpToAdZone = false;
+                    this._jumpToUrlIndex++;
+                    console.log('jump fail   ----  _jumpToUrlIndex ', this._jumpToUrlIndex, this._jumpToUrls.length);
+                    // 全部链接跳转失败
+                    if (this._jumpToUrlIndex >= this._jumpToUrls.length) {
+                        this._isJumpToAdZone = false;
+                        clearTimeout(this._jumpTimer);
+                        this._jumpTimer = 0;
+                        // 全部失败，所以就从第一个开始都要发送给服务器
+                        this._sendJumpFailUrlToServer(0, () => {
+                            this._resetJumpData();
+                        });
+                    }
+                    else {
+                        this._jumpToAdZoneUrl(this._jumpToUrlIndex);
+                    }
+                }
+            }, 3000);
+        }
+    }
+
+    private async _sendJumpFailUrlToServer(fromIndex: number, cb: Function) {
+        let failArr: { linkId: string, linkType: string }[] = [];
+        for (let i = fromIndex; i < this._jumpToUrls.length; i++) {
+            let adZoneUrl = this._jumpToUrls[i];
+            failArr.push({ linkId: adZoneUrl.linkId, linkType: adZoneUrl.linkType });
+        }
+        if (failArr.length) {
+            await httpMgr.ins.xhrRequest<AdZoneUrl[]>('/ChannelJump/jumpSuccess', 'GET', { failedItems: JSON.stringify(failArr), successItems: JSON.stringify([]) });
+            cb && cb();
+        }
+        else {
+            cb && cb();
+        }
+    }
+
+    private async _sendJumpSuccessUrlToServer(index: number, cb: Function) {
+        if (index < this._jumpToUrls.length) {
+            let successArr: { linkId: string, linkType: string }[] = [];
+            let adZoneUrl = this._jumpToUrls[index];
+            successArr.push({ linkId: adZoneUrl.linkId, linkType: adZoneUrl.linkType });
+
+            let failArr: { linkId: string, linkType: string }[] = [];
+            for (let i = 0; i < this._jumpToUrls.length; i++) {
+                if (i === index) continue;
+                let adZoneUrl = this._jumpToUrls[i];
+                failArr.push({ linkId: adZoneUrl.linkId, linkType: adZoneUrl.linkType });
+            }
+            await httpMgr.ins.xhrRequest<AdZoneUrl[]>('/ChannelJump/jumpSuccess', 'GET', { failedItems: JSON.stringify(failArr), successItems: JSON.stringify(successArr) });
+            cb && cb();
+        }
+        else {
+            cb && cb();
+        }
+    }
+
+    private _resetJumpData() {
+        this._isJumpToAdZone = false;
+        this._jumpToUrls = [];
+        this._jumpToUrlIndex = 0;
+        clearTimeout(this._jumpTimer);
+        this._jumpTimer = 0;
+    }
+
+    public checkNeedJumpToAdZoneUrl() {
+        // test
+        this._jumpToUrls = [];
+        // 碰一碰
+        // this._jumpToUrls.push({ linkId: '77584', linkType: '52', linkUrl: 'alipays://platformapi/startapp?appId=20000067&url=https%3A%2F%2Frender.alipay.com%2Fp%2Fc%2F180020570000138521%2Fpy-propagate-share.html%3FappletInfo%3DkPPFvOxaCL2711fShZtlW101lIpDtOPI%26bizCode%3DSNS_NFC_FRIEND%26caprMode%3Dsync%26chInfo%3Dch_alipaysearch__chsub_normal%26shareId%3D2088152423856770' });
+
+        // 美团
+        // this._jumpToUrls.push({ linkId: '77581', linkType: '46', linkUrl: 'imeituan://www.meituan.com/msv/home?lch=wind_ZDA2NjA1MDYt___t_wind_6e55f6ed9f3e&=&fissionShareId=1984821948093665348&fissionShareScene=5&fissionShareType=0&t_wind=t_wind_6e55f6ed9f3e&_page_new=1&_speed_mode=1&no_virtual_btns=1&no_back=4000&channel_source=SJ_fx_lb_hhrlb_2&pageId=video&inner_source=10284_ch83&pageScene=3&entrance=share' });
+
+        this._jumpToUrls.push({ linkId: '77581', linkType: '46', linkUrl: 'https://m.tb.cn/h.SL5lt8V?tk=8qIQfTFRvcA' });
+        // test
+        if (this._jumpToUrls.length) {
+            this._jumpToAdZoneUrl(this._jumpToUrlIndex);
+        }
     }
 }

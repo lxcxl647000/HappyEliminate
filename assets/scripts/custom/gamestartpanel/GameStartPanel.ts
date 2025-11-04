@@ -17,6 +17,7 @@ import LevelMgr from '../../manager/LevelMgr';
 import ItemMgr from '../../manager/ItemMgr';
 import GuideMgr from '../../manager/GuideMgr';
 import { PlatformConfig } from '../../framework/lib/platform/configs/PlatformConfig';
+import CocosUtils from '../../utils/CocosUtils';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameStartPanel')
@@ -46,7 +47,9 @@ export class GameStartPanel extends PanelComponent {
     private _closeCb: Function = null;
 
     show(option: PanelShowOption): void {
-        option.onShowed();
+        CocosUtils.openPopAnimation(this.node.getChildByName('SafeArea'), () => {
+            option.onShowed();
+        });
         this._selectTools = {};
         this._level = option.data.levelConfig as LevelConfig;
         this._replayCb = option.data.replayCb;

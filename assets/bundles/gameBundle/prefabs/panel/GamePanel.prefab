@@ -7848,7 +7848,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "TYPE_HAMMER",
+    "_name": "Hammer",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -7984,7 +7984,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "RANDOM_GRID",
+    "_name": "Random",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -8120,7 +8120,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "TYPE_BOOM",
+    "_name": "Boom",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -8256,7 +8256,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "TYPE_STEPS",
+    "_name": "Steps",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -11699,6 +11699,18 @@
     },
     "bgSprite": {
       "__id__": 502
+    },
+    "hammerCopy": {
+      "__id__": 360
+    },
+    "randomCopy": {
+      "__id__": 366
+    },
+    "boomCopy": {
+      "__id__": 372
+    },
+    "stepsCopy": {
+      "__id__": 378
     },
     "_id": ""
   },
